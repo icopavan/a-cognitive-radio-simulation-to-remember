@@ -2,7 +2,6 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Random;
 
 
 public class FeliceMain {
@@ -10,6 +9,8 @@ public class FeliceMain {
 	public static boolean consoleDebug;
 	public static boolean logging;
 
+	public static final int PU_PAIR_INTRODUCTION_EPOCH = 10000;
+	
 	public static void main(String[] args) {
 		System.out.println("Starting main method");
 		FeliceUtil.initialize();
@@ -35,29 +36,33 @@ public class FeliceMain {
 		System.out.println("Ending main method");
 	}
 	
+	public static void introduceAPUPair(String transmitterName, String receiverName, Environment anEnvironment) {
+		PrimaryUser transmitterPU = new PrimaryUser(transmitterName, anEnvironment);
+		PrimaryUser receiverPU = new PrimaryUser(receiverName, anEnvironment);
+		
+		transmitterPU.role = Role.TRANSMITTER;
+		receiverPU.role = Role.RECEIVER;
+		
+		transmitterPU.peer = receiverPU;
+		receiverPU.peer = transmitterPU;
+		
+		transmitterPU.choosePower();
+		transmitterPU.chooseSpectrum();
+		receiverPU.choosePower();
+		receiverPU.chooseSpectrum();
+		
+		PrimaryUser[] puPair = new PrimaryUser[]{ transmitterPU, receiverPU };
+		anEnvironment.primaryUserPairs.add(puPair);
+	}
+	
 	public static void conductSimulation(Method method) throws IOException {
 		if (logging) {
 			FeliceUtil.log("Conducting simulation for method: " + method + ".\n");
 		}
 		
 		Environment environment = new Environment();
-		
-		Random rand = new Random();
-		
-		int randomInt = rand.nextInt(environment.numberOfSpectra);
-		PrimaryUser pu1 = new PrimaryUser("PU1", environment, environment.spectrums.get(randomInt));
-		randomInt = rand.nextInt(environment.numberOfSpectra);
-		PrimaryUser pu2 = new PrimaryUser("PU2", environment, environment.spectrums.get(randomInt));
-		
-		pu1.role = Role.TRANSMITTER;
-		pu2.role = Role.RECEIVER;
-		
-		pu1.peer = pu2;
-		pu2.peer = pu1;
-		
-		pu1.choosePower();
-		pu1.chooseSpectrum();
-		pu1.transmit();
+
+		introduceAPUPair("PU1", "PU2", environment);
 		
 		for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 			environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method));
@@ -86,6 +91,13 @@ public class FeliceMain {
 			if (consoleDebug) {
 				System.out.println("Iteration: " + (i + 1));
 			}
+			
+			if (i != 0 && i % PU_PAIR_INTRODUCTION_EPOCH == 0) {
+				String firstPUName = String.format("PU%s", i / PU_PAIR_INTRODUCTION_EPOCH + 1);
+				String secondPUName = String.format("PU%s", i / PU_PAIR_INTRODUCTION_EPOCH + 2);
+				introduceAPUPair(firstPUName, secondPUName, environment);
+			}
+			
 			double currentRewardTotals = 0.0;
 			
 			for (CognitiveRadio cr : environment.cognitiveRadios) {
@@ -130,11 +142,6 @@ public class FeliceMain {
 					+ "_average_rewards.txt", true));
 			bw.write(currentRewardAverage + "\n");
 			bw.close();
-			pu1.iterate();
-			if (logging) {
-				FeliceUtil.log("Iteration: " + (i + 1) + "\nPrimary user is on channel "
-						+ pu1.currentState.spectrum);
-			}
 		}
 
 		if (logging) {

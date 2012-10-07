@@ -1,6 +1,3 @@
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,7 +18,7 @@ public class CognitiveRadio extends Agent {
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
 	public static final double RECEIVER_THRESHOLD = 1E-8;
-	public static final double EPSILON_DECREASE = 0.000092;
+	public static final double EPSILON_DECREASE = 0.00064;
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 }; 
 
 	public double epsilon;
@@ -371,24 +368,8 @@ public class CognitiveRadio extends Agent {
 		double energyPerBit = noiseToPowerRatio * 22.0 / 2.0;
 		double qFunctionArg = Math.sqrt(2 * energyPerBit);
 		double probabilityOfBitError = qFunction(qFunctionArg);
-		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(method + "_bit_error_probabilities.txt", true));
-			bw.write(probabilityOfBitError + "\n");
-			bw.close();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 		double packetLengthInBits = 1024;
 		double packetErrorRate = 1 - Math.pow((1 - probabilityOfBitError), packetLengthInBits);
-		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(method + "_packet_error_rates.txt", true));
-			bw.write(packetErrorRate + "\n");
-			bw.close();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 		double randomDouble = randomGenerator.nextDouble();
 		if (randomDouble < packetErrorRate) {
 			return true;
@@ -416,15 +397,11 @@ public class CognitiveRadio extends Agent {
 		succesfullyTransmittedThisEpoch = false;
 		if (currentState.spectrum.containsPrimaryUser) {
 			reward = -15.0;
-			System.out.println("pu collision");
 		} else if (isThereCRCollision()){
-			System.out.println("cr collision");
 			reward = -5.0;
 		} else if (isThereLinkDisconnection()) {
-			System.out.println("link disconnection");
 			reward = -20.0;
 		} else if(isThereChannelInducedError()) {
-			System.out.println("channel induced error");
 			reward = -5.0;
 		} else {
 			reward = 5.0;

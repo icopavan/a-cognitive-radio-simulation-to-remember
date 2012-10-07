@@ -11,6 +11,7 @@ public class Environment {
 	public List<Spectrum> spectrums;
 	public List<CognitiveRadio> cognitiveRadios;
 	public int numberOfSecondaryUsers;
+	public List<PrimaryUser[]> primaryUserPairs;
 	
 	public Environment() {
 		numberOfSpectra = availableSpectrums.length;
@@ -20,6 +21,7 @@ public class Environment {
 			spectrums.add(new Spectrum(availableSpectrums[i]));
 		}
 		cognitiveRadios = new ArrayList<CognitiveRadio>();
+		primaryUserPairs = new ArrayList<PrimaryUser[]>();
 		numberOfSecondaryUsers = Integer.parseInt(FeliceUtil.getSetting("secondary-users"));
 	}
 	
