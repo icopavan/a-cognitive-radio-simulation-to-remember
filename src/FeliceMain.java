@@ -27,15 +27,15 @@ public class FeliceMain {
 			if (logging) {
 				FeliceUtil.log("###############");
 			}
-			conductSimulation(Method.QLEARNING, "qlearning-results.txt");
-			conductSimulation(Method.RANDOM, "random-results.txt");
+			conductSimulation(Method.QLEARNING);
+			conductSimulation(Method.RANDOM);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		System.out.println("Ending main method");
 	}
 	
-	public static void conductSimulation(Method method, String resultsFileName) throws IOException {
+	public static void conductSimulation(Method method) throws IOException {
 		if (logging) {
 			FeliceUtil.log("Conducting simulation for method: " + method + ".\n");
 		}
@@ -106,32 +106,34 @@ public class FeliceMain {
 					currentRewardTotals += cr.currentIterationsReward;
 				}
 			}
-			double successfulTransmissionProbability = (double) successfulTransmissions / (environment.numberOfSecondaryUsers / 2.0);
+			double successfulTransmissionProbability = (double) successfulTransmissions
+					/ (environment.numberOfSecondaryUsers / 2.0);
 			
 			try {
-				BufferedWriter bw = new BufferedWriter(new FileWriter(method + "_channel_switches.txt", true));
+				BufferedWriter bw = new BufferedWriter(new FileWriter(method.toString().toLowerCase()
+						+ "_channel_switches.txt", true));
 				bw.write(channelSwitches + "\n");
 				bw.close();
-				bw = new BufferedWriter(new FileWriter(method + "_successful_transmission.txt", true));
+				bw = new BufferedWriter(new FileWriter(method.toString().toLowerCase()
+						+ "_successful_transmission.txt", true));
 				bw.write(successfulTransmissionProbability + "\n");
 				bw.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			for (Spectrum s : environment.spectrums) {
-				System.out.println(s);
-				System.out.println(s.occupyingAgents);
 				s.occupyingAgents.clear();
 			}
 			
 			double currentRewardAverage = currentRewardTotals / (environment.numberOfSecondaryUsers / 2.0);
-			BufferedWriter bw = new BufferedWriter(new FileWriter(resultsFileName, true));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(method.toString().toLowerCase()
+					+ "_average_rewards.txt", true));
 			bw.write(currentRewardAverage + "\n");
 			bw.close();
 			pu1.iterate();
 			if (logging) {
-				FeliceUtil.log("Iteration: " + (i + 1) + "\nPrimary user is on channel " + pu1.currentState.spectrum);
+				FeliceUtil.log("Iteration: " + (i + 1) + "\nPrimary user is on channel "
+						+ pu1.currentState.spectrum);
 			}
 		}
 
