@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TreeMap;
+
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.commons.math3.special.Erf;
 
 public class CognitiveRadio extends Agent {
@@ -19,8 +21,12 @@ public class CognitiveRadio extends Agent {
 	public static final double DISTANCE = 5.0;
 	public static final double RECEIVER_THRESHOLD = 1E-8;
 	public static final double EPSILON_DECREASE = 0.00064;
-	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 }; 
+	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
+	
+	public CircularFifoBuffer rewardHistory;
 
+	public int REWARD_HISTORY_SIZE = 10;
+	
 	public double epsilon;
 	
 	public AbstractAction actionTaken;
@@ -49,13 +55,17 @@ public class CognitiveRadio extends Agent {
 	
 	public boolean succesfullyTransmittedThisEpoch;
 	
-	public CognitiveRadio(String name, Environment environment, Method aMethod) {
+	public boolean evaluatePastResults;
+	
+	public CognitiveRadio(String name, Environment environment, Method aMethod, boolean evaluateResults) {
 		super(name, environment);
 		method = aMethod;
 		Q = new HashMap<StateAction, Double>();
 		epsilon = 0.8;
 		learningRate = 0.8;
 		nothingActionForComparison = new NothingAction();
+		rewardHistory = new CircularFifoBuffer(REWARD_HISTORY_SIZE);
+		evaluatePastResults = evaluateResults;
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
@@ -82,8 +92,18 @@ public class CognitiveRadio extends Agent {
 		}
 		if (method == Method.QLEARNING) {
 			learningRate *= LEARNING_RATE_REDUCTION_FACTOR;
-			if (epsilon > EPSILON_DECREASE) {
-				epsilon -= EPSILON_DECREASE;
+			if (evaluatePastResults) {
+				if (rewardHistory.isFull()) {
+					if (gettingPositiveRewards()) {
+						epsilon -= EPSILON_DECREASE;
+					} else {
+						epsilon += EPSILON_DECREASE;
+					}
+				}
+			} else {
+				if (epsilon > EPSILON_DECREASE) {
+					epsilon -= EPSILON_DECREASE;
+				}
 			}
 		}
 	}
@@ -140,6 +160,7 @@ public class CognitiveRadio extends Agent {
 	
 	public void evaluate() {
 		currentIterationsReward = calculateReward();
+		rewardHistory.add(new Double(currentIterationsReward));
 		updateQ(thisIterationsStateAction, currentIterationsReward);
 	}
 
@@ -413,4 +434,14 @@ public class CognitiveRadio extends Agent {
 		return reward;
 	}
 	
+	public boolean gettingPositiveRewards() {
+		double totalReward = 0.0;
+		@SuppressWarnings("unchecked")
+		Iterator<Double> iter = rewardHistory.iterator();
+		while (iter.hasNext()) {
+			totalReward += iter.next();
+		}
+		double average = totalReward / REWARD_HISTORY_SIZE;
+		return average > 0.0;
+	}
 }

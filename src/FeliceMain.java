@@ -9,7 +9,7 @@ public class FeliceMain {
 	public static boolean consoleDebug;
 	public static boolean logging;
 
-	public static final int PU_PAIR_INTRODUCTION_EPOCH = 10000;
+	public static final int PU_PAIR_INTRODUCTION_EPOCH = 6000;
 	
 	public static void main(String[] args) {
 		System.out.println("Starting main method");
@@ -28,8 +28,10 @@ public class FeliceMain {
 			if (logging) {
 				FeliceUtil.log("###############");
 			}
-			conductSimulation(Method.QLEARNING);
-			conductSimulation(Method.RANDOM);
+			conductSimulation(Method.QLEARNING, true);
+			conductSimulation(Method.RANDOM, true);
+			conductSimulation(Method.QLEARNING, false);
+			conductSimulation(Method.RANDOM, false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -55,7 +57,7 @@ public class FeliceMain {
 		anEnvironment.primaryUserPairs.add(puPair);
 	}
 	
-	public static void conductSimulation(Method method) throws IOException {
+	public static void conductSimulation(Method method, boolean evaluateResults) throws IOException {
 		if (logging) {
 			FeliceUtil.log("Conducting simulation for method: " + method + ".\n");
 		}
@@ -65,7 +67,8 @@ public class FeliceMain {
 		introduceAPUPair("PU1", "PU2", environment);
 		
 		for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
-			environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method));
+			environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
+					evaluateResults));
 		}
 		
 		int currentCR = 0;
@@ -120,14 +123,14 @@ public class FeliceMain {
 			}
 			double successfulTransmissionProbability = (double) successfulTransmissions
 					/ (environment.numberOfSecondaryUsers / 2.0);
-			
+			String evaluationValue = evaluateResults ? "with" : "without";
 			try {
 				BufferedWriter bw = new BufferedWriter(new FileWriter(method.toString().toLowerCase()
-						+ "_channel_switches.txt", true));
+						+ String.format("_channel_switches.txt", evaluationValue), true));
 				bw.write(channelSwitches + "\n");
 				bw.close();
 				bw = new BufferedWriter(new FileWriter(method.toString().toLowerCase()
-						+ "_successful_transmission.txt", true));
+						+ String.format("_successful_transmission.txt", evaluationValue), true));
 				bw.write(successfulTransmissionProbability + "\n");
 				bw.close();
 			} catch (IOException e1) {
@@ -138,8 +141,9 @@ public class FeliceMain {
 			}
 			
 			double currentRewardAverage = currentRewardTotals / (environment.numberOfSecondaryUsers / 2.0);
+			
 			BufferedWriter bw = new BufferedWriter(new FileWriter(method.toString().toLowerCase()
-					+ "_average_rewards.txt", true));
+					+ String.format("_average_rewards_%s_evaluation.txt", evaluationValue), true));
 			bw.write(currentRewardAverage + "\n");
 			bw.close();
 		}
