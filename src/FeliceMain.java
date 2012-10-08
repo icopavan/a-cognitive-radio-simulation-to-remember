@@ -9,7 +9,7 @@ public class FeliceMain {
 	public static boolean consoleDebug;
 	public static boolean logging;
 
-	public static final int PU_PAIR_INTRODUCTION_EPOCH = 6000;
+	public static final int PU_PAIR_INTRODUCTION_EPOCH = 3000;
 	
 	public static void main(String[] args) {
 		System.out.println("Starting main method");
@@ -115,7 +115,7 @@ public class FeliceMain {
 					if (cr.changedChannelThisIteration) {
 						channelSwitches++;
 					}
-					if (cr.succesfullyTransmittedThisEpoch) {
+					if (cr.succesfullyTransmittedThisIteration) {
 						successfulTransmissions++;
 					}
 					currentRewardTotals += cr.currentIterationsReward;

@@ -53,7 +53,9 @@ public class CognitiveRadio extends Agent {
 	
 	public StateAction thisIterationsStateAction;
 	
-	public boolean succesfullyTransmittedThisEpoch;
+	public boolean succesfullyTransmittedThisIteration;
+	
+	public boolean isExploitingThisIteration;
 	
 	public boolean evaluatePastResults;
 	
@@ -131,6 +133,7 @@ public class CognitiveRadio extends Agent {
 	@Override
 	public void transmit() {
 		isActiveThisIteration = false;
+		isExploitingThisIteration = false;
 		changedChannelThisIteration = false;
 		double randomDouble = randomGenerator.nextDouble();
 		if (randomDouble < PROBABILITY_FOR_TRANSMISSION) {
@@ -161,6 +164,9 @@ public class CognitiveRadio extends Agent {
 	public void evaluate() {
 		currentIterationsReward = calculateReward();
 		rewardHistory.add(new Double(currentIterationsReward));
+		if (isExploitingThisIteration && currentIterationsReward < 0) {
+			Q.remove(thisIterationsStateAction);
+		}
 		updateQ(thisIterationsStateAction, currentIterationsReward);
 	}
 
@@ -301,6 +307,7 @@ public class CognitiveRadio extends Agent {
 	 * Sets actionToConduct to the best action according to current Q. 
 	 */
 	public void exploit() {
+		isExploitingThisIteration = true;
 		if (debug) {
 			FeliceUtil.log(name + " is exploiting.");
 		}
@@ -415,7 +422,7 @@ public class CognitiveRadio extends Agent {
 	
 	public double calculateReward() {
 		double reward;
-		succesfullyTransmittedThisEpoch = false;
+		succesfullyTransmittedThisIteration = false;
 		if (currentState.spectrum.containsPrimaryUser) {
 			reward = -15.0;
 		} else if (isThereCRCollision()){
@@ -426,7 +433,7 @@ public class CognitiveRadio extends Agent {
 			reward = -5.0;
 		} else {
 			reward = 5.0;
-			succesfullyTransmittedThisEpoch = true;
+			succesfullyTransmittedThisIteration = true;
 		}
 		if (debug) {
 			FeliceUtil.log(name + " got reward: " + reward);
