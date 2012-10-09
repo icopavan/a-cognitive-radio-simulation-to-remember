@@ -1,3 +1,6 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -150,6 +153,17 @@ public class CognitiveRadio extends Agent {
 		if (debug) {
 			FeliceUtil.log("End of iteration " + iterationNumber);
 			printQ();
+		}
+		String fileName = String.format("%s-%s-%s-channel-presence.txt", method.toString().toLowerCase(),
+				evaluatePastResults ? "with-evaluation" : "without-evaluation", name.toLowerCase());
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(fileName, true));
+			String presenceLine = String.format("%s,%s", currentState.spectrum.toString(),
+					isActiveThisIteration);
+			bw.write(presenceLine + "\n");
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
