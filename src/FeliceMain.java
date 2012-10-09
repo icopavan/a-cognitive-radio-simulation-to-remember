@@ -9,7 +9,7 @@ public class FeliceMain {
 	public static boolean consoleDebug;
 	public static boolean logging;
 
-	public static final int PU_PAIR_INTRODUCTION_EPOCH = 3000;
+	public static final int PU_PAIR_INTRODUCTION_EPOCH = 2000;
 	
 	public static void main(String[] args) {
 		System.out.println("Starting main method");
@@ -38,7 +38,7 @@ public class FeliceMain {
 		System.out.println("Ending main method");
 	}
 	
-	public static void introduceAPUPair(String transmitterName, String receiverName, Environment anEnvironment) {
+	public static void introduceAPUPair(String transmitterName, String receiverName, Environment anEnvironment, Spectrum aSpectrum) {
 		PrimaryUser transmitterPU = new PrimaryUser(transmitterName, anEnvironment);
 		PrimaryUser receiverPU = new PrimaryUser(receiverName, anEnvironment);
 		
@@ -48,10 +48,8 @@ public class FeliceMain {
 		transmitterPU.peer = receiverPU;
 		receiverPU.peer = transmitterPU;
 		
-		transmitterPU.choosePower();
-		transmitterPU.chooseSpectrum();
-		receiverPU.choosePower();
-		receiverPU.chooseSpectrum();
+		transmitterPU.choosePrimarySpectrum(aSpectrum);
+		receiverPU.choosePrimarySpectrum(aSpectrum);
 		
 		PrimaryUser[] puPair = new PrimaryUser[]{ transmitterPU, receiverPU };
 		anEnvironment.primaryUserPairs.add(puPair);
@@ -63,8 +61,6 @@ public class FeliceMain {
 		}
 		
 		Environment environment = new Environment();
-
-		introduceAPUPair("PU1", "PU2", environment);
 		
 		for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 			environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
@@ -95,10 +91,10 @@ public class FeliceMain {
 				System.out.println("Iteration: " + (i + 1));
 			}
 			
-			if (i != 0 && i % PU_PAIR_INTRODUCTION_EPOCH == 0) {
+			if (i % PU_PAIR_INTRODUCTION_EPOCH == 0) {
 				String firstPUName = String.format("PU%s", i / PU_PAIR_INTRODUCTION_EPOCH + 1);
 				String secondPUName = String.format("PU%s", i / PU_PAIR_INTRODUCTION_EPOCH + 2);
-				introduceAPUPair(firstPUName, secondPUName, environment);
+				introduceAPUPair(firstPUName, secondPUName, environment, environment.spectrums.get(i / PU_PAIR_INTRODUCTION_EPOCH));
 			}
 			
 			double currentRewardTotals = 0.0;

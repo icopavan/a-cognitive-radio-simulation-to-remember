@@ -8,7 +8,6 @@ import java.util.Random;
 import java.util.TreeMap;
 
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
-import org.apache.commons.math3.special.Erf;
 
 public class CognitiveRadio extends Agent {
 
@@ -81,7 +80,6 @@ public class CognitiveRadio extends Agent {
 	}
 	
 	public void initializeParameters() {
-		choosePower();
 		chooseSpectrum();
 	}
 	
@@ -117,15 +115,9 @@ public class CognitiveRadio extends Agent {
 		changedChannelThisIteration = true;
 	}
 	
-	public void jumpPower(PowerAction aPowerAction) {
-		currentState.power = aPowerAction.newPower;
-	}
-	
 	public void conductAction(AbstractAction abstractAction) {
 		Action chosenAction = determineAction(abstractAction);
-		if (chosenAction == Action.JUMP_POWER) {
-			jumpPower((PowerAction) abstractAction);
-		} else if (chosenAction == Action.JUMP_SPECTRUM) {
+		if (chosenAction == Action.JUMP_SPECTRUM) {
 			jumpSpectrum((SpectrumAction) abstractAction);
 		}
 	}
@@ -139,8 +131,8 @@ public class CognitiveRadio extends Agent {
 		if (randomDouble < PROBABILITY_FOR_TRANSMISSION) {
 			super.transmit();
 			isActiveThisIteration = true;
-			State stateToSave = new State(currentState.spectrum, currentState.power);
-			previousState = new State(currentState.spectrum, currentState.power);
+			State stateToSave = new State(currentState.spectrum);
+			previousState = new State(currentState.spectrum);
 			// Explore if random number is less than epsilon or there is no policy yet
 			randomDouble = randomGenerator.nextDouble();
 			if (method == Method.QLEARNING) {
@@ -173,7 +165,6 @@ public class CognitiveRadio extends Agent {
 	@Override
 	public void receive() {
 		currentState.spectrum = peer.currentState.spectrum;
-		currentState.power = peer.currentState.power;
 		super.receive();
 	}
 
@@ -195,11 +186,6 @@ public class CognitiveRadio extends Agent {
 		
 	public List<AbstractAction> getPossibleActions() {
 		possibleActions = new ArrayList<AbstractAction>();
-		for (double i : environment.powerLevels) {
-			if (i != currentState.power) {
-				possibleActions.add(new PowerAction(i));
-			}
-		}
 		for (Spectrum availableSpectrum : environment.spectrums) {
 			if (currentState.spectrum.containsPrimaryUser
 					&& !availableSpectrum.equals(currentState.spectrum)
@@ -247,11 +233,9 @@ public class CognitiveRadio extends Agent {
 			FeliceUtil.log(name + " is exploring.");
 		}
 		randomInt = Math.abs(randomGenerator.nextInt());
-		if (randomInt % 3 == 0) {
-			changePower();
-		} else if (randomInt % 3 == 1) {
+		if (randomInt % 2 == 0) {
 			changeSpectrum();
-		} else if (randomInt % 3 == 2) {
+		} else {
 			doNothing();
 		}
 		
@@ -269,19 +253,6 @@ public class CognitiveRadio extends Agent {
 			FeliceUtil.log("[State Action Pair: " + pairs.getKey().toString() + ", Q: " + pairs.getValue() + "]");
 		}
 		FeliceUtil.log("+++++++++");
-	}
-	
-	public void changePower() {
-		if (debug) {
-			FeliceUtil.log(name + " is changing power.");
-		}
-		randomInt = randomGenerator.nextInt(environment.numberOfPowerLevels);
-		while (currentState.power == environment.powerLevels[randomInt]) {
-			randomInt = randomGenerator.nextInt(environment.numberOfPowerLevels);
-		}
-		
-		currentState.power = environment.powerLevels[randomInt];
-		actionTaken = new PowerAction(currentState.power);
 	}
 	
 	public void changeSpectrum() {
@@ -338,13 +309,7 @@ public class CognitiveRadio extends Agent {
 	
 	public AbstractAction selectRandomAction() {
 		randomInt = Math.abs(randomGenerator.nextInt());
-		if (randomInt % 3 == 0) {
-			int randomInt = randomGenerator.nextInt(environment.numberOfPowerLevels);
-			double newPower = environment.powerLevels[randomInt];
-			randomInt = randomGenerator.nextInt(environment.numberOfPowerLevels);
-			newPower = environment.powerLevels[randomInt];
-			return new PowerAction(newPower);
-		} else if (randomInt % 3 == 1) {
+		if (randomInt % 2 == 0) {
 			int randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			Spectrum newSpectrum = environment.spectrums.get(randomInt);
 			randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
@@ -375,61 +340,12 @@ public class CognitiveRadio extends Agent {
 		return false;
 	}
 	
-	public boolean isThereLinkDisconnection() {
-		double receivedPower = getReceivedPower(currentState);
-		double receivedToTransmittedPowerRatio = receivedPower
-				/ currentState.power;
-		if (receivedToTransmittedPowerRatio < RECEIVER_THRESHOLD) {
-			return true;
-		}
-		return false;
-	}
-	
-	public double qFunction(double x) {
-		double erfArg = x / Math.sqrt(2.0);
-		return 0.5 * (1 - Erf.erf(erfArg));
-	}
-	
-	public boolean isThereChannelInducedError() {
-		double receivedPower = getReceivedPower(currentState);
-		double noiseToPowerRatio = receivedPower / 10E-10;
-		double energyPerBit = noiseToPowerRatio * 22.0 / 2.0;
-		double qFunctionArg = Math.sqrt(2 * energyPerBit);
-		double probabilityOfBitError = qFunction(qFunctionArg);
-		double packetLengthInBits = 1024;
-		double packetErrorRate = 1 - Math.pow((1 - probabilityOfBitError), packetLengthInBits);
-		double randomDouble = randomGenerator.nextDouble();
-		if (randomDouble < packetErrorRate) {
-			return true;
-		}
-		return false;
-	}
-	
-	public double getDistance() {
-		return DISTANCES[randomGenerator.nextInt(DISTANCES.length)];
-	}
-	
-	public double getReceivedPower(State currentState) {
-		double transmittedPower = currentState.power;
-		double alpha = getAlpha(currentState);
-		return transmittedPower * alpha * Math.pow(getDistance(), PATH_LOSS_EXPONENT);
-	}
-	
-	public double getAlpha(State currentState) {
-		double frequency = currentState.spectrum.frequency;
-		return Math.pow(SPEED_OF_LIGHT, 2.0) / Math.pow(4 * Math.PI * frequency, 2.0);
-	}
-	
 	public double calculateReward() {
 		double reward;
 		succesfullyTransmittedThisIteration = false;
 		if (currentState.spectrum.containsPrimaryUser) {
 			reward = -15.0;
 		} else if (isThereCRCollision()){
-			reward = -5.0;
-		} else if (isThereLinkDisconnection()) {
-			reward = -20.0;
-		} else if(isThereChannelInducedError()) {
 			reward = -5.0;
 		} else {
 			reward = 5.0;

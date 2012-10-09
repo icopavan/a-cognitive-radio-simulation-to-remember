@@ -51,28 +51,15 @@ public class Agent {
 		}
 	}
 	
-	public void choosePower() {
-		if (role == Role.TRANSMITTER) {
-			int randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
-			currentState.power = environment.powerLevels[randomInt];
-			if (debug) {
-				FeliceUtil.log(name + " chose power level " + currentState.power + ".");
-			}
-		} else {
-			currentState.power = peer.currentState.power;
-		}
-
-	}
-
 	public void transmit() {
 		if (debug) {
-			FeliceUtil.log(name + " is transmitting on " + currentState.spectrum + ", with power level " + currentState.power);
+			FeliceUtil.log(name + " is transmitting on " + currentState.spectrum);
 		}
 	}
 	
 	public void receive() {
 		if (debug) {
-			FeliceUtil.log(name + " is receiving on " + currentState.spectrum + ", with power level " + currentState.power);
+			FeliceUtil.log(name + " is receiving on " + currentState.spectrum);
 		}
 	}
 	

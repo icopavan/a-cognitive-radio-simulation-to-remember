@@ -4,10 +4,8 @@ import java.util.List;
 public class Environment {
 
 	public int numberOfSpectra;
-	public int numberOfPowerLevels;
 	
-	public double[] powerLevels = { 0.5E-3, 1.0E-3, 2.0E-3, 4.0E-3 };
-	public double[] availableSpectrums = { 50E6, 500E6, 2000E6, 5000E6};
+	public double[] availableSpectrums = { 125E6, 250E6, 500E6, 750E6, 1000E6};
 	public List<Spectrum> spectrums;
 	public List<CognitiveRadio> cognitiveRadios;
 	public int numberOfSecondaryUsers;
@@ -15,7 +13,6 @@ public class Environment {
 	
 	public Environment() {
 		numberOfSpectra = availableSpectrums.length;
-		numberOfPowerLevels = powerLevels.length;
 		spectrums = new ArrayList<Spectrum>();
 		for (int i = 0; i < numberOfSpectra; i++) {
 			spectrums.add(new Spectrum(availableSpectrums[i]));

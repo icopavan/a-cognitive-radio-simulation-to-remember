@@ -6,7 +6,7 @@ import json
 
 FILE_NAMES_LIST = "felice-output-file-names.ini"
 OLD_FILES_DIRECTORY = "what-once-was"
-NUMBER_OF_EPOCHS = 30000
+NUMBER_OF_EPOCHS = 10000
 LEGEND_POSITION = 3
 
 processed_files = []

@@ -12,9 +12,8 @@ public class PrimaryUser extends Agent {
 		iterationNumber = 0;
 	}
 	
-	@Override
-	public void chooseSpectrum() {
-		super.chooseSpectrum();
+	public void choosePrimarySpectrum(Spectrum aSpectrum) {
+		currentState.spectrum = aSpectrum;
 		currentState.spectrum.containsPrimaryUser = true;
 	}
 	
