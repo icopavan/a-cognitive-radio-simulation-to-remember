@@ -5,7 +5,7 @@ public class Environment {
 
 	public int numberOfSpectra;
 	
-	public double[] availableSpectrums = { 125E6, 250E6, 500E6, 750E6, 1000E6};
+	public double[] availableSpectrums = { 125E6, 250E6, 500E6, 750E6, 1000E6 };
 	public List<Spectrum> spectrums;
 	public List<CognitiveRadio> cognitiveRadios;
 	public int numberOfSecondaryUsers;

@@ -10,8 +10,10 @@ public class FeliceMain {
 	public static boolean consoleDebug;
 	public static boolean logging;
 	
-	public static ArrayList<PrimaryUser> puList; 
-	public static final int PU_PAIR_INTRODUCTION_EPOCH = 5000;
+	public static final int MAXIMUM_PU_PAIRS = 4;
+	
+	public static ArrayList<PrimaryUser> puList;
+	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
 	
 	public static void main(String[] args) {
 		System.out.println("Starting main method");
@@ -62,6 +64,7 @@ public class FeliceMain {
 	}
 	
 	public static void conductSimulation(Method method, boolean evaluateResults) throws IOException {
+		int numberOfPUPairs = 0;
 		if (logging) {
 			FeliceUtil.log("Conducting simulation for method: " + method + ".\n");
 		}
@@ -97,11 +100,16 @@ public class FeliceMain {
 				System.out.println("Iteration: " + (i + 1));
 			}
 			
-			if (i % PU_PAIR_INTRODUCTION_EPOCH == 0) {
-				String firstPUName = String.format("PU%s", i / PU_PAIR_INTRODUCTION_EPOCH + 1);
-				String secondPUName = String.format("PU%s", i / PU_PAIR_INTRODUCTION_EPOCH + 2);
+			if (i % PU_PAIR_INTRODUCTION_EPOCH == 0 && numberOfPUPairs < MAXIMUM_PU_PAIRS) {
+				String firstPUName = String.format("PU%s", i /
+						PU_PAIR_INTRODUCTION_EPOCH + 1);
+				String secondPUName = String.format("PU%s", i /
+						PU_PAIR_INTRODUCTION_EPOCH + 2);
 				introduceAPUPair(firstPUName, secondPUName, environment,
-						environment.spectrums.get(i / PU_PAIR_INTRODUCTION_EPOCH));
+						environment.spectrums.get((i / PU_PAIR_INTRODUCTION_EPOCH)
+								% environment.numberOfSpectra));
+				numberOfPUPairs++;
+				System.out.println(numberOfPUPairs);
 			}
 			
 			double currentRewardTotals = 0.0;

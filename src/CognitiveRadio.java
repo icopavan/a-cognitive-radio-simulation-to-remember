@@ -13,7 +13,12 @@ import java.util.TreeMap;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
 public class CognitiveRadio extends Agent {
+	
+	int negativeRewardsInARow;
 
+	public static final double NUMBER_OF_RECENT_VALUES_TO_CHECK = 7;
+	public static final double INITIAL_EPSILON_VALUE = 0.8;
+	public static final double INITIAL_LEARNING_RATE = 0.8;
 	public static final double DISCOUNT_FACTOR = 0.8;
 	public static final double MINIMUM_DOUBLE= - Double.MAX_VALUE;
 	public static final double LEARNING_RATE_REDUCTION_FACTOR = 0.995;
@@ -63,6 +68,7 @@ public class CognitiveRadio extends Agent {
 	
 	public CognitiveRadio(String name, Environment environment, Method aMethod, boolean evaluateResults) {
 		super(name, environment);
+		negativeRewardsInARow = 0;
 		method = aMethod;
 		Q = new HashMap<StateAction, Double>();
 		epsilon = 0.8;
@@ -95,18 +101,8 @@ public class CognitiveRadio extends Agent {
 		}
 		if (method == Method.QLEARNING) {
 			learningRate *= LEARNING_RATE_REDUCTION_FACTOR;
-			if (evaluatePastResults) {
-				if (rewardHistory.isFull()) {
-					if (gettingPositiveRewards()) {
-						epsilon -= EPSILON_DECREASE;
-					} else {
-						epsilon += EPSILON_DECREASE;
-					}
-				}
-			} else {
-				if (epsilon > EPSILON_DECREASE) {
-					epsilon -= EPSILON_DECREASE;
-				}
+			if (epsilon > EPSILON_DECREASE) {
+				epsilon -= EPSILON_DECREASE;
 			}
 		}
 	}
@@ -170,8 +166,19 @@ public class CognitiveRadio extends Agent {
 	public void evaluate() {
 		currentIterationsReward = calculateReward();
 		rewardHistory.add(new Double(currentIterationsReward));
-		if (isExploitingThisIteration && currentIterationsReward < 0) {
-			Q.remove(thisIterationsStateAction);
+		if (isExploitingThisIteration) {
+			if (currentIterationsReward < 0.0) {
+				negativeRewardsInARow++;
+			} else {
+				negativeRewardsInARow = 0;
+			}
+			if (negativeRewardsInARow == NUMBER_OF_RECENT_VALUES_TO_CHECK) {
+				negativeRewardsInARow = 0;
+				if (evaluatePastResults) {
+					epsilon = INITIAL_EPSILON_VALUE;
+					learningRate = INITIAL_LEARNING_RATE;
+				}
+			}
 		}
 		updateQ(thisIterationsStateAction, currentIterationsReward);
 	}
@@ -370,6 +377,8 @@ public class CognitiveRadio extends Agent {
 		}
 		return reward;
 	}
+
+	
 	
 	public boolean gettingPositiveRewards() {
 		double totalReward = 0.0;
