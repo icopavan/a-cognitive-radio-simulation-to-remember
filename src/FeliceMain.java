@@ -2,18 +2,21 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class FeliceMain {
 	
 	public static boolean consoleDebug;
 	public static boolean logging;
-
-	public static final int PU_PAIR_INTRODUCTION_EPOCH = 2000;
+	
+	public static ArrayList<PrimaryUser> puList; 
+	public static final int PU_PAIR_INTRODUCTION_EPOCH = 5000;
 	
 	public static void main(String[] args) {
 		System.out.println("Starting main method");
 		FeliceUtil.initialize();
+		puList = new ArrayList<PrimaryUser>();
 		try {
 			FeliceUtil.readSettingsFile();
 		} catch (FileNotFoundException e1) {
@@ -38,7 +41,8 @@ public class FeliceMain {
 		System.out.println("Ending main method");
 	}
 	
-	public static void introduceAPUPair(String transmitterName, String receiverName, Environment anEnvironment, Spectrum aSpectrum) {
+	public static void introduceAPUPair(String transmitterName, String receiverName,
+			Environment anEnvironment, Spectrum aSpectrum) {
 		PrimaryUser transmitterPU = new PrimaryUser(transmitterName, anEnvironment);
 		PrimaryUser receiverPU = new PrimaryUser(receiverName, anEnvironment);
 		
@@ -53,6 +57,8 @@ public class FeliceMain {
 		
 		PrimaryUser[] puPair = new PrimaryUser[]{ transmitterPU, receiverPU };
 		anEnvironment.primaryUserPairs.add(puPair);
+		puList.add(transmitterPU);
+		puList.add(receiverPU);
 	}
 	
 	public static void conductSimulation(Method method, boolean evaluateResults) throws IOException {
@@ -94,10 +100,15 @@ public class FeliceMain {
 			if (i % PU_PAIR_INTRODUCTION_EPOCH == 0) {
 				String firstPUName = String.format("PU%s", i / PU_PAIR_INTRODUCTION_EPOCH + 1);
 				String secondPUName = String.format("PU%s", i / PU_PAIR_INTRODUCTION_EPOCH + 2);
-				introduceAPUPair(firstPUName, secondPUName, environment, environment.spectrums.get(i / PU_PAIR_INTRODUCTION_EPOCH));
+				introduceAPUPair(firstPUName, secondPUName, environment,
+						environment.spectrums.get(i / PU_PAIR_INTRODUCTION_EPOCH));
 			}
 			
 			double currentRewardTotals = 0.0;
+		
+			for (PrimaryUser pu : puList) {
+				pu.iterate();
+			}
 			
 			for (CognitiveRadio cr : environment.cognitiveRadios) {
 				cr.iterate();

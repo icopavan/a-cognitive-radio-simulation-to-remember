@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.Random;
 
 
@@ -18,10 +19,15 @@ public class PrimaryUser extends Agent {
 	}
 	
 	public void iterate() {
-		iterationNumber++;
 		if (role == Role.TRANSMITTER) {
 			transmit();
 			iterationNumber++;
+			try {
+				FeliceUtil.createOutputInAppendMode(name + ".txt", name
+						+ "," + currentState.spectrum.toString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

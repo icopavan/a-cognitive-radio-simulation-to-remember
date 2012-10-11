@@ -57,5 +57,12 @@ public class FeliceUtil {
 		}
 		
 	}
+	
+	public static void createOutputInAppendMode(String fileName, String line)
+			throws IOException {
+		BufferedWriter bw = new BufferedWriter(new FileWriter(fileName, true));
+		bw.write(line + "\n");
+		bw.close();
+	}
 
 }
