@@ -9,6 +9,8 @@ OLD_FILES_DIRECTORY = "what-once-was"
 NUMBER_OF_EPOCHS = 10000
 LEGEND_POSITION = 3
 
+START_INDEX = 1
+
 processed_files = []
 
 def is_positive_answer():
@@ -63,6 +65,7 @@ def get_float_values_from_file(file_name):
     return values
 
 def plot_data(value_pairs, info):
+    global START_INDEX
     for index, values in enumerate(value_pairs):
         plt.plot(range(1,1+NUMBER_OF_EPOCHS), values, c=info['colors'][index],
                  label=info['labels'][index])
@@ -71,7 +74,9 @@ def plot_data(value_pairs, info):
     plt.ylabel(info['ylabel'])
     if info.has_key('ylimits'):
         plt.ylim(info['ylimits'][0], info['ylimits'][1])
-    plt.show()
+    plt.savefig("{0:02d}-output.png".format(START_INDEX))
+    plt.clf()
+    START_INDEX += 1
 
 def cleanup(files):
     print "Rename old files? y/n"
