@@ -17,7 +17,7 @@ public class FeliceMain {
 	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
 	
 	public static final int START_VALUE = 0;
-	public static final int END_VALUE = 5;
+	public static final int END_VALUE = 50;
 	
 	public static void main(String[] args) {
 		System.out.println("Starting main method");
