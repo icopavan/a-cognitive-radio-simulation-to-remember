@@ -1,6 +1,3 @@
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,9 +11,6 @@ import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
 public class CognitiveRadio extends Agent {
 	
-	int negativeRewardsInARow;
-
-	public static final double NUMBER_OF_RECENT_VALUES_TO_CHECK = 7;
 	public static final double INITIAL_EPSILON_VALUE = 0.8;
 	public static final double INITIAL_LEARNING_RATE = 0.8;
 	public static final double DISCOUNT_FACTOR = 0.8;
@@ -31,6 +25,8 @@ public class CognitiveRadio extends Agent {
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
 	
 	public CircularFifoBuffer rewardHistory;
+	
+	public int negativeRewardsInARow;
 
 	public int REWARD_HISTORY_SIZE = 10;
 	
@@ -64,10 +60,12 @@ public class CognitiveRadio extends Agent {
 	
 	public boolean isExploitingThisIteration;
 	
-	public boolean evaluatePastResults;
+	public int maximumNumberOfNegativeValuesTolerated;
 	
-	public CognitiveRadio(String name, Environment environment, Method aMethod, boolean evaluateResults) {
+	public CognitiveRadio(String name, Environment environment, Method aMethod,
+			int checkLastNValues) {
 		super(name, environment);
+		maximumNumberOfNegativeValuesTolerated = checkLastNValues;
 		negativeRewardsInARow = 0;
 		method = aMethod;
 		Q = new HashMap<StateAction, Double>();
@@ -75,7 +73,6 @@ public class CognitiveRadio extends Agent {
 		learningRate = 0.8;
 		nothingActionForComparison = new NothingAction();
 		rewardHistory = new CircularFifoBuffer(REWARD_HISTORY_SIZE);
-		evaluatePastResults = evaluateResults;
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
@@ -150,17 +147,17 @@ public class CognitiveRadio extends Agent {
 			FeliceUtil.log("End of iteration " + iterationNumber);
 			printQ();
 		}
-		String fileName = String.format("%s-%s-%s-channel-presence.txt", method.toString().toLowerCase(),
-				evaluatePastResults ? "with-evaluation" : "without-evaluation", name.toLowerCase());
-		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(fileName, true));
-			String presenceLine = String.format("%s,%s", currentState.spectrum.toString(),
-					isActiveThisIteration);
-			bw.write(presenceLine + "\n");
-			bw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		String fileName = String.format("%s-%s-%s-channel-presence.txt", method.toString().toLowerCase(),
+//				maximumNumberOfNegativeValuesTolerated > 0? "with-evaluation" : "without-evaluation", name.toLowerCase());
+//		try {
+//			BufferedWriter bw = new BufferedWriter(new FileWriter(fileName, true));
+//			String presenceLine = String.format("%s,%s", currentState.spectrum.toString(),
+//					isActiveThisIteration);
+//			bw.write(presenceLine + "\n");
+//			bw.close();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	public void evaluate() {
@@ -172,9 +169,9 @@ public class CognitiveRadio extends Agent {
 			} else {
 				negativeRewardsInARow = 0;
 			}
-			if (negativeRewardsInARow == NUMBER_OF_RECENT_VALUES_TO_CHECK) {
+			if (negativeRewardsInARow > maximumNumberOfNegativeValuesTolerated) {
 				negativeRewardsInARow = 0;
-				if (evaluatePastResults) {
+				if (maximumNumberOfNegativeValuesTolerated > 0) {
 					epsilon = INITIAL_EPSILON_VALUE;
 					learningRate = INITIAL_LEARNING_RATE;
 				}

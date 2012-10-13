@@ -71,7 +71,6 @@ def plot_data(value_pairs, info):
     plt.ylabel(info['ylabel'])
     if info.has_key('ylimits'):
         plt.ylim(info['ylimits'][0], info['ylimits'][1])
-    plt.title(info['title'])
     plt.show()
 
 def cleanup(files):
