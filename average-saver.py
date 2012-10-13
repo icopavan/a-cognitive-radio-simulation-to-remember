@@ -42,16 +42,22 @@ def backup_file(file_name, backup_dir):
 
 def read_files(file_list):
     file_name_template = 'qlearning_{0}.txt'
-    data = []
+    convergences = []
+    fc = open('converge-all-iters.txt', 'r')
+    for l in fc:
+        convergences.append(int(l))
+    averages = []
     for i in range(START_INDEX,STOP_INDEX+1):
         file_name = file_name_template.format(i)
         f = open(file_name)
         average_totals = 0
         for line in f:
             average_totals += float(line)
-        data.append(average_totals / 10000.0)
-    print data
-    plot_data(data)
+        averages.append([average_totals / 10000.0, convergences[i]])
+    ratios = []
+    for i in range(START_INDEX, STOP_INDEX+1):
+        ratios.append(averages[i][0] / averages[i][1])
+    plot_data(ratios)
 
 def get_float_values_from_file(file_name):
     values = []
@@ -63,7 +69,7 @@ def get_float_values_from_file(file_name):
 
 def plot_data(data):
     plt.plot(range(START_INDEX, STOP_INDEX+1), data, c='blue')
-    plt.savefig("reward_averages.png")
+    plt.savefig("averages_over_convergences.png")
     plt.clf()
 
 def cleanup(files):

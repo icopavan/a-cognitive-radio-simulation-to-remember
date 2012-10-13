@@ -57,10 +57,9 @@ def read_files(file_list):
             previous_value = current_value
         data.append([latest_iteration, best_value])
     print data
-    outputfile = open('converge-pos-iters.txt', 'w')
-    for index, d in enumerate(data):
-        if d[1] == 5.0:
-            outputfile.write(str(index) + "," + str(d[0]) + "\n")
+    outputfile = open('converge-all-iters.txt', 'w')
+    for d in data:
+        outputfile.write(str(d[0]) + "\n")
     outputfile.close()
 
 def get_float_values_from_file(file_name):
