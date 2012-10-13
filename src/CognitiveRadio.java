@@ -24,6 +24,8 @@ public class CognitiveRadio extends Agent {
 	public static final double EPSILON_DECREASE = 0.00064;
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
 	
+	public int successfulTransmissions;
+	
 	public CircularFifoBuffer rewardHistory;
 	
 	public int negativeRewardsInARow;
@@ -65,6 +67,7 @@ public class CognitiveRadio extends Agent {
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
 			int checkLastNValues) {
 		super(name, environment);
+		successfulTransmissions = 0;
 		maximumNumberOfNegativeValuesTolerated = checkLastNValues;
 		negativeRewardsInARow = 0;
 		method = aMethod;
@@ -368,6 +371,7 @@ public class CognitiveRadio extends Agent {
 		} else {
 			reward = 5.0;
 			succesfullyTransmittedThisIteration = true;
+			successfulTransmissions++;
 		}
 		if (debug) {
 			FeliceUtil.log(name + " got reward: " + reward);

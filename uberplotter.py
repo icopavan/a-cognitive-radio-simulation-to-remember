@@ -10,7 +10,7 @@ NUMBER_OF_EPOCHS = 10000
 LEGEND_POSITION = 3
 
 START_INDEX = 0
-STOP_INDEX = 5
+STOP_INDEX = 50
 
 processed_files = []
 
@@ -77,6 +77,7 @@ def plot_data(value_pairs, info, sim_number):
     plt.ylabel(info['ylabel'])
     if info.has_key('ylimits'):
         plt.ylim(info['ylimits'][0], info['ylimits'][1])
+    plt.title("Evaluate Last {0} Rewards".format(sim_number))
     plt.savefig("output-{0:02d}.png".format(sim_number))
     plt.clf()
 

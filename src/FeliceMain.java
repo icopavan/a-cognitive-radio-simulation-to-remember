@@ -40,6 +40,8 @@ public class FeliceMain {
 			}
 			for (simulationNumber = START_VALUE; simulationNumber <= END_VALUE;
 					simulationNumber++) {
+				System.out.println(String.format("Conducting simulation %s ...",
+						simulationNumber));
 				conductSimulation(Method.QLEARNING, simulationNumber);
 				conductSimulation(Method.RANDOM, simulationNumber);
 			}
@@ -128,35 +130,12 @@ public class FeliceMain {
 				cr.iterate();
 			}
 			
-//			int channelSwitches = 0;
-//			int successfulTransmissions = 0;
 			for (CognitiveRadio cr : environment.cognitiveRadios) {
 				if (cr.role == Role.TRANSMITTER) {
 					cr.evaluate();
-//					if (cr.changedChannelThisIteration) {
-//						channelSwitches++;
-//					}
-//					if (cr.succesfullyTransmittedThisIteration) {
-//						successfulTransmissions++;
-//					}
 					currentRewardTotals += cr.currentIterationsReward;
 				}
 			}
-//			double successfulTransmissionProbability = (double) successfulTransmissions
-//					/ (environment.numberOfSecondaryUsers / 2.0);
-//			String evaluationValue = checkLastNValues > 0 ? "with" : "without";
-//			try {
-//				BufferedWriter bw = new BufferedWriter(new FileWriter(method.toString().toLowerCase()
-//						+ String.format("_channel_switches.txt", evaluationValue), true));
-//				bw.write(channelSwitches + "\n");
-//				bw.close();
-//				bw = new BufferedWriter(new FileWriter(method.toString().toLowerCase()
-//						+ String.format("_successful_transmission.txt", evaluationValue), true));
-//				bw.write(successfulTransmissionProbability + "\n");
-//				bw.close();
-//			} catch (IOException e1) {
-//				e1.printStackTrace();
-//			}
 			for (Spectrum s : environment.spectrums) {
 				s.occupyingAgents.clear();
 			}
@@ -168,6 +147,19 @@ public class FeliceMain {
 			bw.write(currentRewardAverage + "\n");
 			bw.close();
 		}
+		int totalNumberOfSuccessfulTransmissions = 0;
+		for (CognitiveRadio cr : environment.cognitiveRadios) {
+			if (cr.role == Role.TRANSMITTER) {
+				totalNumberOfSuccessfulTransmissions += cr.successfulTransmissions;	
+			}
+		}
+		double averageNumberOfSuccessfulTransmissions = (double) totalNumberOfSuccessfulTransmissions
+				/ (environment.cognitiveRadios.size() / 2.0 * numberOfIterations);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(String.format
+				("%s_%s_success_probability.txt", method.toString().toLowerCase(),
+						simulationNumber), true));
+		bw.write(averageNumberOfSuccessfulTransmissions + "\n");
+		bw.close();
 
 		if (logging) {
 			FeliceUtil.log("\n=== Results ===");
