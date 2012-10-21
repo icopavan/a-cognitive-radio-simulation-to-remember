@@ -159,7 +159,7 @@ public class CognitiveRadio extends Agent {
 			thisIterationsStateAction = new StateAction(stateToSave, actionTaken);
 		}
 		if (debug) {
-			FeliceUtil.log("End of iteration " + iterationNumber);
+			ACRSTRUtil.log("End of iteration " + iterationNumber);
 			printQ();
 		}
 	}
@@ -276,7 +276,7 @@ public class CognitiveRadio extends Agent {
 	
 	public void explore() {
 		if (debug) {
-			FeliceUtil.log(name + " is exploring.");
+			ACRSTRUtil.log(name + " is exploring.");
 		}
 		randomInt = Math.abs(randomGenerator.nextInt());
 		if (randomInt % 2 == 0) {
@@ -288,22 +288,22 @@ public class CognitiveRadio extends Agent {
 	}
 	
 	public void printQ() {
-		FeliceUtil.log("=====");
-		FeliceUtil.log("Q for " + name);
-		FeliceUtil.log("-----");
+		ACRSTRUtil.log("=====");
+		ACRSTRUtil.log("Q for " + name);
+		ACRSTRUtil.log("-----");
 		Map<StateAction, Double> orderedQ = new TreeMap<StateAction, Double>();
 		orderedQ.putAll(Q);
 		Iterator<Entry<StateAction, Double>> iter = orderedQ.entrySet().iterator();
 		while (iter.hasNext()) {
 			Map.Entry<StateAction, Double> pairs = (Map.Entry<StateAction, Double>) iter.next();
-			FeliceUtil.log("[State Action Pair: " + pairs.getKey().toString() + ", Q: " + pairs.getValue() + "]");
+			ACRSTRUtil.log("[State Action Pair: " + pairs.getKey().toString() + ", Q: " + pairs.getValue() + "]");
 		}
-		FeliceUtil.log("+++++++++");
+		ACRSTRUtil.log("+++++++++");
 	}
 	
 	public void changeSpectrum() {
 		if (debug) {
-			FeliceUtil.log(name + " is changing spectrum.");
+			ACRSTRUtil.log(name + " is changing spectrum.");
 		}
 		randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 		Spectrum randomSpectrum = environment.spectrums.get(randomInt);
@@ -326,11 +326,11 @@ public class CognitiveRadio extends Agent {
 	public void exploit() {
 		isExploitingThisIteration = true;
 		if (debug) {
-			FeliceUtil.log(name + " is exploiting.");
+			ACRSTRUtil.log(name + " is exploiting.");
 		}
 		actionTaken = getBestAction();
 		if (debug) {
-			FeliceUtil.log(name + " decided best action to be " + actionTaken + ".");
+			ACRSTRUtil.log(name + " decided best action to be " + actionTaken + ".");
 		}
 	}
 	
@@ -399,7 +399,7 @@ public class CognitiveRadio extends Agent {
 			successfulTransmissions++;
 		}
 		if (debug) {
-			FeliceUtil.log(name + " got reward: " + reward);
+			ACRSTRUtil.log(name + " got reward: " + reward);
 		}
 		return reward;
 	}

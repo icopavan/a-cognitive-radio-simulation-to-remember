@@ -19,7 +19,7 @@ public class Environment {
 		}
 		cognitiveRadios = new ArrayList<CognitiveRadio>();
 		primaryUserPairs = new ArrayList<PrimaryUser[]>();
-		numberOfSecondaryUsers = Integer.parseInt(FeliceUtil.getSetting("secondary-users"));
+		numberOfSecondaryUsers = Integer.parseInt(ACRSTRUtil.getSetting("secondary-users"));
 	}
 	
 	public void printQValues() {
@@ -30,7 +30,7 @@ public class Environment {
 	
 	public void printStates() {
 		for (CognitiveRadio cr: cognitiveRadios) {
-			FeliceUtil.log(cr.name + " " + cr.currentState + " " + cr.actionTaken);
+			ACRSTRUtil.log(cr.name + " " + cr.currentState + " " + cr.actionTaken);
 		}
 	}
 	

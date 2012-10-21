@@ -2,7 +2,7 @@ import java.util.Random;
 
 public class Agent {
 
-	public static final String SETTINGS_FILE_NAME = "felice.conf";
+	public static final String SETTINGS_FILE_NAME = "acrstr.conf";
 
 	public State currentState;
 	public State previousState;
@@ -36,7 +36,7 @@ public class Agent {
 	}
 
 	public void getDebugSetting() {
-		debug = FeliceUtil.getSetting("debug").equals("true") ? true : false;
+		debug = ACRSTRUtil.getSetting("debug").equals("true") ? true : false;
 	}
 		
 	public void chooseSpectrum() {
@@ -44,7 +44,7 @@ public class Agent {
 			int randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			currentState.spectrum = environment.spectrums.get(randomInt);
 			if (debug) {
-				FeliceUtil.log(name + " chose spectrum " + currentState.spectrum + ".");
+				ACRSTRUtil.log(name + " chose spectrum " + currentState.spectrum + ".");
 			}
 		} else {
 			currentState.spectrum = peer.currentState.spectrum;
@@ -53,13 +53,13 @@ public class Agent {
 	
 	public void transmit() {
 		if (debug) {
-			FeliceUtil.log(name + " is transmitting on " + currentState.spectrum);
+			ACRSTRUtil.log(name + " is transmitting on " + currentState.spectrum);
 		}
 	}
 	
 	public void receive() {
 		if (debug) {
-			FeliceUtil.log(name + " is receiving on " + currentState.spectrum);
+			ACRSTRUtil.log(name + " is receiving on " + currentState.spectrum);
 		}
 	}
 	

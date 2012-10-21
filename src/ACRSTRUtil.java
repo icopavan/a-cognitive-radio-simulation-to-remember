@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
 
-public class FeliceUtil {
+public class ACRSTRUtil {
 
 	public static final String OLD_FILES_DIRECTORY = "what-once-was";
 	
@@ -19,7 +19,7 @@ public class FeliceUtil {
 	
 	public static BufferedWriter bufferedWriter;
 	
-	public static final String SETTINGS_FILE_NAME = "felice.conf";
+	public static final String SETTINGS_FILE_NAME = "acrstr.conf";
 	
 	public static Map<String, String> settings = new TreeMap<String, String>();
 	

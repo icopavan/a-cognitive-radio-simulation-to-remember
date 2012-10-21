@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 
-public class FeliceMain {
+public class ACRSTR {
 	
 	public static boolean consoleDebug;
 	public static boolean logging;
@@ -21,22 +21,22 @@ public class FeliceMain {
 	
 	public static void main(String[] args) {
 		System.out.println("Starting main method");
-		FeliceUtil.initialize();
+		ACRSTRUtil.initialize();
 		puList = new ArrayList<PrimaryUser>();
 		try {
-			FeliceUtil.readSettingsFile();
+			ACRSTRUtil.readSettingsFile();
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
-		maximumPUPairs = Integer.parseInt(FeliceUtil.getSetting("primary-user-pairs"));
-		consoleDebug = (FeliceUtil.getSetting("console-debug")).equals("true");
-		logging = (FeliceUtil.getSetting("main-file-log")).equals(true);
+		maximumPUPairs = Integer.parseInt(ACRSTRUtil.getSetting("primary-user-pairs"));
+		consoleDebug = (ACRSTRUtil.getSetting("console-debug")).equals("true");
+		logging = (ACRSTRUtil.getSetting("main-file-log")).equals(true);
 		if (consoleDebug) {
 			System.out.println("An Implementation of 'Spectrum Management of Cognitive Radio Using Multi-agent Reinforcement Learning'\n");
 		}
 		try {
 			if (logging) {
-				FeliceUtil.log("###############");
+				ACRSTRUtil.log("###############");
 			}
 			for (simulationNumber = START_VALUE; simulationNumber <= END_VALUE;
 					simulationNumber++) {
@@ -86,7 +86,7 @@ public class FeliceMain {
 				getLowerCaseEnumName(ratesResponse));
 		int numberOfPUPairs = 0;
 		if (logging) {
-			FeliceUtil.log("Conducting simulation for method: " + method + ".\n");
+			ACRSTRUtil.log("Conducting simulation for method: " + method + ".\n");
 		}
 		
 		Environment environment = new Environment();
@@ -113,7 +113,7 @@ public class FeliceMain {
 			cr.initializeParameters();
 		}
 		
-		int numberOfIterations = Integer.parseInt(FeliceUtil.getSetting("iterations"));
+		int numberOfIterations = Integer.parseInt(ACRSTRUtil.getSetting("iterations"));
 		
 		for (int i = 0; i < numberOfIterations; i++) {
 			if (consoleDebug) {
@@ -159,7 +159,7 @@ public class FeliceMain {
 		}
 
 		if (logging) {
-			FeliceUtil.log("\n=== Results ===");
+			ACRSTRUtil.log("\n=== Results ===");
 			for (CognitiveRadio cr : environment.cognitiveRadios) {
 				if (cr.role == Role.TRANSMITTER) {
 					cr.printQ();

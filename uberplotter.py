@@ -4,7 +4,7 @@ import os
 import datetime
 import json
 
-FILE_NAMES_LIST = "felice-output-file-names.ini"
+FILE_NAMES_LIST = "acrstr-output-file-names.ini"
 OLD_FILES_DIRECTORY = "what-once-was"
 NUMBER_OF_EPOCHS = 10000
 LEGEND_POSITION = 3
