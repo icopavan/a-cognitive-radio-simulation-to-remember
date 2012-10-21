@@ -71,7 +71,7 @@ def get_float_values_from_file(file_name):
 def plot_data(value_pairs, info, sim_number):
     print "Plotting simulation number: {0:d}".format(sim_number)
     for index, values in enumerate(value_pairs):
-        plt.plot(range(1,1+NUMBER_OF_EPOCHS), values, c=info['colors'][index], label=info['labels'][index])
+        plt.plot(range(1,1+NUMBER_OF_EPOCHS), values, c=info['colors'][index], label=info['labels'][index], lw=2)
     plt.legend(loc=LEGEND_POSITION)
     plt.xlabel(info['xlabel'])
     plt.ylabel(info['ylabel'])
