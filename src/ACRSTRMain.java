@@ -42,11 +42,28 @@ public class ACRSTRMain {
 					simulationNumber++) {
 				System.out.println(String.format("Conducting simulation %s ...",
 						simulationNumber));
+
 				conductSimulation(Method.QLEARNING, simulationNumber,
 						QValuesResponse.DELETE_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
 				conductSimulation(Method.QLEARNING, simulationNumber,
 						QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
-				conductSimulation(Method.QLEARNING, simulationNumber, QValuesResponse.KEEP_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
+				conductSimulation(Method.QLEARNING, simulationNumber,
+						QValuesResponse.KEEP_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
+				
+				conductSimulation(Method.QLEARNING, simulationNumber,
+						QValuesResponse.DELETE_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
+				conductSimulation(Method.QLEARNING, simulationNumber,
+						QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
+				conductSimulation(Method.QLEARNING, simulationNumber,
+						QValuesResponse.KEEP_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
+				
+				conductSimulation(Method.QLEARNING, simulationNumber,
+						QValuesResponse.DELETE_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
+				conductSimulation(Method.QLEARNING, simulationNumber,
+						QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
+				conductSimulation(Method.QLEARNING, simulationNumber,
+						QValuesResponse.KEEP_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
+				
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
