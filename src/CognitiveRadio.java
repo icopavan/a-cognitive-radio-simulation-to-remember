@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.TreeMap;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
 public class CognitiveRadio extends Agent {
-	
+
 	public static final double INITIAL_EPSILON_VALUE = 0.8;
 	public static final double INITIAL_LEARNING_RATE = 0.8;
 	public static final double DISCOUNT_FACTOR = 0.8;
@@ -26,6 +27,8 @@ public class CognitiveRadio extends Agent {
 	public static final double FACTOR_TO_INCREASE_RATES = 2.5;
 	
 	public int successfulTransmissions;
+	
+	public HashSet<StateAction> offendingQValues;
 	
 	public CircularFifoBuffer rewardHistory;
 	
@@ -73,6 +76,7 @@ public class CognitiveRadio extends Agent {
 			int checkLastNValues, QValuesResponse qValueResponse,
 			RatesResponse ratesResponse) {
 		super(name, environment);
+		offendingQValues = new HashSet<StateAction>();
 		successfulTransmissions = 0;
 		maximumNumberOfNegativeValuesTolerated = checkLastNValues;
 		negativeRewardsInARow = 0;
@@ -160,14 +164,17 @@ public class CognitiveRadio extends Agent {
 		}
 	}
 	
+	// Respond to environmental changes
 	public void evaluate() {
 		currentIterationsReward = calculateReward();
 		rewardHistory.add(new Double(currentIterationsReward));
 		if (isExploitingThisIteration) {
 			if (currentIterationsReward < 0.0) {
 				negativeRewardsInARow++;
+				offendingQValues.add(thisIterationsStateAction);
 			} else {
 				negativeRewardsInARow = 0;
+				offendingQValues.clear();
 			}
 			if (negativeRewardsInARow > maximumNumberOfNegativeValuesTolerated) {
 				negativeRewardsInARow = 0;
@@ -184,6 +191,16 @@ public class CognitiveRadio extends Agent {
 						if (learningRate > 0.8) {
 							learningRate = 0.8;
 						}
+					}
+					
+					if (responseForQValues == QValuesResponse.DELETE_OFFENDING_Q_VALUES) {
+						for (StateAction offendingStateAction : offendingQValues) {
+							Q.remove(offendingStateAction);
+						}
+					} else if (responseForQValues == QValuesResponse.DELETE_Q_VALUES) {
+						Q.clear();
+					} else if (responseForQValues == QValuesResponse.KEEP_Q_VALUES) {
+						
 					}
 				}
 			}
