@@ -23,6 +23,7 @@ public class CognitiveRadio extends Agent {
 	public static final double RECEIVER_THRESHOLD = 1E-8;
 	public static final double EPSILON_DECREASE = 0.00064;
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
+	public static final double FACTOR_TO_INCREASE_RATES = 2.0;
 	
 	public int successfulTransmissions;
 	
@@ -175,11 +176,11 @@ public class CognitiveRadio extends Agent {
 						epsilon = INITIAL_EPSILON_VALUE;
 						learningRate = INITIAL_LEARNING_RATE;
 					} else if (responseForRates == RatesResponse.INCREASE_BY_FACTOR) {
-						epsilon *= 0.25;
+						epsilon *= FACTOR_TO_INCREASE_RATES;
 						if (epsilon > 0.8) {
 							epsilon = 0.8;
 						}
-						learningRate *= 1.25;
+						learningRate *= FACTOR_TO_INCREASE_RATES;
 						if (learningRate > 0.8) {
 							learningRate = 0.8;
 						}
