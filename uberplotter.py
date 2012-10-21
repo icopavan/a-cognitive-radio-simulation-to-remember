@@ -9,8 +9,8 @@ OLD_FILES_DIRECTORY = "what-once-was"
 NUMBER_OF_EPOCHS = 10000
 LEGEND_POSITION = 3
 
-START_INDEX = 0
-STOP_INDEX = 50
+START_INDEX = 5
+STOP_INDEX = 5
 
 processed_files = []
 
@@ -53,6 +53,7 @@ def read_files(file_list):
                 a_pair = []
                 for single_file in file_pairs:
                     single_file_name = single_file.format(i)
+                    print single_file_name
                     processed_files.append(single_file_name)
                     a_pair.append(get_float_values_from_file(single_file_name))
                 info = json.loads(pairs_and_info[1])
@@ -70,16 +71,15 @@ def get_float_values_from_file(file_name):
 def plot_data(value_pairs, info, sim_number):
     print "Plotting simulation number: {0:d}".format(sim_number)
     for index, values in enumerate(value_pairs):
-        plt.plot(range(1,1+NUMBER_OF_EPOCHS), values, c=info['colors'][index],
-                 label=info['labels'][index])
+        plt.plot(range(1,1+NUMBER_OF_EPOCHS), values, c=info['colors'][index], label=info['labels'][index])
     plt.legend(loc=LEGEND_POSITION)
     plt.xlabel(info['xlabel'])
     plt.ylabel(info['ylabel'])
     if info.has_key('ylimits'):
         plt.ylim(info['ylimits'][0], info['ylimits'][1])
     plt.title("Evaluate Last {0} Rewards".format(sim_number))
-    plt.savefig("output-{0:02d}.png".format(sim_number))
-    plt.clf()
+#    plt.savefig("output-{0:02d}.png".format(sim_number))
+#    plt.clf()
 
 def cleanup(files):
     print "Rename old files? y/n"
@@ -90,4 +90,5 @@ def cleanup(files):
         
 if __name__ == '__main__':
     read_files(FILE_NAMES_LIST)
+    plt.show()
     cleanup(processed_files)

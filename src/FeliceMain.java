@@ -16,8 +16,8 @@ public class FeliceMain {
 	public static ArrayList<PrimaryUser> puList;
 	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
 	
-	public static final int START_VALUE = 0;
-	public static final int END_VALUE = 50;
+	public static final int START_VALUE = 5;
+	public static final int END_VALUE = 5;
 	
 	public static void main(String[] args) {
 		System.out.println("Starting main method");
@@ -79,7 +79,7 @@ public class FeliceMain {
 	
 	public static void conductSimulation(Method method, int checkLastNValues, QValuesResponse qValueResponse, RatesResponse ratesResponse)
 			throws IOException {
-		String filename = String.format("%s-%s-%s-%s.txt",
+		String filename = String.format("%s-%s-%s-%s",
 				getLowerCaseEnumName(method), checkLastNValues,
 				getLowerCaseEnumName(qValueResponse),
 				getLowerCaseEnumName(ratesResponse));
@@ -152,21 +152,10 @@ public class FeliceMain {
 			
 			double currentRewardAverage = currentRewardTotals / (environment.numberOfSecondaryUsers / 2.0);
 			
-			BufferedWriter bw = new BufferedWriter(new FileWriter(filename + "_reward_average.txt"));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(filename + "_reward_average.txt", true));
 			bw.write(currentRewardAverage + "\n");
 			bw.close();
 		}
-		int totalNumberOfSuccessfulTransmissions = 0;
-		for (CognitiveRadio cr : environment.cognitiveRadios) {
-			if (cr.role == Role.TRANSMITTER) {
-				totalNumberOfSuccessfulTransmissions += cr.successfulTransmissions;	
-			}
-		}
-		double averageNumberOfSuccessfulTransmissions = (double) totalNumberOfSuccessfulTransmissions
-				/ (environment.cognitiveRadios.size() / 2.0 * numberOfIterations);
-		BufferedWriter bw = new BufferedWriter(new FileWriter(filename + "_success_probability.txt", true));
-		bw.write(averageNumberOfSuccessfulTransmissions + "\n");
-		bw.close();
 
 		if (logging) {
 			FeliceUtil.log("\n=== Results ===");
