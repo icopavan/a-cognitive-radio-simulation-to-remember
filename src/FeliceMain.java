@@ -42,8 +42,8 @@ public class FeliceMain {
 					simulationNumber++) {
 				System.out.println(String.format("Conducting simulation %s ...",
 						simulationNumber));
-				conductSimulation(Method.QLEARNING, simulationNumber);
-				conductSimulation(Method.RANDOM, simulationNumber);
+				conductSimulation(Method.QLEARNING, simulationNumber,
+						QValuesResponse.DELETE_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -71,7 +71,7 @@ public class FeliceMain {
 		puList.add(receiverPU);
 	}
 	
-	public static void conductSimulation(Method method, int checkLastNValues)
+	public static void conductSimulation(Method method, int checkLastNValues, QValuesResponse qValueResponse, RatesResponse ratesResponse)
 			throws IOException {
 		int numberOfPUPairs = 0;
 		if (logging) {
@@ -82,7 +82,7 @@ public class FeliceMain {
 		
 		for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 			environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
-					checkLastNValues));
+					checkLastNValues, qValueResponse, ratesResponse));
 		}
 		
 		int currentCR = 0;

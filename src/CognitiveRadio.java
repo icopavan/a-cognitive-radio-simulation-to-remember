@@ -65,7 +65,8 @@ public class CognitiveRadio extends Agent {
 	public int maximumNumberOfNegativeValuesTolerated;
 	
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
-			int checkLastNValues) {
+			int checkLastNValues, QValuesResponse qValueResponse,
+			RatesResponse ratesResponse) {
 		super(name, environment);
 		successfulTransmissions = 0;
 		maximumNumberOfNegativeValuesTolerated = checkLastNValues;

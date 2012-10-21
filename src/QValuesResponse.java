@@ -1,0 +1,6 @@
+
+public enum QValuesResponse {
+
+	DELETE_Q_VALUES, DELETE_OFFENDING_Q_VALUES, KEEP_Q_VALUES;
+	
+}
