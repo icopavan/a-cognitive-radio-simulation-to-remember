@@ -44,6 +44,8 @@ public class FeliceMain {
 						simulationNumber));
 				conductSimulation(Method.QLEARNING, simulationNumber,
 						QValuesResponse.DELETE_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
+				conductSimulation(Method.QLEARNING, simulationNumber,
+						QValuesResponse.DELETE_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

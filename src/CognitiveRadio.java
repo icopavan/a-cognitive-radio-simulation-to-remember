@@ -64,6 +64,10 @@ public class CognitiveRadio extends Agent {
 	
 	public int maximumNumberOfNegativeValuesTolerated;
 	
+	public RatesResponse responseForRates;
+	
+	public QValuesResponse responseForQValues;
+	
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
 			RatesResponse ratesResponse) {
@@ -77,6 +81,8 @@ public class CognitiveRadio extends Agent {
 		learningRate = 0.8;
 		nothingActionForComparison = new NothingAction();
 		rewardHistory = new CircularFifoBuffer(REWARD_HISTORY_SIZE);
+		responseForQValues = qValueResponse;
+		responseForRates = ratesResponse;
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
@@ -151,17 +157,6 @@ public class CognitiveRadio extends Agent {
 			FeliceUtil.log("End of iteration " + iterationNumber);
 			printQ();
 		}
-//		String fileName = String.format("%s-%s-%s-channel-presence.txt", method.toString().toLowerCase(),
-//				maximumNumberOfNegativeValuesTolerated > 0? "with-evaluation" : "without-evaluation", name.toLowerCase());
-//		try {
-//			BufferedWriter bw = new BufferedWriter(new FileWriter(fileName, true));
-//			String presenceLine = String.format("%s,%s", currentState.spectrum.toString(),
-//					isActiveThisIteration);
-//			bw.write(presenceLine + "\n");
-//			bw.close();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
 	}
 	
 	public void evaluate() {
@@ -176,8 +171,19 @@ public class CognitiveRadio extends Agent {
 			if (negativeRewardsInARow > maximumNumberOfNegativeValuesTolerated) {
 				negativeRewardsInARow = 0;
 				if (maximumNumberOfNegativeValuesTolerated > 0) {
-					epsilon = INITIAL_EPSILON_VALUE;
-					learningRate = INITIAL_LEARNING_RATE;
+					if (responseForRates == RatesResponse.RESET_TO_INITIAL_VALUES) {
+						epsilon = INITIAL_EPSILON_VALUE;
+						learningRate = INITIAL_LEARNING_RATE;
+					} else if (responseForRates == RatesResponse.INCREASE_BY_FACTOR) {
+						epsilon *= 0.25;
+						if (epsilon > 0.8) {
+							epsilon = 0.8;
+						}
+						learningRate *= 1.25;
+						if (learningRate > 0.8) {
+							learningRate = 0.8;
+						}
+					}
 				}
 			}
 		}
