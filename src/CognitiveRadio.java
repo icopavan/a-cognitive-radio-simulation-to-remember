@@ -23,7 +23,7 @@ public class CognitiveRadio extends Agent {
 	public static final double RECEIVER_THRESHOLD = 1E-8;
 	public static final double EPSILON_DECREASE = 0.00064;
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
-	public static final double FACTOR_TO_INCREASE_RATES = 2.0;
+	public static final double FACTOR_TO_INCREASE_RATES = 2.5;
 	
 	public int successfulTransmissions;
 	
