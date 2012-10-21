@@ -73,8 +73,16 @@ public class FeliceMain {
 		puList.add(receiverPU);
 	}
 	
+	public static String getLowerCaseEnumName(@SuppressWarnings("rawtypes") Enum anEnum) {
+		return anEnum.toString().toLowerCase();
+	}
+	
 	public static void conductSimulation(Method method, int checkLastNValues, QValuesResponse qValueResponse, RatesResponse ratesResponse)
 			throws IOException {
+		String filename = String.format("%s-%s-%s-%s.txt",
+				getLowerCaseEnumName(method), checkLastNValues,
+				getLowerCaseEnumName(qValueResponse),
+				getLowerCaseEnumName(ratesResponse));
 		int numberOfPUPairs = 0;
 		if (logging) {
 			FeliceUtil.log("Conducting simulation for method: " + method + ".\n");
@@ -144,8 +152,7 @@ public class FeliceMain {
 			
 			double currentRewardAverage = currentRewardTotals / (environment.numberOfSecondaryUsers / 2.0);
 			
-			BufferedWriter bw = new BufferedWriter(new FileWriter(String.format
-					("%s_%s.txt", method.toString().toLowerCase(), simulationNumber), true));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(filename + "_reward_average.txt"));
 			bw.write(currentRewardAverage + "\n");
 			bw.close();
 		}
@@ -157,9 +164,7 @@ public class FeliceMain {
 		}
 		double averageNumberOfSuccessfulTransmissions = (double) totalNumberOfSuccessfulTransmissions
 				/ (environment.cognitiveRadios.size() / 2.0 * numberOfIterations);
-		BufferedWriter bw = new BufferedWriter(new FileWriter(String.format
-				("%s_%s_success_probability.txt", method.toString().toLowerCase(),
-						simulationNumber), true));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(filename + "_success_probability.txt", true));
 		bw.write(averageNumberOfSuccessfulTransmissions + "\n");
 		bw.close();
 
