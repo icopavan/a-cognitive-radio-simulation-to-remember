@@ -1,8 +1,13 @@
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.json.simple.JSONValue;
 
 
 public class ACRSTRMain {
@@ -19,6 +24,8 @@ public class ACRSTRMain {
 	public static final int START_VALUE = 5;
 	public static final int END_VALUE = 5;
 	
+	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
+	
 	public static void main(String[] args) {
 		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
@@ -32,7 +39,8 @@ public class ACRSTRMain {
 		consoleDebug = (ACRSTRUtil.getSetting("console-debug")).equals("true");
 		logging = (ACRSTRUtil.getSetting("main-file-log")).equals(true);
 		if (consoleDebug) {
-			System.out.println("An Implementation of 'Spectrum Management of Cognitive Radio Using Multi-agent Reinforcement Learning'\n");
+			System.out.println("An Implementation of 'Spectrum Management of " +
+					"Cognitive Radio Using Multi-agent Reinforcement Learning'\n");
 		}
 		try {
 			if (logging) {
@@ -42,7 +50,11 @@ public class ACRSTRMain {
 					simulationNumber++) {
 				System.out.println(String.format("Conducting simulation %s ...",
 						simulationNumber));
-
+				File oldOutput = new File(DIRECTORY_FOR_LATEST_OUTPUT);
+				if (oldOutput.exists()) {
+					oldOutput.renameTo(new File("acrstr-"
+							+ System.currentTimeMillis()));
+				}
 				conductSimulation(Method.QLEARNING, simulationNumber,
 						QValuesResponse.DELETE_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
 				conductSimulation(Method.QLEARNING, simulationNumber,
@@ -95,12 +107,20 @@ public class ACRSTRMain {
 		return anEnum.toString().toLowerCase();
 	}
 	
-	public static void conductSimulation(Method method, int checkLastNValues, QValuesResponse qValueResponse, RatesResponse ratesResponse)
+	public static void conductSimulation(Method method, int checkLastNValues,
+			QValuesResponse qValueResponse, RatesResponse ratesResponse)
 			throws IOException {
-		String filename = String.format("%s-%s-%s-%s",
-				getLowerCaseEnumName(method), checkLastNValues,
-				getLowerCaseEnumName(qValueResponse),
-				getLowerCaseEnumName(ratesResponse));
+		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
+		outputDirectory.mkdir();
+		String filename = DIRECTORY_FOR_LATEST_OUTPUT + '/' + System.currentTimeMillis() + ".txt";
+		BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
+		Map<String, String> parameters = new HashMap<String, String>();
+		parameters.put("method", method.toString().toLowerCase());
+		parameters.put("checked recent values", Integer.toString(checkLastNValues));
+		parameters.put("q response", qValueResponse.toString());
+		parameters.put("rate response", ratesResponse.toString());
+		String jsonString = JSONValue.toJSONString(parameters);
+		bw.write(jsonString + "\n"); 
 		int numberOfPUPairs = 0;
 		if (logging) {
 			ACRSTRUtil.log("Conducting simulation for method: " + method + ".\n");
@@ -167,12 +187,10 @@ public class ACRSTRMain {
 			for (Spectrum s : environment.spectrums) {
 				s.occupyingAgents.clear();
 			}
-			
-			double currentRewardAverage = currentRewardTotals / (environment.numberOfSecondaryUsers / 2.0);
-			
-			BufferedWriter bw = new BufferedWriter(new FileWriter(filename + "_reward_average.txt", true));
-			bw.write(currentRewardAverage + "\n");
-			bw.close();
+
+			double currentRewardAverage = currentRewardTotals
+					/ (environment.numberOfSecondaryUsers / 2.0);
+			bw.write(Double.toString(currentRewardAverage) + "\n");
 		}
 
 		if (logging) {
@@ -183,6 +201,7 @@ public class ACRSTRMain {
 				}
 			}
 		}
-		}
+		bw.close();
+	}
 	
 }
