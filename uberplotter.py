@@ -20,7 +20,11 @@ def read_files():
         plot_data(values, info)
 
 def plot_data(values, info):
-    plt.plot(range(1,1+NUMBER_OF_EPOCHS), values)
+    plt.xlabel('Iterations')
+    plt.ylabel('Average Reward')
+    plot_label = '{0}, {1}'.format(info["q response"], info["rate response"])
+    plt.plot(range(1,1+NUMBER_OF_EPOCHS), values, label=plot_label)
+    plt.legend(loc=LEGEND_POSITION)
 
 if __name__ == '__main__':
     read_files()
