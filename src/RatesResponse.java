@@ -1,9 +1,9 @@
 
 public enum RatesResponse {
 
-	RESET_TO_INITIAL_VALUES("Reset to initial values"),
-	INCREASE_BY_FACTOR("Increase by a factor"),
-	INCREASE_BY_CONSTANT("Increase by a constant");
+	RESET_TO_INITIAL_VALUES("ri"),
+	INCREASE_BY_FACTOR("if"),
+	INCREASE_BY_CONSTANT("ic");
 	
 	public String description;
 	
