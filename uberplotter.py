@@ -1,16 +1,17 @@
 #! /usr/bin/env python
 import matplotlib.pyplot as plt
-import json, os
+import json, os, glob
 
 NUMBER_OF_EPOCHS = 10000
 LEGEND_POSITION = 3
 LATEST_OUTPUT_DIRECTORY = 'acrstr-latest'
+GLOB_PATTERN = 'acrstr-1*'
 
 processed_files = []
 
-def read_files():
-    files = os.listdir(LATEST_OUTPUT_DIRECTORY)
-    os.chdir(LATEST_OUTPUT_DIRECTORY)
+def read_files(filedir):
+    files = os.listdir(filedir)
+    os.chdir(filedir)
     averages = []
     convergences = []
     for a_file in files:
@@ -21,9 +22,8 @@ def read_files():
             values.append(float(line))
         averages.append([get_average(values), info])
         convergences.append([get_convergence(values), info])
-        plot_average_values(values, info)
-#    plot_differing_values(averages)
-#    plot_differing_values(convergences)
+    plot_differing_values(averages, filedir)
+    os.chdir('..')
 
 def get_convergence(values):
     convergence = 1
@@ -39,7 +39,7 @@ def get_average(values):
         running_sum += value
     return running_sum / len(values)
 
-def plot_differing_values(values_in_pairs):
+def plot_differing_values(values_in_pairs, filedir):
     differing_values = []
     infos = []
     for value_and_info in values_in_pairs:
@@ -48,6 +48,8 @@ def plot_differing_values(values_in_pairs):
                      + value_and_info[1]["rate response"] + ']')
     plt.bar(range(len(differing_values)), differing_values)
     plt.xticks(range(len(differing_values)), infos)
+    plt.savefig(filedir + '.png')
+    plt.clf()
 
 def plot_average_values(values, info):
     plot_data(range(1,1+NUMBER_OF_EPOCHS), values, info)
@@ -59,5 +61,5 @@ def plot_data(x, y, info):
 
 
 if __name__ == '__main__':
-    read_files()
-    plt.show()
+    for dirname in glob.glob(GLOB_PATTERN):
+        read_files(dirname)
