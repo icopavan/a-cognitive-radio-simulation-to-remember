@@ -43,31 +43,38 @@ public class ACRSTRMain {
 			if (logging) {
 				ACRSTRUtil.log("###############");
 			}
-			System.out.println(String.format("Conducting simulation %s ...",
-					simulationNumber));
 			File oldOutput = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 			if (oldOutput.exists()) {
 				oldOutput.renameTo(new File("acrstr-"
 						+ System.currentTimeMillis()));
 			}
 			conductSimulation(Method.QLEARNING, simulationNumber,
-					QValuesResponse.DELETE_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
+					QValuesResponse.DELETE_Q_VALUES,
+					RatesResponse.RESET_TO_INITIAL_VALUES);
 			conductSimulation(Method.QLEARNING, simulationNumber,
-					QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
+					QValuesResponse.DELETE_OFFENDING_Q_VALUES,
+					RatesResponse.RESET_TO_INITIAL_VALUES);
 			conductSimulation(Method.QLEARNING, simulationNumber,
-					QValuesResponse.KEEP_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
+					QValuesResponse.KEEP_Q_VALUES,
+					RatesResponse.RESET_TO_INITIAL_VALUES);
 			conductSimulation(Method.QLEARNING, simulationNumber,
-					QValuesResponse.DELETE_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
+					QValuesResponse.DELETE_Q_VALUES,
+					RatesResponse.INCREASE_BY_FACTOR);
 			conductSimulation(Method.QLEARNING, simulationNumber,
-					QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
+					QValuesResponse.DELETE_OFFENDING_Q_VALUES,
+					RatesResponse.INCREASE_BY_FACTOR);
 			conductSimulation(Method.QLEARNING, simulationNumber,
-					QValuesResponse.KEEP_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
+					QValuesResponse.KEEP_Q_VALUES,
+					RatesResponse.INCREASE_BY_FACTOR);
 			conductSimulation(Method.QLEARNING, simulationNumber,
-					QValuesResponse.DELETE_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
+					QValuesResponse.DELETE_Q_VALUES,
+					RatesResponse.INCREASE_BY_CONSTANT);
 			conductSimulation(Method.QLEARNING, simulationNumber,
-					QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
+					QValuesResponse.DELETE_OFFENDING_Q_VALUES,
+					RatesResponse.INCREASE_BY_CONSTANT);
 			conductSimulation(Method.QLEARNING, simulationNumber,
-					QValuesResponse.KEEP_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
+					QValuesResponse.KEEP_Q_VALUES,
+					RatesResponse.INCREASE_BY_CONSTANT);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
