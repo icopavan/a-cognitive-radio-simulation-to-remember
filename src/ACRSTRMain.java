@@ -21,9 +21,6 @@ public class ACRSTRMain {
 	public static ArrayList<PrimaryUser> puList;
 	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
 	
-	public static final int START_VALUE = 5;
-	public static final int END_VALUE = 5;
-	
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
 	public static void main(String[] args) {
@@ -46,37 +43,31 @@ public class ACRSTRMain {
 			if (logging) {
 				ACRSTRUtil.log("###############");
 			}
-			for (simulationNumber = START_VALUE; simulationNumber <= END_VALUE;
-					simulationNumber++) {
-				System.out.println(String.format("Conducting simulation %s ...",
-						simulationNumber));
-				File oldOutput = new File(DIRECTORY_FOR_LATEST_OUTPUT);
-				if (oldOutput.exists()) {
-					oldOutput.renameTo(new File("acrstr-"
-							+ System.currentTimeMillis()));
-				}
-				conductSimulation(Method.QLEARNING, simulationNumber,
-						QValuesResponse.DELETE_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
-				conductSimulation(Method.QLEARNING, simulationNumber,
-						QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
-				conductSimulation(Method.QLEARNING, simulationNumber,
-						QValuesResponse.KEEP_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
-				
-				conductSimulation(Method.QLEARNING, simulationNumber,
-						QValuesResponse.DELETE_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
-				conductSimulation(Method.QLEARNING, simulationNumber,
-						QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
-				conductSimulation(Method.QLEARNING, simulationNumber,
-						QValuesResponse.KEEP_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
-				
-				conductSimulation(Method.QLEARNING, simulationNumber,
-						QValuesResponse.DELETE_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
-				conductSimulation(Method.QLEARNING, simulationNumber,
-						QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
-				conductSimulation(Method.QLEARNING, simulationNumber,
-						QValuesResponse.KEEP_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
-				
+			System.out.println(String.format("Conducting simulation %s ...",
+					simulationNumber));
+			File oldOutput = new File(DIRECTORY_FOR_LATEST_OUTPUT);
+			if (oldOutput.exists()) {
+				oldOutput.renameTo(new File("acrstr-"
+						+ System.currentTimeMillis()));
 			}
+			conductSimulation(Method.QLEARNING, simulationNumber,
+					QValuesResponse.DELETE_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
+			conductSimulation(Method.QLEARNING, simulationNumber,
+					QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
+			conductSimulation(Method.QLEARNING, simulationNumber,
+					QValuesResponse.KEEP_Q_VALUES, RatesResponse.RESET_TO_INITIAL_VALUES);
+			conductSimulation(Method.QLEARNING, simulationNumber,
+					QValuesResponse.DELETE_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
+			conductSimulation(Method.QLEARNING, simulationNumber,
+					QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
+			conductSimulation(Method.QLEARNING, simulationNumber,
+					QValuesResponse.KEEP_Q_VALUES, RatesResponse.INCREASE_BY_FACTOR);
+			conductSimulation(Method.QLEARNING, simulationNumber,
+					QValuesResponse.DELETE_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
+			conductSimulation(Method.QLEARNING, simulationNumber,
+					QValuesResponse.DELETE_OFFENDING_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
+			conductSimulation(Method.QLEARNING, simulationNumber,
+					QValuesResponse.KEEP_Q_VALUES, RatesResponse.INCREASE_BY_CONSTANT);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
