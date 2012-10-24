@@ -21,8 +21,8 @@ def read_files():
             values.append(float(line))
         averages.append([get_average(values), info])
         convergences.append([get_convergence(values), info])
-#        plot_average_values(values, info)
-    plot_differing_values(averages)
+        plot_average_values(values, info)
+#    plot_differing_values(averages)
 #    plot_differing_values(convergences)
 
 def get_convergence(values):

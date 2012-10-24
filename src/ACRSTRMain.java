@@ -14,12 +14,13 @@ public class ACRSTRMain {
 	
 	public static boolean consoleDebug;
 	public static boolean logging;
-	public static int simulationNumber;
 	
 	public static int maximumPUPairs;
 	
 	public static ArrayList<PrimaryUser> puList;
 	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
+	
+	public static final int CHECK_LAST_N_VALUES = 5;
 	
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
@@ -48,31 +49,31 @@ public class ACRSTRMain {
 				oldOutput.renameTo(new File("acrstr-"
 						+ System.currentTimeMillis()));
 			}
-			conductSimulation(Method.QLEARNING, simulationNumber,
+			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
 					QValuesResponse.DELETE_Q_VALUES,
 					RatesResponse.RESET_TO_INITIAL_VALUES);
-			conductSimulation(Method.QLEARNING, simulationNumber,
+			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
 					QValuesResponse.DELETE_OFFENDING_Q_VALUES,
 					RatesResponse.RESET_TO_INITIAL_VALUES);
-			conductSimulation(Method.QLEARNING, simulationNumber,
+			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
 					QValuesResponse.KEEP_Q_VALUES,
 					RatesResponse.RESET_TO_INITIAL_VALUES);
-			conductSimulation(Method.QLEARNING, simulationNumber,
+			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
 					QValuesResponse.DELETE_Q_VALUES,
 					RatesResponse.INCREASE_BY_FACTOR);
-			conductSimulation(Method.QLEARNING, simulationNumber,
+			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
 					QValuesResponse.DELETE_OFFENDING_Q_VALUES,
 					RatesResponse.INCREASE_BY_FACTOR);
-			conductSimulation(Method.QLEARNING, simulationNumber,
+			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
 					QValuesResponse.KEEP_Q_VALUES,
 					RatesResponse.INCREASE_BY_FACTOR);
-			conductSimulation(Method.QLEARNING, simulationNumber,
+			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
 					QValuesResponse.DELETE_Q_VALUES,
 					RatesResponse.INCREASE_BY_CONSTANT);
-			conductSimulation(Method.QLEARNING, simulationNumber,
+			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
 					QValuesResponse.DELETE_OFFENDING_Q_VALUES,
 					RatesResponse.INCREASE_BY_CONSTANT);
-			conductSimulation(Method.QLEARNING, simulationNumber,
+			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
 					QValuesResponse.KEEP_Q_VALUES,
 					RatesResponse.INCREASE_BY_CONSTANT);
 		} catch (IOException e) {
