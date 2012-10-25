@@ -5,7 +5,7 @@ import json, os, glob
 NUMBER_OF_EPOCHS = 10000
 LEGEND_POSITION = 3
 LATEST_OUTPUT_DIRECTORY = 'acrstr-latest'
-GLOB_PATTERN = 'acrstr-1*'
+GLOB_PATTERN = LATEST_OUTPUT_DIRECTORY
 
 processed_files = []
 
@@ -47,8 +47,7 @@ def plot_differing_values(values_in_pairs, filedir):
         differing_values.append(value_and_info[0])
         infos.append('[' + value_and_info[1]["q response"] + '-'
                      + value_and_info[1]["rate response"] + ']')
-    plt.bar(range(len(differing_values)), differing_values)
-    plt.xticks(range(len(differing_values)), infos)
+    plt.plot(range(len(differing_values)), differing_values)
     plt.savefig(filedir + '.png')
     plt.clf()
 

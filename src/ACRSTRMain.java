@@ -26,10 +26,12 @@ public class ACRSTRMain {
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
 	public static final int START_N_VALUES = 0;
-	public static final int END_N_VALUES = 5000;
+	public static final int END_N_VALUES = 100;
 	
 	public static List<QValuesResponse> qValuesResponses;
 	public static List<RatesResponse> ratesResponses;
+	
+	public static int numberOfCRTransmitters;
 	
 	public static void main(String[] args) {
 		qValuesResponses = new ArrayList<QValuesResponse>();
@@ -61,9 +63,12 @@ public class ACRSTRMain {
 				oldOutput.renameTo(new File("acrstr-"
 						+ System.currentTimeMillis()));
 			}
+			
+			String output = ACRSTRUtil.getSetting("output");
+			
 			for (QValuesResponse qvr : qValuesResponses) {
 				for (RatesResponse rsr : ratesResponses) {
-					conductSimulation(Method.QLEARNING, START_N_VALUES, END_N_VALUES, qvr, rsr);
+					conductSimulation(Method.QLEARNING, START_N_VALUES, END_N_VALUES, qvr, rsr, output);
 				}
 			}
 		} catch (IOException e) {
@@ -92,12 +97,9 @@ public class ACRSTRMain {
 		puList.add(receiverPU);
 	}
 	
-	public static String getLowerCaseEnumName(@SuppressWarnings("rawtypes") Enum anEnum) {
-		return anEnum.toString().toLowerCase();
-	}
-	
-	public static void conductSimulation(Method method, int startNValues, int endNValues,
-			QValuesResponse qValueResponse, RatesResponse ratesResponse)
+	public static void conductSimulation(Method method, int startNValues,
+			int endNValues, QValuesResponse qValueResponse,
+			RatesResponse ratesResponse, String output)
 			throws IOException {
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
@@ -125,6 +127,8 @@ public class ACRSTRMain {
 				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
 						checkLastNValues, qValueResponse, ratesResponse));
 			}
+			
+			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;
 
 			int currentCR = 0;
 
@@ -171,10 +175,15 @@ public class ACRSTRMain {
 					cr.iterate();
 				}
 
+				int numberOfSuccessfulTransmissionThisIteration = 0;
+				
 				for (CognitiveRadio cr : environment.cognitiveRadios) {
 					if (cr.role == Role.TRANSMITTER) {
 						cr.evaluate();
 						currentRewardTotals += cr.currentIterationsReward;
+						if (cr.succesfullyTransmittedThisIteration) {
+							numberOfSuccessfulTransmissionThisIteration++;
+						}
 					}
 				}
 				for (Spectrum s : environment.spectrums) {
@@ -182,8 +191,16 @@ public class ACRSTRMain {
 				}
 
 				double currentRewardAverage = currentRewardTotals
-						/ (environment.numberOfSecondaryUsers / 2.0);
-				bw.write(Double.toString(currentRewardAverage) + "\n");
+						/ numberOfCRTransmitters;
+				double probabilityOfSuccessfulTransmission = numberOfSuccessfulTransmissionThisIteration
+						/ numberOfCRTransmitters;
+				if (output.equals("average")) {
+					bw.write(Double.toString(currentRewardAverage) + "\n");	
+				} else if (output.equals("probability")) {
+					bw.write(Double.toString(probabilityOfSuccessfulTransmission)
+							+ "\n");
+				}
+				
 			}
 
 			if (logging) {
