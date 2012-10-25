@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.simple.JSONValue;
@@ -24,7 +25,17 @@ public class ACRSTRMain {
 	
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
+	public static List<QValuesResponse> qValuesResponses;
+	public static List<RatesResponse> ratesResponses;
+	
 	public static void main(String[] args) {
+		qValuesResponses = new ArrayList<QValuesResponse>();
+		ratesResponses = new ArrayList<RatesResponse>();
+		qValuesResponses.add(QValuesResponse.DELETE_OFFENDING_Q_VALUES);
+		qValuesResponses.add(QValuesResponse.KEEP_Q_VALUES);
+		ratesResponses.add(RatesResponse.INCREASE_BY_CONSTANT);
+		ratesResponses.add(RatesResponse.RESET_TO_INITIAL_VALUES);
+		
 		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
 		puList = new ArrayList<PrimaryUser>();
@@ -49,33 +60,11 @@ public class ACRSTRMain {
 				oldOutput.renameTo(new File("acrstr-"
 						+ System.currentTimeMillis()));
 			}
-			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
-					QValuesResponse.DELETE_Q_VALUES,
-					RatesResponse.RESET_TO_INITIAL_VALUES);
-			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
-					QValuesResponse.DELETE_OFFENDING_Q_VALUES,
-					RatesResponse.RESET_TO_INITIAL_VALUES);
-			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
-					QValuesResponse.KEEP_Q_VALUES,
-					RatesResponse.RESET_TO_INITIAL_VALUES);
-			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
-					QValuesResponse.DELETE_Q_VALUES,
-					RatesResponse.INCREASE_BY_FACTOR);
-			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
-					QValuesResponse.DELETE_OFFENDING_Q_VALUES,
-					RatesResponse.INCREASE_BY_FACTOR);
-			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
-					QValuesResponse.KEEP_Q_VALUES,
-					RatesResponse.INCREASE_BY_FACTOR);
-			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
-					QValuesResponse.DELETE_Q_VALUES,
-					RatesResponse.INCREASE_BY_CONSTANT);
-			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
-					QValuesResponse.DELETE_OFFENDING_Q_VALUES,
-					RatesResponse.INCREASE_BY_CONSTANT);
-			conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES,
-					QValuesResponse.KEEP_Q_VALUES,
-					RatesResponse.INCREASE_BY_CONSTANT);
+			for (QValuesResponse qvr : qValuesResponses) {
+				for (RatesResponse rsr : ratesResponses) {
+					conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES, qvr, rsr);
+				}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
