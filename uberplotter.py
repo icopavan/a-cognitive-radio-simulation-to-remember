@@ -11,6 +11,7 @@ processed_files = []
 
 def read_files(filedir):
     files = os.listdir(filedir)
+    files.sort()
     os.chdir(filedir)
     averages = []
     convergences = []
@@ -58,7 +59,6 @@ def plot_average_values(values, info):
 def plot_data(x, y, info):
     plot_label = '{0}, {1}'.format(info["q response"], info["rate response"])
     plt.plot(x, y, label=plot_label)
-
 
 if __name__ == '__main__':
     for dirname in glob.glob(GLOB_PATTERN):
