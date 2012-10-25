@@ -25,6 +25,9 @@ public class ACRSTRMain {
 	
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
+	public static final int START_N_VALUES = 0;
+	public static final int END_N_VALUES = 5000;
+	
 	public static List<QValuesResponse> qValuesResponses;
 	public static List<RatesResponse> ratesResponses;
 	
@@ -32,9 +35,7 @@ public class ACRSTRMain {
 		qValuesResponses = new ArrayList<QValuesResponse>();
 		ratesResponses = new ArrayList<RatesResponse>();
 		qValuesResponses.add(QValuesResponse.DELETE_OFFENDING_Q_VALUES);
-		qValuesResponses.add(QValuesResponse.KEEP_Q_VALUES);
 		ratesResponses.add(RatesResponse.INCREASE_BY_CONSTANT);
-		ratesResponses.add(RatesResponse.RESET_TO_INITIAL_VALUES);
 		
 		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
@@ -62,7 +63,7 @@ public class ACRSTRMain {
 			}
 			for (QValuesResponse qvr : qValuesResponses) {
 				for (RatesResponse rsr : ratesResponses) {
-					conductSimulation(Method.QLEARNING, CHECK_LAST_N_VALUES, qvr, rsr);
+					conductSimulation(Method.QLEARNING, START_N_VALUES, END_N_VALUES, qvr, rsr);
 				}
 			}
 		} catch (IOException e) {
@@ -95,101 +96,107 @@ public class ACRSTRMain {
 		return anEnum.toString().toLowerCase();
 	}
 	
-	public static void conductSimulation(Method method, int checkLastNValues,
+	public static void conductSimulation(Method method, int startNValues, int endNValues,
 			QValuesResponse qValueResponse, RatesResponse ratesResponse)
 			throws IOException {
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
-		String filename = DIRECTORY_FOR_LATEST_OUTPUT + '/' + System.currentTimeMillis() + ".txt";
-		BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
-		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("method", method.toString().toLowerCase());
-		parameters.put("checked recent values", Integer.toString(checkLastNValues));
-		parameters.put("q response", qValueResponse.toString());
-		parameters.put("rate response", ratesResponse.toString());
-		String jsonString = JSONValue.toJSONString(parameters);
-		bw.write(jsonString + "\n"); 
-		int numberOfPUPairs = 0;
-		if (logging) {
-			ACRSTRUtil.log("Conducting simulation for method: " + method + ".\n");
-		}
 		
-		Environment environment = new Environment();
-		
-		for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
-			environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
-					checkLastNValues, qValueResponse, ratesResponse));
-		}
-		
-		int currentCR = 0;
-		
-		for (CognitiveRadio cr : environment.cognitiveRadios) {
-			if (currentCR % 2 == 0) {
-				cr.role = Role.TRANSMITTER;
-				cr.peer = environment.cognitiveRadios.get(currentCR + 1);
-			} else {
-				cr.role = Role.RECEIVER;
-				cr.peer = environment.cognitiveRadios.get(currentCR - 1);
-			}
-			currentCR++;
-		}
-		
-		for (CognitiveRadio cr: environment.cognitiveRadios) {
-			cr.initializeParameters();
-		}
-		
-		int numberOfIterations = Integer.parseInt(ACRSTRUtil.getSetting("iterations"));
-		
-		for (int i = 0; i < numberOfIterations; i++) {
-			if (consoleDebug) {
-				System.out.println("Iteration: " + (i + 1));
-			}
+		for (int checkLastNValues = startNValues; checkLastNValues <= endNValues; checkLastNValues++) {
+			System.out.println(String.format("Checking last %s values ...", checkLastNValues));
 			
-			if (i % PU_PAIR_INTRODUCTION_EPOCH == 0 && numberOfPUPairs <= maximumPUPairs) {
-				String firstPUName = String.format("PU%s", i /
-						PU_PAIR_INTRODUCTION_EPOCH + 1);
-				String secondPUName = String.format("PU%s", i /
-						PU_PAIR_INTRODUCTION_EPOCH + 2);
-				introduceAPUPair(firstPUName, secondPUName, environment,
-						environment.spectrums.get((i / PU_PAIR_INTRODUCTION_EPOCH)
-								% environment.numberOfSpectra));
-				numberOfPUPairs++;
-			}
-			
-			double currentRewardTotals = 0.0;
-		
-			for (PrimaryUser pu : puList) {
-				pu.iterate();
-			}
-			
-			for (CognitiveRadio cr : environment.cognitiveRadios) {
-				cr.iterate();
-			}
-			
-			for (CognitiveRadio cr : environment.cognitiveRadios) {
-				if (cr.role == Role.TRANSMITTER) {
-					cr.evaluate();
-					currentRewardTotals += cr.currentIterationsReward;
-				}
-			}
-			for (Spectrum s : environment.spectrums) {
-				s.occupyingAgents.clear();
+			String filename = DIRECTORY_FOR_LATEST_OUTPUT + '/' + System.currentTimeMillis() + ".txt";
+			BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
+			Map<String, String> parameters = new HashMap<String, String>();
+			parameters.put("method", method.toString().toLowerCase());
+			parameters.put("checked recent values", Integer.toString(checkLastNValues));
+			parameters.put("q response", qValueResponse.toString());
+			parameters.put("rate response", ratesResponse.toString());
+			String jsonString = JSONValue.toJSONString(parameters);
+			bw.write(jsonString + "\n"); 
+			int numberOfPUPairs = 0;
+			if (logging) {
+				ACRSTRUtil.log("Conducting simulation for method: " + method + ".\n");
 			}
 
-			double currentRewardAverage = currentRewardTotals
-					/ (environment.numberOfSecondaryUsers / 2.0);
-			bw.write(Double.toString(currentRewardAverage) + "\n");
-		}
+			Environment environment = new Environment();
 
-		if (logging) {
-			ACRSTRUtil.log("\n=== Results ===");
+			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
+				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
+						checkLastNValues, qValueResponse, ratesResponse));
+			}
+
+			int currentCR = 0;
+
 			for (CognitiveRadio cr : environment.cognitiveRadios) {
-				if (cr.role == Role.TRANSMITTER) {
-					cr.printQ();
+				if (currentCR % 2 == 0) {
+					cr.role = Role.TRANSMITTER;
+					cr.peer = environment.cognitiveRadios.get(currentCR + 1);
+				} else {
+					cr.role = Role.RECEIVER;
+					cr.peer = environment.cognitiveRadios.get(currentCR - 1);
+				}
+				currentCR++;
+			}
+
+			for (CognitiveRadio cr: environment.cognitiveRadios) {
+				cr.initializeParameters();
+			}
+
+			int numberOfIterations = Integer.parseInt(ACRSTRUtil.getSetting("iterations"));
+
+			for (int i = 0; i < numberOfIterations; i++) {
+				if (consoleDebug) {
+					System.out.println("Iteration: " + (i + 1));
+				}
+
+				if (i % PU_PAIR_INTRODUCTION_EPOCH == 0 && numberOfPUPairs <= maximumPUPairs) {
+					String firstPUName = String.format("PU%s", i /
+							PU_PAIR_INTRODUCTION_EPOCH + 1);
+					String secondPUName = String.format("PU%s", i /
+							PU_PAIR_INTRODUCTION_EPOCH + 2);
+					introduceAPUPair(firstPUName, secondPUName, environment,
+							environment.spectrums.get((i / PU_PAIR_INTRODUCTION_EPOCH)
+									% environment.numberOfSpectra));
+					numberOfPUPairs++;
+				}
+
+				double currentRewardTotals = 0.0;
+
+				for (PrimaryUser pu : puList) {
+					pu.iterate();
+				}
+
+				for (CognitiveRadio cr : environment.cognitiveRadios) {
+					cr.iterate();
+				}
+
+				for (CognitiveRadio cr : environment.cognitiveRadios) {
+					if (cr.role == Role.TRANSMITTER) {
+						cr.evaluate();
+						currentRewardTotals += cr.currentIterationsReward;
+					}
+				}
+				for (Spectrum s : environment.spectrums) {
+					s.occupyingAgents.clear();
+				}
+
+				double currentRewardAverage = currentRewardTotals
+						/ (environment.numberOfSecondaryUsers / 2.0);
+				bw.write(Double.toString(currentRewardAverage) + "\n");
+			}
+
+			if (logging) {
+				ACRSTRUtil.log("\n=== Results ===");
+				for (CognitiveRadio cr : environment.cognitiveRadios) {
+					if (cr.role == Role.TRANSMITTER) {
+						cr.printQ();
+					}
 				}
 			}
+			bw.close();
+
 		}
-		bw.close();
 	}
-	
+
 }
