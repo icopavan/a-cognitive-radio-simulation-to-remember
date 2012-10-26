@@ -192,7 +192,7 @@ public class ACRSTRMain {
 
 				double currentRewardAverage = currentRewardTotals
 						/ numberOfCRTransmitters;
-				double probabilityOfSuccessfulTransmission = numberOfSuccessfulTransmissionThisIteration
+				double probabilityOfSuccessfulTransmission = (double) numberOfSuccessfulTransmissionThisIteration
 						/ numberOfCRTransmitters;
 				if (output.equals("average")) {
 					bw.write(Double.toString(currentRewardAverage) + "\n");	
