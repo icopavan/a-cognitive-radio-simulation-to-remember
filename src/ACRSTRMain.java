@@ -25,8 +25,8 @@ public class ACRSTRMain {
 	
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
-	public static final int START_N_VALUES = 0;
-	public static final int END_N_VALUES = 100;
+	public static final int START_N_VALUES = 5;
+	public static final int END_N_VALUES = 5;
 	
 	public static List<QValuesResponse> qValuesResponses;
 	public static List<RatesResponse> ratesResponses;
@@ -149,6 +149,8 @@ public class ACRSTRMain {
 
 			int numberOfIterations = Integer.parseInt(ACRSTRUtil.getSetting("iterations"));
 
+			double cumulativeRewards = 0.0;
+			
 			for (int i = 0; i < numberOfIterations; i++) {
 				if (consoleDebug) {
 					System.out.println("Iteration: " + (i + 1));
@@ -175,30 +177,36 @@ public class ACRSTRMain {
 					cr.iterate();
 				}
 
-				int numberOfSuccessfulTransmissionThisIteration = 0;
+				int numberOfSuccessfulTransmissionsThisIteration = 0;
 				
 				for (CognitiveRadio cr : environment.cognitiveRadios) {
 					if (cr.role == Role.TRANSMITTER) {
 						cr.evaluate();
 						currentRewardTotals += cr.currentIterationsReward;
 						if (cr.succesfullyTransmittedThisIteration) {
-							numberOfSuccessfulTransmissionThisIteration++;
+							numberOfSuccessfulTransmissionsThisIteration++;
 						}
 					}
 				}
+				
+				cumulativeRewards += currentRewardTotals;
+				double cumulativeRewardAverage = cumulativeRewards / (i + 1);
+				
 				for (Spectrum s : environment.spectrums) {
 					s.occupyingAgents.clear();
 				}
 
 				double currentRewardAverage = currentRewardTotals
 						/ numberOfCRTransmitters;
-				double probabilityOfSuccessfulTransmission = (double) numberOfSuccessfulTransmissionThisIteration
+				double probabilityOfSuccessfulTransmission = (double) numberOfSuccessfulTransmissionsThisIteration
 						/ numberOfCRTransmitters;
 				if (output.equals("average")) {
 					bw.write(Double.toString(currentRewardAverage) + "\n");	
 				} else if (output.equals("probability")) {
 					bw.write(Double.toString(probabilityOfSuccessfulTransmission)
 							+ "\n");
+				} else if (output.equals("cumulative-rewards")) {
+					bw.write(Double.toString(cumulativeRewardAverage) + "\n");
 				}
 				
 			}

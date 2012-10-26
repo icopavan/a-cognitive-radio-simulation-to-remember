@@ -23,6 +23,7 @@ def read_files(filedir):
             values.append(float(line))
         averages.append([get_average(values), info])
         convergences.append([get_convergence(values), info])
+        plot_an_epochs_values(values, info)
     plot_differing_values(averages, filedir)
     os.chdir('..')
 
@@ -51,7 +52,7 @@ def plot_differing_values(values_in_pairs, filedir):
     plt.savefig(filedir + '.png')
     plt.clf()
 
-def plot_average_values(values, info):
+def plot_an_epochs_values(values, info):
     plot_data(range(1,1+NUMBER_OF_EPOCHS), values, info)
     plt.legend(loc=LEGEND_POSITION)
 
