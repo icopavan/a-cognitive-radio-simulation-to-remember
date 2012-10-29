@@ -21,12 +21,10 @@ public class ACRSTRMain {
 	public static ArrayList<PrimaryUser> puList;
 	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
 	
-	public static final int CHECK_LAST_N_VALUES = 5;
-	
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
-	public static final int START_N_VALUES = 5;
-	public static final int END_N_VALUES = 5;
+	public static final int START_N_VALUES = 0;
+	public static final int END_N_VALUES = 1000;
 	
 	public static List<QValuesResponse> qValuesResponses;
 	public static List<RatesResponse> ratesResponses;
@@ -151,6 +149,8 @@ public class ACRSTRMain {
 
 			double cumulativeRewards = 0.0;
 			
+			double cumulativeSuccessProbabilities = 0.0;
+			
 			for (int i = 0; i < numberOfIterations; i++) {
 				if (consoleDebug) {
 					System.out.println("Iteration: " + (i + 1));
@@ -191,6 +191,12 @@ public class ACRSTRMain {
 				
 				cumulativeRewards += currentRewardTotals;
 				double cumulativeRewardAverage = cumulativeRewards / (i + 1);
+
+				double probabilityOfSuccessfulTransmission = (double) numberOfSuccessfulTransmissionsThisIteration
+						/ numberOfCRTransmitters;
+				
+				cumulativeSuccessProbabilities += probabilityOfSuccessfulTransmission
+						/ ((i + 1) * numberOfCRTransmitters) ;
 				
 				for (Spectrum s : environment.spectrums) {
 					s.occupyingAgents.clear();
@@ -198,15 +204,15 @@ public class ACRSTRMain {
 
 				double currentRewardAverage = currentRewardTotals
 						/ numberOfCRTransmitters;
-				double probabilityOfSuccessfulTransmission = (double) numberOfSuccessfulTransmissionsThisIteration
-						/ numberOfCRTransmitters;
 				if (output.equals("average")) {
 					bw.write(Double.toString(currentRewardAverage) + "\n");	
 				} else if (output.equals("probability")) {
 					bw.write(Double.toString(probabilityOfSuccessfulTransmission)
 							+ "\n");
-				} else if (output.equals("cumulative-rewards")) {
+				} else if (output.equals("cumulative-reward")) {
 					bw.write(Double.toString(cumulativeRewardAverage) + "\n");
+				} else if (output.equals("cumulative-probability")) {
+					bw.write(Double.toString(cumulativeSuccessProbabilities) + "\n");
 				}
 				
 			}
