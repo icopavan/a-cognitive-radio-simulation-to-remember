@@ -28,14 +28,18 @@ public class ACRSTRMain {
 	
 	public static List<QValuesResponse> qValuesResponses;
 	public static List<RatesResponse> ratesResponses;
+	public static List<Method> methodsToSimulate;
 	
 	public static int numberOfCRTransmitters;
 	
 	public static void main(String[] args) {
 		qValuesResponses = new ArrayList<QValuesResponse>();
 		ratesResponses = new ArrayList<RatesResponse>();
-		qValuesResponses.add(QValuesResponse.DELETE_OFFENDING_Q_VALUES);
-		ratesResponses.add(RatesResponse.INCREASE_BY_CONSTANT);
+		methodsToSimulate = new ArrayList<Method>();
+		qValuesResponses.add(QValuesResponse.KEEP_Q_VALUES);
+		ratesResponses.add(RatesResponse.RESET_TO_INITIAL_VALUES);
+		methodsToSimulate.add(Method.QLEARNING);
+		methodsToSimulate.add(Method.RANDOM);
 		
 		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
@@ -66,7 +70,9 @@ public class ACRSTRMain {
 			
 			for (QValuesResponse qvr : qValuesResponses) {
 				for (RatesResponse rsr : ratesResponses) {
-					conductSimulation(Method.QLEARNING, START_N_VALUES, END_N_VALUES, qvr, rsr, output);
+					for (Method m : methodsToSimulate) {
+						conductSimulation(m, START_N_VALUES, END_N_VALUES, qvr, rsr, output);
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -108,7 +114,7 @@ public class ACRSTRMain {
 			String filename = DIRECTORY_FOR_LATEST_OUTPUT + '/' + System.currentTimeMillis() + ".txt";
 			BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
 			Map<String, String> parameters = new HashMap<String, String>();
-			parameters.put("method", method.toString().toLowerCase());
+			parameters.put("method", method.toString());
 			parameters.put("checked recent values", Integer.toString(checkLastNValues));
 			parameters.put("q response", qValueResponse.toString());
 			parameters.put("rate response", ratesResponse.toString());
