@@ -24,7 +24,7 @@ public class ACRSTRMain {
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
 	public static final int START_N_VALUES = 0;
-	public static final int END_N_VALUES = 1000;
+	public static final int END_N_VALUES = 0;
 	
 	public static List<QValuesResponse> qValuesResponses;
 	public static List<RatesResponse> ratesResponses;
@@ -184,6 +184,7 @@ public class ACRSTRMain {
 				}
 
 				int numberOfSuccessfulTransmissionsThisIteration = 0;
+				int channelChangesThisIteration = 0;
 				
 				for (CognitiveRadio cr : environment.cognitiveRadios) {
 					if (cr.role == Role.TRANSMITTER) {
@@ -191,6 +192,9 @@ public class ACRSTRMain {
 						currentRewardTotals += cr.currentIterationsReward;
 						if (cr.succesfullyTransmittedThisIteration) {
 							numberOfSuccessfulTransmissionsThisIteration++;
+						}
+						if (cr.changedChannelThisIteration) {
+							channelChangesThisIteration++;
 						}
 					}
 				}
@@ -219,8 +223,9 @@ public class ACRSTRMain {
 					bw.write(Double.toString(cumulativeRewardAverage) + "\n");
 				} else if (output.equals("cumulative-probability")) {
 					bw.write(Double.toString(cumulativeSuccessProbabilities) + "\n");
-				}
-				
+				} else if (output.equals("channel-changes")) {
+					bw.write(Integer.toString(channelChangesThisIteration) + "\n");
+				}		
 			}
 
 			if (logging) {

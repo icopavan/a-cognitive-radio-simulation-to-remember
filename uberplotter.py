@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import json, os, glob
 
 NUMBER_OF_EPOCHS = 10000
-LEGEND_POSITION = 3
+LEGEND_POSITION = 0
 LATEST_OUTPUT_DIRECTORY = 'acrstr-latest'
 GLOB_PATTERN = LATEST_OUTPUT_DIRECTORY
 COLORS = {'Q-learning': 'blue', 'Random': 'red'}
