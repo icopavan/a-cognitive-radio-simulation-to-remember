@@ -22,9 +22,8 @@ public class CognitiveRadio extends Agent {
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
 	public static final double RECEIVER_THRESHOLD = 1E-8;
-	public static final double EPSILON_DECREASE = 0.00064;
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
-	public static final double FACTOR_TO_INCREASE_RATES = 2.5;
+	public static final double FACTOR_TO_INCREASE_RATES = 1.5;
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
 	
 	public int successfulTransmissions;
@@ -73,9 +72,11 @@ public class CognitiveRadio extends Agent {
 	
 	public QValuesResponse responseForQValues;
 	
+	public double epsilonDecrease;
+	
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse) {
+			RatesResponse ratesResponse, double decreaseEpsilonBy) {
 		super(name, environment);
 		offendingQValues = new HashSet<StateAction>();
 		successfulTransmissions = 0;
@@ -89,6 +90,7 @@ public class CognitiveRadio extends Agent {
 		rewardHistory = new CircularFifoBuffer(REWARD_HISTORY_SIZE);
 		responseForQValues = qValueResponse;
 		responseForRates = ratesResponse;
+		epsilonDecrease = decreaseEpsilonBy;
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
@@ -114,10 +116,13 @@ public class CognitiveRadio extends Agent {
 		}
 		if (method == Method.QLEARNING) {
 			learningRate *= LEARNING_RATE_REDUCTION_FACTOR;
-			if (epsilon > EPSILON_DECREASE) {
-				epsilon -= EPSILON_DECREASE;
+			if (epsilon > epsilonDecrease) {
+				epsilon -= epsilonDecrease;
+			} else {
+				epsilon = 0.0;
 			}
 		}
+		iterationNumber++;
 	}
 	
 	public void jumpSpectrum(SpectrumAction aSpectrumAction) {
