@@ -17,7 +17,6 @@ public class CognitiveRadio extends Agent {
 	public static final double DISCOUNT_FACTOR = 0.8;
 	public static final double MINIMUM_DOUBLE= - Double.MAX_VALUE;
 	public static final double LEARNING_RATE_REDUCTION_FACTOR = 0.995;
-	public static final double PROBABILITY_FOR_TRANSMISSION = 0.2;
 	public static final double SPEED_OF_LIGHT = 3E8;
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
@@ -74,10 +73,14 @@ public class CognitiveRadio extends Agent {
 	
 	public double epsilonDecrease;
 	
+	public double probabilityForTransmission;
+	
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, double decreaseEpsilonBy) {
+			RatesResponse ratesResponse, double decreaseEpsilonBy,
+			double transmissionProbability) {
 		super(name, environment);
+		probabilityForTransmission = transmissionProbability;
 		offendingQValues = new HashSet<StateAction>();
 		successfulTransmissions = 0;
 		maximumNumberOfNegativeValuesTolerated = checkLastNValues;
@@ -145,11 +148,13 @@ public class CognitiveRadio extends Agent {
 		isExploitingThisIteration = false;
 		changedChannelThisIteration = false;
 		double randomDouble = randomGenerator.nextDouble();
-		if (randomDouble < PROBABILITY_FOR_TRANSMISSION) {
+		if (randomDouble < probabilityForTransmission) {
 			super.transmit();
 			isActiveThisIteration = true;
-			State stateToSave = new State(currentState.spectrum);
-			previousState = new State(currentState.spectrum);
+			State stateToSave = new State(currentState.spectrum,
+					currentState.probabilityForTransmission);
+			previousState = new State(currentState.spectrum,
+					currentState.probabilityForTransmission);
 			// Explore if random number is less than epsilon or there is no policy yet
 			randomDouble = randomGenerator.nextDouble();
 			if (method == Method.QLEARNING) {

@@ -14,19 +14,19 @@ import org.json.simple.JSONValue;
 
 public class ACRSTRMain {
 	
-	public static boolean consoleDebug;
-	public static boolean logging;
-	
-	public static int maximumPUPairs;
-	
-	public static ArrayList<PrimaryUser> puList;
-	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
-	
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
-	
+
+	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
 	public static final int START_N_VALUES = 0;
 	public static final int END_N_VALUES = 0;
 	
+	public static final double INITIAL_PROBABILITY_FOR_TRANSMISSION = 0.2;
+
+	public static boolean consoleDebug;
+	public static boolean logging;
+	public static int maximumPUPairs;
+	
+	public static ArrayList<PrimaryUser> puList;
 	public static List<QValuesResponse> qValuesResponses;
 	public static List<RatesResponse> ratesResponses;
 	public static List<Method> methodsToSimulate;
@@ -144,9 +144,11 @@ public class ACRSTRMain {
 			Environment environment = new Environment();
 
 			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
-				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
-						checkLastNValues, qValueResponse, ratesResponse,
-						Double.parseDouble(epsilonDecrease)));
+				environment.cognitiveRadios.add(new CognitiveRadio("CR"
+						+ (i + 1), environment, method, checkLastNValues,
+						qValueResponse, ratesResponse,
+						Double.parseDouble(epsilonDecrease),
+						INITIAL_PROBABILITY_FOR_TRANSMISSION));
 			}
 			
 			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;

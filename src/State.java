@@ -5,6 +5,9 @@ public class State implements Comparable<State> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(probabilityForTransmission);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result
 				+ ((spectrum == null) ? 0 : spectrum.hashCode());
 		return result;
@@ -19,6 +22,9 @@ public class State implements Comparable<State> {
 		if (getClass() != obj.getClass())
 			return false;
 		State other = (State) obj;
+		if (Double.doubleToLongBits(probabilityForTransmission) != Double
+				.doubleToLongBits(other.probabilityForTransmission))
+			return false;
 		if (spectrum == null) {
 			if (other.spectrum != null)
 				return false;
@@ -29,22 +35,31 @@ public class State implements Comparable<State> {
 
 	public Spectrum spectrum;
 	
+	public double probabilityForTransmission;
+	
 	public State() {
 		
 	}
 	
 	@Override
 	public String toString() {
-		return "State [spectrum=" + spectrum + "]";
+		return "State [spectrum=" + spectrum + ", probabilityForTransmission="
+				+ probabilityForTransmission + "]";
 	}
 	
-	public State(Spectrum spectrum) {
+	public State(Spectrum spectrum, double transmissionProbability) {
 		this.spectrum = spectrum;
+		probabilityForTransmission = transmissionProbability;
 	}
 
 	@Override
 	public int compareTo(State arg0) {
-		return spectrum.compareTo(arg0.spectrum);
+		if (probabilityForTransmission != arg0.probabilityForTransmission) {
+			return (int) Math.ceil(probabilityForTransmission
+					- arg0.probabilityForTransmission);
+		} else {
+			return spectrum.compareTo(arg0.spectrum);
+		}
 	}
 
 }
