@@ -1,9 +1,9 @@
 
 public enum QValuesResponse {
 
-	DELETE_Q_VALUES("Delete All Values"), 
-	DELETE_OFFENDING_Q_VALUES("Delete Obsolete Values"), 
-	KEEP_Q_VALUES("Keep All Values");
+	DELETE_Q_VALUES("da"), 
+	DELETE_OFFENDING_Q_VALUES("do"), 
+	KEEP_Q_VALUES("ka");
 	
 	public String description;
 	

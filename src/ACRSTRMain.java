@@ -7,32 +7,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.json.simple.JSONValue;
 
 
 public class ACRSTRMain {
 	
-	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
-
-	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
-	public static final int START_N_VALUES = 0;
-	public static final int END_N_VALUES = 0;
-	
-	public static final double INITIAL_PROBABILITY_FOR_TRANSMISSION = 0.2;
-
 	public static boolean consoleDebug;
 	public static boolean logging;
+	
 	public static int maximumPUPairs;
 	
 	public static ArrayList<PrimaryUser> puList;
+	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
+	
+	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
+	
+	public static final int START_N_VALUES = 0;
+	public static final int END_N_VALUES = 0;
+	
 	public static List<QValuesResponse> qValuesResponses;
 	public static List<RatesResponse> ratesResponses;
 	public static List<Method> methodsToSimulate;
-	public static List<String> epsilonDecreases;
-	public static List<Integer> lastValuesToCheck;
-	public static List<Integer> puDeactivationEpochs;
 	
 	public static int numberOfCRTransmitters;
 	
@@ -40,17 +36,10 @@ public class ACRSTRMain {
 		qValuesResponses = new ArrayList<QValuesResponse>();
 		ratesResponses = new ArrayList<RatesResponse>();
 		methodsToSimulate = new ArrayList<Method>();
-		epsilonDecreases = new ArrayList<String>();
-		lastValuesToCheck = new ArrayList<Integer>();
-		puDeactivationEpochs = new ArrayList<Integer>();
 		qValuesResponses.add(QValuesResponse.KEEP_Q_VALUES);
-		ratesResponses.add(RatesResponse.INCREASE_BY_CONSTANT);
+		ratesResponses.add(RatesResponse.RESET_TO_INITIAL_VALUES);
 		methodsToSimulate.add(Method.QLEARNING);
-		epsilonDecreases.add("0.00048");
-		lastValuesToCheck.add(5);
-		lastValuesToCheck.add(0);
-		puDeactivationEpochs.add(new Integer(4500));
-		puDeactivationEpochs.add(new Integer(6750));
+		methodsToSimulate.add(Method.RANDOM);
 		
 		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
@@ -62,7 +51,7 @@ public class ACRSTRMain {
 		}
 		maximumPUPairs = Integer.parseInt(ACRSTRUtil.getSetting("primary-user-pairs"));
 		consoleDebug = (ACRSTRUtil.getSetting("console-debug")).equals("true");
-		logging = (ACRSTRUtil.getSetting("main-file-log")).equals("true");
+		logging = (ACRSTRUtil.getSetting("main-file-log")).equals(true);
 		if (consoleDebug) {
 			System.out.println("An Implementation of 'Spectrum Management of " +
 					"Cognitive Radio Using Multi-agent Reinforcement Learning'\n");
@@ -82,10 +71,7 @@ public class ACRSTRMain {
 			for (QValuesResponse qvr : qValuesResponses) {
 				for (RatesResponse rsr : ratesResponses) {
 					for (Method m : methodsToSimulate) {
-						for (String epsilonDecrease : epsilonDecreases) {
-							conductSimulation(m, lastValuesToCheck,
-									qvr, rsr, output, epsilonDecrease);	
-						}
+						conductSimulation(m, START_N_VALUES, END_N_VALUES, qvr, rsr, output);
 					}
 				}
 			}
@@ -115,14 +101,14 @@ public class ACRSTRMain {
 		puList.add(receiverPU);
 	}
 	
-	public static void conductSimulation(Method method, List<Integer> lastValuesToCheck,
-			QValuesResponse qValueResponse, RatesResponse ratesResponse,
-			String output, String epsilonDecrease)
+	public static void conductSimulation(Method method, int startNValues,
+			int endNValues, QValuesResponse qValueResponse,
+			RatesResponse ratesResponse, String output)
 			throws IOException {
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
 		
-		for (Integer checkLastNValues : lastValuesToCheck) {
+		for (int checkLastNValues = startNValues; checkLastNValues <= endNValues; checkLastNValues++) {
 			System.out.println(String.format("Checking last %s values ...", checkLastNValues));
 			
 			String filename = DIRECTORY_FOR_LATEST_OUTPUT + '/' + System.currentTimeMillis() + ".txt";
@@ -132,8 +118,6 @@ public class ACRSTRMain {
 			parameters.put("checked recent values", Integer.toString(checkLastNValues));
 			parameters.put("q response", qValueResponse.toString());
 			parameters.put("rate response", ratesResponse.toString());
-			parameters.put("epsilon decrease", epsilonDecrease);
-			parameters.put("check last values", checkLastNValues.toString());
 			String jsonString = JSONValue.toJSONString(parameters);
 			bw.write(jsonString + "\n"); 
 			int numberOfPUPairs = 0;
@@ -144,11 +128,8 @@ public class ACRSTRMain {
 			Environment environment = new Environment();
 
 			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
-				environment.cognitiveRadios.add(new CognitiveRadio("CR"
-						+ (i + 1), environment, method, checkLastNValues,
-						qValueResponse, ratesResponse,
-						Double.parseDouble(epsilonDecrease),
-						INITIAL_PROBABILITY_FOR_TRANSMISSION));
+				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
+						checkLastNValues, qValueResponse, ratesResponse));
 			}
 			
 			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;
@@ -190,17 +171,6 @@ public class ACRSTRMain {
 							environment.spectrums.get((i / PU_PAIR_INTRODUCTION_EPOCH)
 									% environment.numberOfSpectra));
 					numberOfPUPairs++;
-				}
-				
-				for (Integer anInt : puDeactivationEpochs) {
-					if (anInt.intValue() == i) {
-						int randomIndex = new Random().nextInt(environment.primaryUserPairs.size());
-						PrimaryUser[] aPUPair = environment.primaryUserPairs
-								.get(randomIndex);
-						aPUPair[0].currentState.spectrum.containsPrimaryUser = false;
-						puList.remove(aPUPair[0]);
-						puList.remove(aPUPair[1]);
-					}
 				}
 
 				double currentRewardTotals = 0.0;

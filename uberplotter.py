@@ -6,9 +6,8 @@ NUMBER_OF_EPOCHS = 10000
 LEGEND_POSITION = 0
 LATEST_OUTPUT_DIRECTORY = 'acrstr-latest'
 GLOB_PATTERN = LATEST_OUTPUT_DIRECTORY
-
-COLORS = { "0": 'red', "5":'blue' }
-ZORDERS = { "0": 0, "5": 1 }
+COLORS = {'Q-learning': 'blue', 'Random': 'red'}
+ZORDERS = { 'Q-learning': 1, 'Random': 0 }
 
 processed_files = []
 
@@ -60,11 +59,8 @@ def plot_an_epochs_values(values, info):
     plt.legend(loc=LEGEND_POSITION)
 
 def plot_data(x, y, info):
-    series = info['check last values']
-    min_y = min(y) - 1    
-    max_y = max(y) + 1
-    plt.ylim(min_y, max_y)
-    plt.plot(x, y, label=series, c=COLORS[series], zorder=ZORDERS[series])
+    method = info['method']
+    plt.plot(x, y, label=method, c=COLORS[method], zorder=ZORDERS[method])
 
 if __name__ == '__main__':
     for dirname in glob.glob(GLOB_PATTERN):
