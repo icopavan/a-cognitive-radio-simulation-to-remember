@@ -22,7 +22,6 @@ public class CognitiveRadio extends Agent {
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
 	public static final double RECEIVER_THRESHOLD = 1E-8;
-	public static final double EPSILON_DECREASE = 0.00064;
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
 	public static final double FACTOR_TO_INCREASE_RATES = 2.5;
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
@@ -73,9 +72,11 @@ public class CognitiveRadio extends Agent {
 	
 	public QValuesResponse responseForQValues;
 	
+	public double epsilonDecrement;
+	
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse) {
+			RatesResponse ratesResponse, String decreaseEpsilonBy) {
 		super(name, environment);
 		offendingQValues = new HashSet<StateAction>();
 		successfulTransmissions = 0;
@@ -89,6 +90,7 @@ public class CognitiveRadio extends Agent {
 		rewardHistory = new CircularFifoBuffer(REWARD_HISTORY_SIZE);
 		responseForQValues = qValueResponse;
 		responseForRates = ratesResponse;
+		epsilonDecrement = Double.parseDouble(decreaseEpsilonBy);
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
@@ -114,8 +116,8 @@ public class CognitiveRadio extends Agent {
 		}
 		if (method == Method.QLEARNING) {
 			learningRate *= LEARNING_RATE_REDUCTION_FACTOR;
-			if (epsilon > EPSILON_DECREASE) {
-				epsilon -= EPSILON_DECREASE;
+			if (epsilon > epsilonDecrement) {
+				epsilon -= epsilonDecrement;
 			}
 		}
 	}
@@ -183,7 +185,7 @@ public class CognitiveRadio extends Agent {
 					if (responseForRates == RatesResponse.RESET_TO_INITIAL_VALUES) {
 						epsilon = INITIAL_EPSILON_VALUE;
 						learningRate = INITIAL_LEARNING_RATE;
-					} else if (responseForRates == RatesResponse.INCREASE_BY_FACTOR) {
+					} else if (responseForRates == RatesResponse.MULTIPLY_BY_FACTOR) {
 						epsilon *= FACTOR_TO_INCREASE_RATES;
 						if (epsilon > 0.8) {
 							epsilon = 0.8;
@@ -203,13 +205,13 @@ public class CognitiveRadio extends Agent {
 						}
 					}
 					
-					if (responseForQValues == QValuesResponse.DELETE_OFFENDING_Q_VALUES) {
+					if (responseForQValues == QValuesResponse.DELETE_OBSOLETE_VALUES) {
 						for (StateAction offendingStateAction : offendingQValues) {
 							Q.remove(offendingStateAction);
 						}
-					} else if (responseForQValues == QValuesResponse.DELETE_Q_VALUES) {
+					} else if (responseForQValues == QValuesResponse.DELETE_ALL_VALUES) {
 						Q.clear();
-					} else if (responseForQValues == QValuesResponse.KEEP_Q_VALUES) {
+					} else if (responseForQValues == QValuesResponse.KEEP_ALL_VALUES) {
 						// Do nothing
 					}
 				}
