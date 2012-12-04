@@ -29,6 +29,8 @@ public class State implements Comparable<State> {
 
 	public Spectrum spectrum;
 	
+	public double transmissionProbability;
+	
 	public State() {
 		
 	}
@@ -38,8 +40,9 @@ public class State implements Comparable<State> {
 		return "State [spectrum=" + spectrum + "]";
 	}
 	
-	public State(Spectrum spectrum) {
+	public State(Spectrum spectrum, double transmissionProbability) {
 		this.spectrum = spectrum;
+		this.transmissionProbability = transmissionProbability;
 	}
 
 	@Override
