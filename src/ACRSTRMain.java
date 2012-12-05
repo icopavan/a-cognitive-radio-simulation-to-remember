@@ -30,6 +30,7 @@ public class ACRSTRMain {
 	public static List<QValuesResponse> qValuesResponses;
 	public static List<RatesResponse> ratesResponses;
 	public static List<Method> methodsToSimulate;
+	public static List<Integer> lastValuesToCheck;
 	
 	public static int numberOfCRTransmitters;
 	public static Stack<String> colors;
@@ -39,18 +40,23 @@ public class ACRSTRMain {
 		colors = new Stack<String>();
 		colors.push("red");
 		colors.push("blue");
+		colors.push("green");
 		
 		zOrders = new Stack<String>();
 		zOrders.push("1");
 		zOrders.push("2");
+		zOrders.push("3");
 		
+		lastValuesToCheck = new ArrayList<Integer>();
 		qValuesResponses = new ArrayList<QValuesResponse>();
 		ratesResponses = new ArrayList<RatesResponse>();
 		methodsToSimulate = new ArrayList<Method>();
 		qValuesResponses.add(QValuesResponse.KEEP_Q_VALUES);
 		ratesResponses.add(RatesResponse.RESET_TO_INITIAL_VALUES);
+		ratesResponses.add(RatesResponse.INCREASE_BY_CONSTANT);
+		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
 		methodsToSimulate.add(Method.QLEARNING);
-		methodsToSimulate.add(Method.RANDOM);
+		lastValuesToCheck.add(5);
 		
 		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
@@ -82,7 +88,7 @@ public class ACRSTRMain {
 			for (QValuesResponse qvr : qValuesResponses) {
 				for (RatesResponse rsr : ratesResponses) {
 					for (Method m : methodsToSimulate) {
-						conductSimulation(m, START_N_VALUES, END_N_VALUES, qvr, rsr, output);
+						conductSimulation(m, qvr, rsr, output);	
 					}
 				}
 			}
@@ -112,21 +118,18 @@ public class ACRSTRMain {
 		puList.add(receiverPU);
 	}
 	
-	public static void conductSimulation(Method method, int startNValues,
-			int endNValues, QValuesResponse qValueResponse,
+	public static void conductSimulation(Method method, QValuesResponse qValueResponse,
 			RatesResponse ratesResponse, String output)
 			throws IOException {
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
 		
-		for (int checkLastNValues = startNValues; checkLastNValues <= endNValues; checkLastNValues++) {
-			System.out.println(String.format("Checking last %s values ...", checkLastNValues));
-			
+		for (Integer n : lastValuesToCheck) {
 			String filename = DIRECTORY_FOR_LATEST_OUTPUT + '/' + System.currentTimeMillis() + ".txt";
 			BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
 			Map<String, String> parameters = new HashMap<String, String>();
 			parameters.put("method", method.toString());
-			parameters.put("checked recent values", Integer.toString(checkLastNValues));
+			parameters.put("checked recent values", n.toString());
 			parameters.put("q response", qValueResponse.toString());
 			parameters.put("rate response", ratesResponse.toString());
 			parameters.put("color", colors.pop());
@@ -143,7 +146,7 @@ public class ACRSTRMain {
 
 			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
-						checkLastNValues, qValueResponse, ratesResponse));
+						n, qValueResponse, ratesResponse));
 			}
 			
 			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;
