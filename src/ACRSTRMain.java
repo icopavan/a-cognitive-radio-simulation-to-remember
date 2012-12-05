@@ -34,18 +34,11 @@ public class ACRSTRMain {
 	
 	public static int numberOfCRTransmitters;
 	public static Stack<String> colors;
-	public static Stack<String> zOrders;
 	
 	public static void main(String[] args) {
 		colors = new Stack<String>();
+		colors.push("blue");		
 		colors.push("red");
-		colors.push("blue");
-		colors.push("green");
-		
-		zOrders = new Stack<String>();
-		zOrders.push("1");
-		zOrders.push("2");
-		zOrders.push("3");
 		
 		lastValuesToCheck = new ArrayList<Integer>();
 		qValuesResponses = new ArrayList<QValuesResponse>();
@@ -53,10 +46,9 @@ public class ACRSTRMain {
 		methodsToSimulate = new ArrayList<Method>();
 		qValuesResponses.add(QValuesResponse.KEEP_Q_VALUES);
 		ratesResponses.add(RatesResponse.RESET_TO_INITIAL_VALUES);
-		ratesResponses.add(RatesResponse.INCREASE_BY_CONSTANT);
-		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
+		methodsToSimulate.add(Method.RANDOM);
 		methodsToSimulate.add(Method.QLEARNING);
-		lastValuesToCheck.add(5);
+		lastValuesToCheck.add(0);
 		
 		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
@@ -133,7 +125,6 @@ public class ACRSTRMain {
 			parameters.put("q response", qValueResponse.toString());
 			parameters.put("rate response", ratesResponse.toString());
 			parameters.put("color", colors.pop());
-			parameters.put("zOrder", zOrders.pop());
 			parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
 			parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
 			parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));

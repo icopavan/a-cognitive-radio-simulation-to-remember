@@ -28,8 +28,10 @@ public class ACRSTRUtil {
 		Scanner fileScanner = new Scanner(settingsFile);
 		while (fileScanner.hasNextLine()) {
 			String line = fileScanner.nextLine();
-			String[] settingAndValue = line.split("\\=");
-			settings.put(settingAndValue[0], settingAndValue[1]);
+			if (!line.startsWith("#")) {
+				String[] settingAndValue = line.split("\\=");
+				settings.put(settingAndValue[0], settingAndValue[1]);
+			}
 		}
 	}
 	
