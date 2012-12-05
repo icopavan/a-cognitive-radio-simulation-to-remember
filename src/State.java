@@ -7,6 +7,9 @@ public class State implements Comparable<State> {
 		int result = 1;
 		result = prime * result
 				+ ((spectrum == null) ? 0 : spectrum.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(transmissionProbability);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
 
@@ -24,6 +27,9 @@ public class State implements Comparable<State> {
 				return false;
 		} else if (!spectrum.equals(other.spectrum))
 			return false;
+		if (Double.doubleToLongBits(transmissionProbability) != Double
+				.doubleToLongBits(other.transmissionProbability))
+			return false;
 		return true;
 	}
 
@@ -37,7 +43,8 @@ public class State implements Comparable<State> {
 	
 	@Override
 	public String toString() {
-		return "State [spectrum=" + spectrum + "]";
+		return "State [spectrum=" + spectrum + ", transmissionProbability="
+				+ transmissionProbability + "]";
 	}
 	
 	public State(Spectrum spectrum, double transmissionProbability) {
@@ -47,7 +54,11 @@ public class State implements Comparable<State> {
 
 	@Override
 	public int compareTo(State arg0) {
-		return spectrum.compareTo(arg0.spectrum);
+		if (spectrum.equals(arg0.spectrum)) {
+			return (int) (transmissionProbability - arg0.transmissionProbability);
+		} else {
+			return spectrum.compareTo(arg0.spectrum);
+		}
 	}
 
 }
