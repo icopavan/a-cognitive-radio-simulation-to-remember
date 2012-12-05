@@ -53,7 +53,7 @@ public class SpectrumAction extends AbstractAction {
 		} catch (ClassCastException e) {
 			try {
 				@SuppressWarnings("unused")
-				ProbabilityAction o = (ProbabilityAction) arg0;
+				PowerAction o = (PowerAction) arg0;
 				return 1;
 			} catch (ClassCastException ex) {
 				return 2;

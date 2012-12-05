@@ -12,9 +12,6 @@ import org.json.simple.JSONValue;
 
 
 public class ACRSTRMain {
-
-	public final static String[] COLORS = { "red", "blue", "green" };
-	public final static String[] Z_ORDERS = { "0", "1", "2" };
 	
 	public static boolean consoleDebug;
 	public static boolean logging;
@@ -29,28 +26,20 @@ public class ACRSTRMain {
 	public static final int START_N_VALUES = 0;
 	public static final int END_N_VALUES = 0;
 	
-	public static int numberOfCRTransmitters;
-	
 	public static List<QValuesResponse> qValuesResponses;
 	public static List<RatesResponse> ratesResponses;
 	public static List<Method> methodsToSimulate;
-	public static List<String> epsilonDecrements;
 	
-	public static int simulationsConducted;
+	public static int numberOfCRTransmitters;
 	
 	public static void main(String[] args) {
-		simulationsConducted = 0;
-		
 		qValuesResponses = new ArrayList<QValuesResponse>();
 		ratesResponses = new ArrayList<RatesResponse>();
 		methodsToSimulate = new ArrayList<Method>();
-		epsilonDecrements = new ArrayList<String>();
-		qValuesResponses.add(QValuesResponse.KEEP_ALL_VALUES);
-		ratesResponses.add(RatesResponse.INCREASE_BY_CONSTANT);
+		qValuesResponses.add(QValuesResponse.KEEP_Q_VALUES);
 		ratesResponses.add(RatesResponse.RESET_TO_INITIAL_VALUES);
-		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
-		methodsToSimulate.add(Method.QLEARNING);	
-		epsilonDecrements.add("0.00048");
+		methodsToSimulate.add(Method.QLEARNING);
+		methodsToSimulate.add(Method.RANDOM);
 		
 		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
@@ -82,12 +71,7 @@ public class ACRSTRMain {
 			for (QValuesResponse qvr : qValuesResponses) {
 				for (RatesResponse rsr : ratesResponses) {
 					for (Method m : methodsToSimulate) {
-						for (String d : epsilonDecrements) {
-							conductSimulation(m, START_N_VALUES,
-									END_N_VALUES, qvr, rsr, output,
-									d);
-							simulationsConducted++;
-						}
+						conductSimulation(m, START_N_VALUES, END_N_VALUES, qvr, rsr, output);
 					}
 				}
 			}
@@ -119,7 +103,7 @@ public class ACRSTRMain {
 	
 	public static void conductSimulation(Method method, int startNValues,
 			int endNValues, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, String output, String epsilonDecrement)
+			RatesResponse ratesResponse, String output)
 			throws IOException {
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
@@ -134,12 +118,6 @@ public class ACRSTRMain {
 			parameters.put("checked recent values", Integer.toString(checkLastNValues));
 			parameters.put("q response", qValueResponse.toString());
 			parameters.put("rate response", ratesResponse.toString());
-			parameters.put("epsilon decrement", epsilonDecrement.toString());
-			parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
-			parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));
-			parameters.put("color", COLORS[simulationsConducted]);
-			parameters.put("zOrder", Z_ORDERS[simulationsConducted]);
-			parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("comparing")));			
 			String jsonString = JSONValue.toJSONString(parameters);
 			bw.write(jsonString + "\n"); 
 			int numberOfPUPairs = 0;
@@ -151,7 +129,7 @@ public class ACRSTRMain {
 
 			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
-						checkLastNValues, qValueResponse, ratesResponse, epsilonDecrement));
+						checkLastNValues, qValueResponse, ratesResponse));
 			}
 			
 			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;

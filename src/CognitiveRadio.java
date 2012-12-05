@@ -17,14 +17,15 @@ public class CognitiveRadio extends Agent {
 	public static final double DISCOUNT_FACTOR = 0.8;
 	public static final double MINIMUM_DOUBLE= - Double.MAX_VALUE;
 	public static final double LEARNING_RATE_REDUCTION_FACTOR = 0.995;
-	public static final double INITIAL_PROBABILITY_FOR_TRANSMISSION = 0.2;
+	public static final double PROBABILITY_FOR_TRANSMISSION = 0.2;
 	public static final double SPEED_OF_LIGHT = 3E8;
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
 	public static final double RECEIVER_THRESHOLD = 1E-8;
+	public static final double EPSILON_DECREASE = 0.00064;
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
+	public static final double FACTOR_TO_INCREASE_RATES = 2.5;
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
-	public static final double PROBABILITY_CHANGE_STEP = 0.1;
 	
 	public int successfulTransmissions;
 	
@@ -72,20 +73,10 @@ public class CognitiveRadio extends Agent {
 	
 	public QValuesResponse responseForQValues;
 	
-	public double epsilonDecrement;
-	
-	public double probabilityForTransmission;
-	
-	public static List<Action> availableActions; 
-	
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, String decreaseEpsilonBy) {
+			RatesResponse ratesResponse) {
 		super(name, environment);
-		availableActions = new ArrayList<Action>();
-		availableActions.add(Action.DO_NOTHING);
-		availableActions.add(Action.JUMP_SPECTRUM);
-		
 		offendingQValues = new HashSet<StateAction>();
 		successfulTransmissions = 0;
 		maximumNumberOfNegativeValuesTolerated = checkLastNValues;
@@ -98,8 +89,6 @@ public class CognitiveRadio extends Agent {
 		rewardHistory = new CircularFifoBuffer(REWARD_HISTORY_SIZE);
 		responseForQValues = qValueResponse;
 		responseForRates = ratesResponse;
-		epsilonDecrement = Double.parseDouble(decreaseEpsilonBy);
-		probabilityForTransmission = INITIAL_PROBABILITY_FOR_TRANSMISSION;
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
@@ -125,8 +114,8 @@ public class CognitiveRadio extends Agent {
 		}
 		if (method == Method.QLEARNING) {
 			learningRate *= LEARNING_RATE_REDUCTION_FACTOR;
-			if (epsilon > epsilonDecrement) {
-				epsilon -= epsilonDecrement;
+			if (epsilon > EPSILON_DECREASE) {
+				epsilon -= EPSILON_DECREASE;
 			}
 		}
 	}
@@ -138,22 +127,10 @@ public class CognitiveRadio extends Agent {
 		changedChannelThisIteration = true;
 	}
 	
-	public void jumpProbability(ProbabilityAction aProbabilityAction) {
-		if (aProbabilityAction.change == ProbabilityChange.DECREMENT
-				&& currentState.transmissionProbability > 0.0) {
-			currentState.transmissionProbability -= PROBABILITY_CHANGE_STEP;
-		} else if (aProbabilityAction.change == ProbabilityChange.INCREMENT
-				&& currentState.transmissionProbability < 1.0) {
-			currentState.transmissionProbability += PROBABILITY_CHANGE_STEP; 
-		}
-	}
-	
 	public void conductAction(AbstractAction abstractAction) {
 		Action chosenAction = determineAction(abstractAction);
 		if (chosenAction == Action.JUMP_SPECTRUM) {
 			jumpSpectrum((SpectrumAction) abstractAction);
-		} else if (chosenAction == Action.JUMP_PROBABILITY) {
-			jumpProbability((ProbabilityAction) abstractAction);
 		}
 	}
 	
@@ -163,11 +140,11 @@ public class CognitiveRadio extends Agent {
 		isExploitingThisIteration = false;
 		changedChannelThisIteration = false;
 		double randomDouble = randomGenerator.nextDouble();
-		if (randomDouble < probabilityForTransmission) {
+		if (randomDouble < PROBABILITY_FOR_TRANSMISSION) {
 			super.transmit();
 			isActiveThisIteration = true;
-			State stateToSave = new State(currentState.spectrum, probabilityForTransmission);
-			previousState = new State(currentState.spectrum, probabilityForTransmission);
+			State stateToSave = new State(currentState.spectrum);
+			previousState = new State(currentState.spectrum);
 			// Explore if random number is less than epsilon or there is no policy yet
 			randomDouble = randomGenerator.nextDouble();
 			if (method == Method.QLEARNING) {
@@ -206,9 +183,15 @@ public class CognitiveRadio extends Agent {
 					if (responseForRates == RatesResponse.RESET_TO_INITIAL_VALUES) {
 						epsilon = INITIAL_EPSILON_VALUE;
 						learningRate = INITIAL_LEARNING_RATE;
-					} else if (responseForRates == RatesResponse.SET_TO_MIDPOINT) {
-						epsilon += (INITIAL_EPSILON_VALUE - epsilon) / 2.0;
-						learningRate += (INITIAL_LEARNING_RATE - learningRate) / 2.0;
+					} else if (responseForRates == RatesResponse.INCREASE_BY_FACTOR) {
+						epsilon *= FACTOR_TO_INCREASE_RATES;
+						if (epsilon > 0.8) {
+							epsilon = 0.8;
+						}
+						learningRate *= FACTOR_TO_INCREASE_RATES;
+						if (learningRate > 0.8) {
+							learningRate = 0.8;
+						}
 					} else if (responseForRates == RatesResponse.INCREASE_BY_CONSTANT) {
 						epsilon += CONSTANT_TO_INCREASE_RATES;
 						if (epsilon > 0.8) {
@@ -220,13 +203,13 @@ public class CognitiveRadio extends Agent {
 						}
 					}
 					
-					if (responseForQValues == QValuesResponse.DELETE_OBSOLETE_VALUES) {
+					if (responseForQValues == QValuesResponse.DELETE_OFFENDING_Q_VALUES) {
 						for (StateAction offendingStateAction : offendingQValues) {
 							Q.remove(offendingStateAction);
 						}
-					} else if (responseForQValues == QValuesResponse.DELETE_ALL_VALUES) {
+					} else if (responseForQValues == QValuesResponse.DELETE_Q_VALUES) {
 						Q.clear();
-					} else if (responseForQValues == QValuesResponse.KEEP_ALL_VALUES) {
+					} else if (responseForQValues == QValuesResponse.KEEP_Q_VALUES) {
 						// Do nothing
 					}
 				}
@@ -381,34 +364,24 @@ public class CognitiveRadio extends Agent {
 	}
 	
 	public AbstractAction selectRandomAction() {
-		randomInt = randomGenerator.nextInt(availableActions.size());
-		Action randomAction = availableActions.get(randomInt);
-		if (randomAction == Action.JUMP_SPECTRUM) {
+		randomInt = Math.abs(randomGenerator.nextInt());
+		if (randomInt % 2 == 0) {
 			int randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			Spectrum newSpectrum = environment.spectrums.get(randomInt);
 			randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			newSpectrum = environment.spectrums.get(randomInt);
 			return new SpectrumAction(newSpectrum);
-		} else if(randomAction == Action.JUMP_PROBABILITY) {
-			randomInt = Math.abs(randomGenerator.nextInt());
-			if (randomInt % 2 == 0) {
-				return new ProbabilityAction(ProbabilityChange.INCREMENT);
-			} else {
-				return new ProbabilityAction(ProbabilityChange.DECREMENT);
-			}
-		} else if (randomAction == Action.DO_NOTHING){
-			return new NothingAction();
 		} else {
-			throw new IllegalArgumentException();
+			return new NothingAction();
 		}
 	}
 	
 	public Action determineAction(AbstractAction action) {
 		String className = action.getClass().getSimpleName();
-		if (className.equals("SpectrumAction")) {
+		if (className.equals("JumpAction")) {
+			return Action.JUMP_POWER;
+		} else if (className.equals("SpectrumAction")) {
 			return Action.JUMP_SPECTRUM;
-		} else if (className.equals("ProbabilityAction")) {
-			return Action.JUMP_PROBABILITY;
 		} else {
 			return Action.DO_NOTHING;
 		}
