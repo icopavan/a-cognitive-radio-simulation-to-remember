@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Stack;
 
 import org.json.simple.JSONValue;
@@ -33,28 +34,26 @@ public class ACRSTRMain {
 	public static List<Integer> lastValuesToCheck;
 	public static List<String> epsilonDecrements;
 	
+	public static int[] epochsToDeactivatePUPairs = { 6000, 8000 };			
+	
 	public static int numberOfCRTransmitters;
 	public static Stack<String> colors;
 	
 	public static void main(String[] args) {
 		colors = new Stack<String>();
-		colors.push("blue");		
 		colors.push("red");
-		colors.push("green");
+		colors.push("blue");				
 		
 		lastValuesToCheck = new ArrayList<Integer>();
 		qValuesResponses = new ArrayList<QValuesResponse>();
 		ratesResponses = new ArrayList<RatesResponse>();
 		methodsToSimulate = new ArrayList<Method>();
 		epsilonDecrements = new ArrayList<String>();
-		qValuesResponses.add(QValuesResponse.DELETE_ALL_VALUES);
-		qValuesResponses.add(QValuesResponse.KEEP_ALL_VALUES);
 		qValuesResponses.add(QValuesResponse.DELETE_OBSOLETE_VALUES);		
-		
-
 		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
 		methodsToSimulate.add(Method.QLEARNING);
 		lastValuesToCheck.add(5);
+		lastValuesToCheck.add(0);
 		
 		Double initialDecrement = 0.0005;
 		epsilonDecrements.add(initialDecrement.toString());
@@ -120,6 +119,14 @@ public class ACRSTRMain {
 		anEnvironment.primaryUserPairs.add(puPair);
 		puList.add(transmitterPU);
 		puList.add(receiverPU);
+	}
+	
+	public static void deactivateAPUPair(Environment anEnvironment) {
+		PrimaryUser[] aPUPair = anEnvironment.primaryUserPairs.get(
+				new Random().nextInt(anEnvironment.primaryUserPairs.size() / 2));
+		puList.remove(aPUPair[0]);
+		puList.remove(aPUPair[1]);
+		aPUPair[0].currentState.spectrum.containsPrimaryUser = false;
 	}
 	
 	public static void conductSimulation(Method method, QValuesResponse qValueResponse,
@@ -194,6 +201,12 @@ public class ACRSTRMain {
 							environment.spectrums.get((i / PU_PAIR_INTRODUCTION_EPOCH)
 									% environment.numberOfSpectra));
 					numberOfPUPairs++;
+				}
+				
+				for (int deactivationEpoch: epochsToDeactivatePUPairs) {
+					if (i == deactivationEpoch) {
+						deactivateAPUPair(environment);
+					}
 				}
 
 				double currentRewardTotals = 0.0;
