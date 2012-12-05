@@ -12,6 +12,9 @@ import org.json.simple.JSONValue;
 
 
 public class ACRSTRMain {
+
+	public final static String[] COLORS = { "red", "blue", "green" };
+	public final static String[] Z_ORDERS = { "0", "1", "2" };
 	
 	public static boolean consoleDebug;
 	public static boolean logging;
@@ -33,15 +36,19 @@ public class ACRSTRMain {
 	public static List<Method> methodsToSimulate;
 	public static List<String> epsilonDecrements;
 	
+	public static int simulationsConducted;
+	
 	public static void main(String[] args) {
+		simulationsConducted = 0;
+		
 		qValuesResponses = new ArrayList<QValuesResponse>();
 		ratesResponses = new ArrayList<RatesResponse>();
 		methodsToSimulate = new ArrayList<Method>();
 		epsilonDecrements = new ArrayList<String>();
 		qValuesResponses.add(QValuesResponse.KEEP_ALL_VALUES);
-		qValuesResponses.add(QValuesResponse.DELETE_OBSOLETE_VALUES);
-		qValuesResponses.add(QValuesResponse.DELETE_ALL_VALUES);
 		ratesResponses.add(RatesResponse.INCREASE_BY_CONSTANT);
+		ratesResponses.add(RatesResponse.RESET_TO_INITIAL_VALUES);
+		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
 		methodsToSimulate.add(Method.QLEARNING);	
 		epsilonDecrements.add("0.00048");
 		
@@ -76,7 +83,10 @@ public class ACRSTRMain {
 				for (RatesResponse rsr : ratesResponses) {
 					for (Method m : methodsToSimulate) {
 						for (String d : epsilonDecrements) {
-							conductSimulation(m, START_N_VALUES, END_N_VALUES, qvr, rsr, output, d);	
+							conductSimulation(m, START_N_VALUES,
+									END_N_VALUES, qvr, rsr, output,
+									d);
+							simulationsConducted++;
 						}
 					}
 				}
@@ -125,6 +135,11 @@ public class ACRSTRMain {
 			parameters.put("q response", qValueResponse.toString());
 			parameters.put("rate response", ratesResponse.toString());
 			parameters.put("epsilon decrement", epsilonDecrement.toString());
+			parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
+			parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));
+			parameters.put("color", COLORS[simulationsConducted]);
+			parameters.put("zOrder", Z_ORDERS[simulationsConducted]);
+			parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("comparing")));			
 			String jsonString = JSONValue.toJSONString(parameters);
 			bw.write(jsonString + "\n"); 
 			int numberOfPUPairs = 0;

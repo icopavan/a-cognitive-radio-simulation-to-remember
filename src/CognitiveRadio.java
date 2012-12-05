@@ -24,7 +24,6 @@ public class CognitiveRadio extends Agent {
 	public static final double RECEIVER_THRESHOLD = 1E-8;
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
-	public static final int NUMBER_OF_ACTIONS = 3;
 	public static final double PROBABILITY_CHANGE_STEP = 0.1;
 	
 	public int successfulTransmissions;
@@ -77,10 +76,16 @@ public class CognitiveRadio extends Agent {
 	
 	public double probabilityForTransmission;
 	
+	public static List<Action> availableActions; 
+	
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
 			RatesResponse ratesResponse, String decreaseEpsilonBy) {
 		super(name, environment);
+		availableActions = new ArrayList<Action>();
+		availableActions.add(Action.DO_NOTHING);
+		availableActions.add(Action.JUMP_SPECTRUM);
+		
 		offendingQValues = new HashSet<StateAction>();
 		successfulTransmissions = 0;
 		maximumNumberOfNegativeValuesTolerated = checkLastNValues;
@@ -376,22 +381,25 @@ public class CognitiveRadio extends Agent {
 	}
 	
 	public AbstractAction selectRandomAction() {
-		randomInt = Math.abs(randomGenerator.nextInt());
-		if (randomInt % NUMBER_OF_ACTIONS == 0) {
+		randomInt = randomGenerator.nextInt(availableActions.size());
+		Action randomAction = availableActions.get(randomInt);
+		if (randomAction == Action.JUMP_SPECTRUM) {
 			int randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			Spectrum newSpectrum = environment.spectrums.get(randomInt);
 			randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			newSpectrum = environment.spectrums.get(randomInt);
 			return new SpectrumAction(newSpectrum);
-		} else if(randomInt % NUMBER_OF_ACTIONS == 1) {
+		} else if(randomAction == Action.JUMP_PROBABILITY) {
 			randomInt = Math.abs(randomGenerator.nextInt());
 			if (randomInt % 2 == 0) {
 				return new ProbabilityAction(ProbabilityChange.INCREMENT);
 			} else {
 				return new ProbabilityAction(ProbabilityChange.DECREMENT);
 			}
-		} else {
+		} else if (randomAction == Action.DO_NOTHING){
 			return new NothingAction();
+		} else {
+			throw new IllegalArgumentException();
 		}
 	}
 	

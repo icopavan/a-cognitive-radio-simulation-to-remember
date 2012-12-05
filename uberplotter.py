@@ -6,8 +6,6 @@ NUMBER_OF_EPOCHS = 10000
 LEGEND_POSITION = 0
 LATEST_OUTPUT_DIRECTORY = 'acrstr-latest'
 GLOB_PATTERN = LATEST_OUTPUT_DIRECTORY
-COLORS = {'Delete Obsolete Values': 'blue', 'Delete All Values': 'red', 'Keep All Values': 'green' }
-ZORDERS = {'Delete All Values': 0, 'Keep All Values': 1, 'Delete Obsolete Values': 2 }
 
 processed_files = []
 
@@ -59,8 +57,9 @@ def plot_an_epochs_values(values, info):
     plt.legend(loc=LEGEND_POSITION)
 
 def plot_data(x, y, info):
-    method = info['q response']
-    plt.plot(x, y, label=method, c=COLORS[method], zorder=ZORDERS[method])
+    plt.xlabel(info['xLabel'])
+    plt.ylabel(info['yLabel'])
+    plt.plot(x, y, label=info['comparing'], c=info['color'], zorder=info['zOrder'])
 
 if __name__ == '__main__':
     for dirname in glob.glob(GLOB_PATTERN):
