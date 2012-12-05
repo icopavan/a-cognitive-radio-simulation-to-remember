@@ -58,7 +58,7 @@ def plot_differing_values(values_in_pairs, filedir):
 def plot_an_epochs_values(values, info):
     plot_data(range(1,1+NUMBER_OF_EPOCHS), values, info)
     plt.legend(loc=LEGEND_POSITION)
-    plt.ylim(last_min_y-0.1, last_max_y+0.1)
+    plt.ylim(last_min_y-1, last_max_y+1)
 
 def plot_data(x, y, info):
     global last_min_y, last_max_y

@@ -31,6 +31,7 @@ public class ACRSTRMain {
 	public static List<RatesResponse> ratesResponses;
 	public static List<Method> methodsToSimulate;
 	public static List<Integer> lastValuesToCheck;
+	public static List<String> epsilonDecrements;
 	
 	public static int numberOfCRTransmitters;
 	public static Stack<String> colors;
@@ -39,16 +40,25 @@ public class ACRSTRMain {
 		colors = new Stack<String>();
 		colors.push("blue");		
 		colors.push("red");
+		colors.push("green");
 		
 		lastValuesToCheck = new ArrayList<Integer>();
 		qValuesResponses = new ArrayList<QValuesResponse>();
 		ratesResponses = new ArrayList<RatesResponse>();
 		methodsToSimulate = new ArrayList<Method>();
-		qValuesResponses.add(QValuesResponse.KEEP_Q_VALUES);
-		ratesResponses.add(RatesResponse.RESET_TO_INITIAL_VALUES);
-		methodsToSimulate.add(Method.RANDOM);
+		epsilonDecrements = new ArrayList<String>();
+		qValuesResponses.add(QValuesResponse.DELETE_ALL_VALUES);
+		qValuesResponses.add(QValuesResponse.KEEP_ALL_VALUES);
+		qValuesResponses.add(QValuesResponse.DELETE_OBSOLETE_VALUES);		
+		
+
+		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
 		methodsToSimulate.add(Method.QLEARNING);
-		lastValuesToCheck.add(0);
+		lastValuesToCheck.add(5);
+		
+		Double initialDecrement = 0.0005;
+		epsilonDecrements.add(initialDecrement.toString());
+
 		
 		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
@@ -80,7 +90,9 @@ public class ACRSTRMain {
 			for (QValuesResponse qvr : qValuesResponses) {
 				for (RatesResponse rsr : ratesResponses) {
 					for (Method m : methodsToSimulate) {
-						conductSimulation(m, qvr, rsr, output);	
+						for (String d : epsilonDecrements) {
+							conductSimulation(m, qvr, rsr, output, d);
+						}
 					}
 				}
 			}
@@ -111,7 +123,7 @@ public class ACRSTRMain {
 	}
 	
 	public static void conductSimulation(Method method, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, String output)
+			RatesResponse ratesResponse, String output, String epsilonDecrement)
 			throws IOException {
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
@@ -125,6 +137,7 @@ public class ACRSTRMain {
 			parameters.put("q response", qValueResponse.toString());
 			parameters.put("rate response", ratesResponse.toString());
 			parameters.put("color", colors.pop());
+			parameters.put("epsilon decrement", epsilonDecrement);
 			parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
 			parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
 			parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));
@@ -139,7 +152,7 @@ public class ACRSTRMain {
 
 			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
-						n, qValueResponse, ratesResponse));
+						n, qValueResponse, ratesResponse, Double.parseDouble(epsilonDecrement)));
 			}
 			
 			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;
