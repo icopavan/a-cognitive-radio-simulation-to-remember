@@ -58,6 +58,8 @@ def plot_an_epochs_values(values, info):
 
 def plot_data(x, y, info):
     plt.plot(x, y, label=info['comparing'], c=info['color'], zorder=info['zOrder'])
+    plt.xlabel(info['xLabel'])
+    plt.ylabel(info['yLabel'])
 
 if __name__ == '__main__':
     for dirname in glob.glob(GLOB_PATTERN):

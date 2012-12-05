@@ -135,6 +135,8 @@ public class ACRSTRMain {
 			parameters.put("color", colors.pop());
 			parameters.put("zOrder", zOrders.pop());
 			parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
+			parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
+			parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));
 			String jsonString = JSONValue.toJSONString(parameters);
 			bw.write(jsonString + "\n"); 
 			int numberOfPUPairs = 0;
