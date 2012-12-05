@@ -2,7 +2,7 @@
 public enum RatesResponse {
 
 	RESET_TO_INITIAL_VALUES("ri"),
-	INCREASE_BY_FACTOR("if"),
+	SET_TO_MIDPOINT("stm"),
 	INCREASE_BY_CONSTANT("ic");
 	
 	public String description;
