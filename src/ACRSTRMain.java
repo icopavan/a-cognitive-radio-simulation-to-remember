@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.json.simple.JSONValue;
 
@@ -31,8 +32,18 @@ public class ACRSTRMain {
 	public static List<Method> methodsToSimulate;
 	
 	public static int numberOfCRTransmitters;
+	public static Stack<String> colors;
+	public static Stack<String> zOrders;
 	
 	public static void main(String[] args) {
+		colors = new Stack<String>();
+		colors.push("red");
+		colors.push("blue");
+		
+		zOrders = new Stack<String>();
+		zOrders.push("1");
+		zOrders.push("2");
+		
 		qValuesResponses = new ArrayList<QValuesResponse>();
 		ratesResponses = new ArrayList<RatesResponse>();
 		methodsToSimulate = new ArrayList<Method>();
@@ -118,6 +129,9 @@ public class ACRSTRMain {
 			parameters.put("checked recent values", Integer.toString(checkLastNValues));
 			parameters.put("q response", qValueResponse.toString());
 			parameters.put("rate response", ratesResponse.toString());
+			parameters.put("color", colors.pop());
+			parameters.put("zOrder", zOrders.pop());
+			parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
 			String jsonString = JSONValue.toJSONString(parameters);
 			bw.write(jsonString + "\n"); 
 			int numberOfPUPairs = 0;
