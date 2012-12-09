@@ -42,6 +42,8 @@ public class CognitiveRadio extends Agent {
 	
 	public List<AbstractAction> possibleActions;
 	
+	public List<Action> availableActions;
+	
 	public double learningRate;
 	
 	public HashMap<StateAction, Double> Q;
@@ -97,6 +99,12 @@ public class CognitiveRadio extends Agent {
 		epsilonDecrement = decreaseEpsilonBy;
 		probabilityForTransmission = INITIAL_PROBABILITY_FOR_TRANSMISSION;
 		changeProbabilities = changeProbability;
+		availableActions = new ArrayList<Action>();
+		availableActions.add(Action.DO_NOTHING);
+		availableActions.add(Action.JUMP_SPECTRUM);
+		if (changeProbability) {
+			availableActions.add(Action.JUMP_PROBABILITY);
+		}
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
@@ -384,14 +392,15 @@ public class CognitiveRadio extends Agent {
 	}
 	
 	public AbstractAction selectRandomAction() {
-		randomInt = Math.abs(randomGenerator.nextInt());
-		if (randomInt % 3 == 0) {
+		randomInt = randomGenerator.nextInt(availableActions.size());
+		Action anAvailableAction = availableActions.get(randomInt);
+		if (anAvailableAction == Action.JUMP_SPECTRUM) {
 			int randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			Spectrum newSpectrum = environment.spectrums.get(randomInt);
 			randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			newSpectrum = environment.spectrums.get(randomInt);
 			return new SpectrumAction(newSpectrum);
-		} else if (randomInt % 3 == 1) {
+		} else if (anAvailableAction == Action.JUMP_PROBABILITY) {
 			int randomInt = randomGenerator.nextInt(2);
 			ProbabilityAction probabilityAction = null;
 			if (randomInt == 0) {

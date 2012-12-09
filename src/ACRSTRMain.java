@@ -52,8 +52,8 @@ public class ACRSTRMain {
 		qValuesResponses.add(QValuesResponse.DELETE_OBSOLETE_VALUES);		
 		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
 		methodsToSimulate.add(Method.QLEARNING);
+		methodsToSimulate.add(Method.RANDOM);
 		lastValuesToCheck.add(5);
-		lastValuesToCheck.add(0);
 		
 		Double initialDecrement = 0.0005;
 		epsilonDecrements.add(initialDecrement.toString());
