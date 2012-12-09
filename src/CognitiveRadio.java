@@ -24,6 +24,7 @@ public class CognitiveRadio extends Agent {
 	public static final double RECEIVER_THRESHOLD = 1E-8;
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
+	public static final double PROBABILITY_CHANGE_STEP = 0.1;
 	
 	public int successfulTransmissions;
 	
@@ -135,6 +136,20 @@ public class CognitiveRadio extends Agent {
 		Action chosenAction = determineAction(abstractAction);
 		if (chosenAction == Action.JUMP_SPECTRUM) {
 			jumpSpectrum((SpectrumAction) abstractAction);
+		} else if (chosenAction == Action.JUMP_PROBABILITY) {
+			jumpProbability((ProbabilityAction) abstractAction);
+		}
+	}
+	
+	public void jumpProbability(ProbabilityAction aProbabilityAction) {
+		if (aProbabilityAction.probabilityChange == ProbabilityChange.DECREMENT) {
+			if (probabilityForTransmission > PROBABILITY_CHANGE_STEP) {
+				probabilityForTransmission -= PROBABILITY_CHANGE_STEP;
+			}
+		} else if (aProbabilityAction.probabilityChange == ProbabilityChange.INCREMENT) {
+			if (probabilityForTransmission < 1 - PROBABILITY_CHANGE_STEP) {
+				probabilityForTransmission += PROBABILITY_CHANGE_STEP;
+			}
 		}
 	}
 	
@@ -363,12 +378,21 @@ public class CognitiveRadio extends Agent {
 	
 	public AbstractAction selectRandomAction() {
 		randomInt = Math.abs(randomGenerator.nextInt());
-		if (randomInt % 2 == 0) {
+		if (randomInt % 3 == 0) {
 			int randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			Spectrum newSpectrum = environment.spectrums.get(randomInt);
 			randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			newSpectrum = environment.spectrums.get(randomInt);
 			return new SpectrumAction(newSpectrum);
+		} else if (randomInt % 3 == 1) {
+			int randomInt = randomGenerator.nextInt(2);
+			ProbabilityAction probabilityAction = null;
+			if (randomInt == 0) {
+				probabilityAction = new ProbabilityAction(ProbabilityChange.DECREMENT);
+			} else if (randomInt == 1) {
+				probabilityAction = new ProbabilityAction(ProbabilityChange.INCREMENT);
+			}
+			return probabilityAction;
 		} else {
 			return new NothingAction();
 		}
@@ -376,10 +400,12 @@ public class CognitiveRadio extends Agent {
 	
 	public Action determineAction(AbstractAction action) {
 		String className = action.getClass().getSimpleName();
-		if (className.equals("JumpAction")) {
+		if (className.equals("PowerAction")) {
 			return Action.JUMP_POWER;
 		} else if (className.equals("SpectrumAction")) {
 			return Action.JUMP_SPECTRUM;
+		} else if (className.equals("ProbabilityAction")) {
+			return Action.JUMP_PROBABILITY;
 		} else {
 			return Action.DO_NOTHING;
 		}
