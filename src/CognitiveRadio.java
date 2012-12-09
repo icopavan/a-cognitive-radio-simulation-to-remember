@@ -76,9 +76,11 @@ public class CognitiveRadio extends Agent {
 	
 	public double probabilityForTransmission;
 	
+	public boolean changeProbabilities;
+	
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, double decreaseEpsilonBy) {
+			RatesResponse ratesResponse, double decreaseEpsilonBy, boolean changeProbability) {
 		super(name, environment);
 		offendingQValues = new HashSet<StateAction>();
 		successfulTransmissions = 0;
@@ -94,6 +96,7 @@ public class CognitiveRadio extends Agent {
 		responseForRates = ratesResponse;
 		epsilonDecrement = decreaseEpsilonBy;
 		probabilityForTransmission = INITIAL_PROBABILITY_FOR_TRANSMISSION;
+		changeProbabilities = changeProbability;
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
@@ -263,6 +266,10 @@ public class CognitiveRadio extends Agent {
 			}
 		}
 		possibleActions.add(new NothingAction());
+		if (changeProbabilities) {
+			possibleActions.add(new ProbabilityAction(ProbabilityChange.DECREMENT));
+			possibleActions.add(new ProbabilityAction(ProbabilityChange.INCREMENT));
+		}
 		return possibleActions;
 	}
 		

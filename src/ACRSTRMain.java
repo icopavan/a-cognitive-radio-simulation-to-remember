@@ -159,7 +159,7 @@ public class ACRSTRMain {
 
 			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
-						n, qValueResponse, ratesResponse, Double.parseDouble(epsilonDecrement)));
+						n, qValueResponse, ratesResponse, Double.parseDouble(epsilonDecrement), false));
 			}
 			
 			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;
