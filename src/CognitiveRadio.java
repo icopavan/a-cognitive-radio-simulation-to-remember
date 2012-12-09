@@ -17,7 +17,7 @@ public class CognitiveRadio extends Agent {
 	public static final double DISCOUNT_FACTOR = 0.8;
 	public static final double MINIMUM_DOUBLE= - Double.MAX_VALUE;
 	public static final double LEARNING_RATE_REDUCTION_FACTOR = 0.995;
-	public static final double PROBABILITY_FOR_TRANSMISSION = 0.2;
+	public static final double INITIAL_PROBABILITY_FOR_TRANSMISSION = 0.2;
 	public static final double SPEED_OF_LIGHT = 3E8;
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
@@ -73,6 +73,8 @@ public class CognitiveRadio extends Agent {
 	
 	public double epsilonDecrement;
 	
+	public double probabilityForTransmission;
+	
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
 			RatesResponse ratesResponse, double decreaseEpsilonBy) {
@@ -90,6 +92,7 @@ public class CognitiveRadio extends Agent {
 		responseForQValues = qValueResponse;
 		responseForRates = ratesResponse;
 		epsilonDecrement = decreaseEpsilonBy;
+		probabilityForTransmission = INITIAL_PROBABILITY_FOR_TRANSMISSION;
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
@@ -141,7 +144,7 @@ public class CognitiveRadio extends Agent {
 		isExploitingThisIteration = false;
 		changedChannelThisIteration = false;
 		double randomDouble = randomGenerator.nextDouble();
-		if (randomDouble < PROBABILITY_FOR_TRANSMISSION) {
+		if (randomDouble < probabilityForTransmission) {
 			super.transmit();
 			isActiveThisIteration = true;
 			State stateToSave = new State(currentState.spectrum);
