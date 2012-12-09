@@ -152,7 +152,7 @@ public class ACRSTRMain {
 			parameters.put("rate response", ratesResponse.toString());
 			parameters.put("color", colors.pop());
 			parameters.put("epsilon decrement", epsilonDecrement);
-			parameters.put("change tranmission probability", changeTransmissionProbability.toString());
+			parameters.put("change transmission probability", changeTransmissionProbability.toString());
 			parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
 			parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
 			parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));

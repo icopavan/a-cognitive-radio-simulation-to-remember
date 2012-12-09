@@ -25,6 +25,7 @@ public class CognitiveRadio extends Agent {
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
 	public static final double PROBABILITY_CHANGE_STEP = 0.1;
+	public static final double REWARD_COEFFICIENT_FOR_PROBABILITY = 5.0;
 	
 	public int successfulTransmissions;
 	
@@ -431,17 +432,18 @@ public class CognitiveRadio extends Agent {
 	}
 	
 	public double calculateReward() {
-		double reward;
+		double reward, baseReward; 
 		succesfullyTransmittedThisIteration = false;
 		if (currentState.spectrum.containsPrimaryUser) {
-			reward = -15.0;
+			baseReward = -15.0;
 		} else if (isThereCRCollision()){
-			reward = -5.0;
+			baseReward = -5.0;
 		} else {
-			reward = 5.0;
+			baseReward = 5.0;
 			succesfullyTransmittedThisIteration = true;
 			successfulTransmissions++;
 		}
+		reward = baseReward + probabilityForTransmission * REWARD_COEFFICIENT_FOR_PROBABILITY;
 		if (debug) {
 			ACRSTRUtil.log(name + " got reward: " + reward);
 		}
