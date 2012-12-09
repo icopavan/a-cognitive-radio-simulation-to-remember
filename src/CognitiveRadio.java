@@ -316,13 +316,7 @@ public class CognitiveRadio extends Agent {
 		if (debug) {
 			ACRSTRUtil.log(name + " is exploring.");
 		}
-		randomInt = Math.abs(randomGenerator.nextInt());
-		if (randomInt % 2 == 0) {
-			changeSpectrum();
-		} else {
-			doNothing();
-		}
-		
+		actionTaken = selectRandomAction();
 	}
 	
 	public void printQ() {

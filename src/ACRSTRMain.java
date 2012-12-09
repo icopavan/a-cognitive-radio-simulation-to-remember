@@ -33,6 +33,7 @@ public class ACRSTRMain {
 	public static List<Method> methodsToSimulate;
 	public static List<Integer> lastValuesToCheck;
 	public static List<String> epsilonDecrements;
+	public static List<Boolean> changeTransmissionProbabilities;
 	
 	public static int[] epochsToDeactivatePUPairs = { 6000, 8000 };			
 	
@@ -49,11 +50,14 @@ public class ACRSTRMain {
 		ratesResponses = new ArrayList<RatesResponse>();
 		methodsToSimulate = new ArrayList<Method>();
 		epsilonDecrements = new ArrayList<String>();
-		qValuesResponses.add(QValuesResponse.DELETE_OBSOLETE_VALUES);		
+		changeTransmissionProbabilities = new ArrayList<Boolean>();
+		
+		qValuesResponses.add(QValuesResponse.DELETE_OBSOLETE_VALUES);
 		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
 		methodsToSimulate.add(Method.QLEARNING);
-		methodsToSimulate.add(Method.RANDOM);
 		lastValuesToCheck.add(5);
+		changeTransmissionProbabilities.add(false);
+		changeTransmissionProbabilities.add(true);
 		
 		Double initialDecrement = 0.0005;
 		epsilonDecrements.add(initialDecrement.toString());
@@ -90,7 +94,9 @@ public class ACRSTRMain {
 				for (RatesResponse rsr : ratesResponses) {
 					for (Method m : methodsToSimulate) {
 						for (String d : epsilonDecrements) {
-							conductSimulation(m, qvr, rsr, output, d);
+							for (Boolean b : changeTransmissionProbabilities) {
+								conductSimulation(m, qvr, rsr, output, d, b);	
+							}
 						}
 					}
 				}
@@ -130,7 +136,8 @@ public class ACRSTRMain {
 	}
 	
 	public static void conductSimulation(Method method, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, String output, String epsilonDecrement)
+			RatesResponse ratesResponse, String output, String epsilonDecrement,
+			Boolean changeTransmissionProbability)
 			throws IOException {
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
@@ -145,9 +152,11 @@ public class ACRSTRMain {
 			parameters.put("rate response", ratesResponse.toString());
 			parameters.put("color", colors.pop());
 			parameters.put("epsilon decrement", epsilonDecrement);
+			parameters.put("change tranmission probability", changeTransmissionProbability.toString());
 			parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
 			parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
 			parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));
+			
 			String jsonString = JSONValue.toJSONString(parameters);
 			bw.write(jsonString + "\n"); 
 			int numberOfPUPairs = 0;
@@ -159,7 +168,8 @@ public class ACRSTRMain {
 
 			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
-						n, qValueResponse, ratesResponse, Double.parseDouble(epsilonDecrement), false));
+						n, qValueResponse, ratesResponse, Double.parseDouble(epsilonDecrement),
+						changeTransmissionProbability));
 			}
 			
 			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;
@@ -221,6 +231,7 @@ public class ACRSTRMain {
 
 				int numberOfSuccessfulTransmissionsThisIteration = 0;
 				int channelChangesThisIteration = 0;
+				double transmissionProbabilities = 0;
 				
 				for (CognitiveRadio cr : environment.cognitiveRadios) {
 					if (cr.role == Role.TRANSMITTER) {
@@ -232,8 +243,12 @@ public class ACRSTRMain {
 						if (cr.changedChannelThisIteration) {
 							channelChangesThisIteration++;
 						}
+						transmissionProbabilities += cr.probabilityForTransmission;
 					}
 				}
+				
+				double averageTransmissionProbability = transmissionProbabilities
+						/ numberOfCRTransmitters;
 				
 				cumulativeRewards += currentRewardTotals;
 				double cumulativeRewardAverage = cumulativeRewards / (i + 1);
@@ -261,7 +276,9 @@ public class ACRSTRMain {
 					bw.write(Double.toString(cumulativeSuccessProbabilities) + "\n");
 				} else if (output.equals("channel-changes")) {
 					bw.write(Integer.toString(channelChangesThisIteration) + "\n");
-				}		
+				} else if (output.equals("transmission-probability")) {
+					bw.write(Double.toString(averageTransmissionProbability) + "\n");
+				}
 			}
 
 			if (logging) {
