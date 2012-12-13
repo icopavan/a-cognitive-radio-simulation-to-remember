@@ -14,6 +14,8 @@ import org.json.simple.JSONValue;
 
 
 public class ACRSTRMain {
+
+	public static int TAKE_AVERAGE_OF_N_VALUES = 100;
 	
 	public static boolean consoleDebug;
 	public static boolean logging;
@@ -55,9 +57,9 @@ public class ACRSTRMain {
 		qValuesResponses.add(QValuesResponse.DELETE_OBSOLETE_VALUES);
 		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
 		methodsToSimulate.add(Method.QLEARNING);
+		methodsToSimulate.add(Method.RANDOM);
 		lastValuesToCheck.add(5);
 		changeTransmissionProbabilities.add(false);
-		changeTransmissionProbabilities.add(true);
 		
 		Double initialDecrement = 0.0005;
 		epsilonDecrements.add(initialDecrement.toString());
@@ -139,8 +141,12 @@ public class ACRSTRMain {
 			RatesResponse ratesResponse, String output, String epsilonDecrement,
 			Boolean changeTransmissionProbability)
 			throws IOException {
+		List<Double> lastNValues = new ArrayList<Double>();
+		
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
+		
+		int numberOfIterations = Integer.parseInt(ACRSTRUtil.getSetting("iterations"));
 		
 		for (Integer n : lastValuesToCheck) {
 			String filename = DIRECTORY_FOR_LATEST_OUTPUT + '/' + System.currentTimeMillis() + ".txt";
@@ -156,6 +162,11 @@ public class ACRSTRMain {
 			parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
 			parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
 			parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));
+			
+			int numberOfLines = output.equals("average-of-last-n-values")
+					? numberOfIterations / TAKE_AVERAGE_OF_N_VALUES : numberOfIterations;
+			
+			parameters.put("numberOfValues", Integer.toString(numberOfLines)); 
 			
 			String jsonString = JSONValue.toJSONString(parameters);
 			bw.write(jsonString + "\n"); 
@@ -191,7 +202,7 @@ public class ACRSTRMain {
 				cr.initializeParameters();
 			}
 
-			int numberOfIterations = Integer.parseInt(ACRSTRUtil.getSetting("iterations"));
+
 
 			double cumulativeRewards = 0.0;
 			
@@ -278,6 +289,18 @@ public class ACRSTRMain {
 					bw.write(Integer.toString(channelChangesThisIteration) + "\n");
 				} else if (output.equals("transmission-probability")) {
 					bw.write(Double.toString(averageTransmissionProbability) + "\n");
+				} else if (output.equals("average-of-last-n-values")) {
+					if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
+						double sumOfLastNValues = 0.0;
+						for (Double value : lastNValues) {
+							sumOfLastNValues += value;
+						}
+						double average = sumOfLastNValues / TAKE_AVERAGE_OF_N_VALUES;
+						bw.write(Double.toString(average) + "\n");
+						lastNValues.clear();
+					} else {
+						lastNValues.add(currentRewardAverage);
+					}
 				}
 			}
 

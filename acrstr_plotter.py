@@ -2,10 +2,10 @@
 import matplotlib.pyplot as plt
 import json, os, glob, sys
 
-NUMBER_OF_EPOCHS = 10000
 LEGEND_POSITION = 3
 LATEST_OUTPUT_DIRECTORY = 'acrstr-latest'
 GLOB_PATTERN = LATEST_OUTPUT_DIRECTORY
+NUMBER_OF_EPOCHS = 10000
 
 last_min_y = sys.float_info.max
 last_max_y = - sys.float_info.max
@@ -56,7 +56,11 @@ def plot_differing_values(values_in_pairs, filedir):
     plt.clf()
 
 def plot_an_epochs_values(values, info):
-    plot_data(range(1,1+NUMBER_OF_EPOCHS), values, info)
+    number_of_values = int(info['numberOfValues'])
+    labels = range(1,1+number_of_values)
+    for index, label in enumerate(labels):
+        labels[index] = label * NUMBER_OF_EPOCHS / number_of_values
+    plot_data(labels, values, info),
     plt.legend(loc=LEGEND_POSITION)
     plt.ylim(last_min_y-1, last_max_y+1)
 
