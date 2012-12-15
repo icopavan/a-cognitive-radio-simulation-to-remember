@@ -25,7 +25,7 @@ public class CognitiveRadio extends Agent {
 	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
 	public static final double PROBABILITY_CHANGE_STEP = 0.1;
-	public static final double REWARD_COEFFICIENT_FOR_PROBABILITY = 5.0;
+	public static final double REWARD_COEFFICIENT_FOR_PROBABILITY = 25.0;
 	
 	public int successfulTransmissions;
 	
@@ -65,7 +65,7 @@ public class CognitiveRadio extends Agent {
 	
 	public StateAction thisIterationsStateAction;
 	
-	public boolean succesfullyTransmittedThisIteration;
+	public boolean successfullyTransmittedThisIteration;
 	
 	public boolean isExploitingThisIteration;
 	
@@ -432,18 +432,25 @@ public class CognitiveRadio extends Agent {
 	}
 	
 	public double calculateReward() {
-		double reward, baseReward; 
-		succesfullyTransmittedThisIteration = false;
+		double reward;
+		
+		boolean puCollision = false, crCollision = false,
+				successfulTransmission = false;
+		
 		if (currentState.spectrum.containsPrimaryUser) {
-			baseReward = -15.0;
-		} else if (isThereCRCollision()){
-			baseReward = -5.0;
-		} else {
-			baseReward = 5.0;
-			succesfullyTransmittedThisIteration = true;
-			successfulTransmissions++;
+			puCollision = true;
 		}
-		reward = baseReward + probabilityForTransmission * REWARD_COEFFICIENT_FOR_PROBABILITY;
+		if (isThereCRCollision()){
+			crCollision = true;
+		}
+		if (!puCollision && !crCollision) {
+			successfulTransmission = true;
+		}
+		successfullyTransmittedThisIteration = successfulTransmission;
+		reward = (puCollision ? -10.0 : 0.0) + (crCollision ? -5.0 : 0.0)
+				+ (successfulTransmission ?
+						probabilityForTransmission * REWARD_COEFFICIENT_FOR_PROBABILITY
+						: 0.0);
 		if (debug) {
 			ACRSTRUtil.log(name + " got reward: " + reward);
 		}

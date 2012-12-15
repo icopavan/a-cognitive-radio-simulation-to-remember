@@ -248,7 +248,7 @@ public class ACRSTRMain {
 					if (cr.role == Role.TRANSMITTER) {
 						cr.evaluate();
 						currentRewardTotals += cr.currentIterationsReward;
-						if (cr.succesfullyTransmittedThisIteration) {
+						if (cr.successfullyTransmittedThisIteration) {
 							numberOfSuccessfulTransmissionsThisIteration++;
 						}
 						if (cr.changedChannelThisIteration) {
