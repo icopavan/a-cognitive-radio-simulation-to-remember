@@ -447,10 +447,8 @@ public class CognitiveRadio extends Agent {
 			successfulTransmission = true;
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
-		reward = (puCollision ? -10.0 : 0.0) + (crCollision ? -5.0 : 0.0)
-				+ (successfulTransmission ?
-						probabilityForTransmission * REWARD_COEFFICIENT_FOR_PROBABILITY
-						: 0.0);
+		reward = (puCollision ? -15.0 : 0.0) + (crCollision ? -5.0 : 0.0)
+				+ (successfulTransmission ? 5.0 : 0.0);
 		if (debug) {
 			ACRSTRUtil.log(name + " got reward: " + reward);
 		}

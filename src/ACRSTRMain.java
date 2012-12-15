@@ -37,7 +37,7 @@ public class ACRSTRMain {
 	public static List<String> epsilonDecrements;
 	public static List<Boolean> changeTransmissionProbabilities;
 	
-	public static int[] epochsToDeactivatePUPairs = { 6000, 8000 };			
+	public static int[] epochsToDeactivatePUPairs = {};			
 	
 	public static int numberOfCRTransmitters;
 	public static Stack<String> colors;
