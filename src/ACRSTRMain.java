@@ -37,33 +37,30 @@ public class ACRSTRMain {
 	public static List<String> epsilonDecrements;
 	public static List<Boolean> changeTransmissionProbabilities;
 	
-	public static int[] epochsToDeactivatePUPairs = {};			
+	public static int[] epochsToDeactivatePUPairs = { 6000, 8000 };
 	
 	public static int numberOfCRTransmitters;
 	public static Stack<String> colors;
 	
 	public static void main(String[] args) {
 		colors = new Stack<String>();
+		colors.push("blue");
 		colors.push("red");
-		colors.push("blue");				
-		
+				
 		lastValuesToCheck = new ArrayList<Integer>();
 		qValuesResponses = new ArrayList<QValuesResponse>();
 		ratesResponses = new ArrayList<RatesResponse>();
 		methodsToSimulate = new ArrayList<Method>();
 		epsilonDecrements = new ArrayList<String>();
 		changeTransmissionProbabilities = new ArrayList<Boolean>();
-		
 		qValuesResponses.add(QValuesResponse.DELETE_OBSOLETE_VALUES);
 		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
 		methodsToSimulate.add(Method.QLEARNING);
-		methodsToSimulate.add(Method.RANDOM);
+		lastValuesToCheck.add(0);
 		lastValuesToCheck.add(5);
 		changeTransmissionProbabilities.add(false);
 		
-		Double initialDecrement = 0.0005;
-		epsilonDecrements.add(initialDecrement.toString());
-
+		epsilonDecrements.add("0.0008");
 		
 		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
@@ -141,7 +138,9 @@ public class ACRSTRMain {
 			RatesResponse ratesResponse, String output, String epsilonDecrement,
 			Boolean changeTransmissionProbability)
 			throws IOException {
-		List<Double> lastNValues = new ArrayList<Double>();
+		List<Double> lastNAverages = new ArrayList<Double>();
+		List<Double> lastNProbabilities = new ArrayList<Double>();
+		List<Integer> lastNChannelChanges = new ArrayList<Integer>();
 		
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
@@ -163,7 +162,7 @@ public class ACRSTRMain {
 			parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
 			parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));
 			
-			int numberOfLines = output.equals("average-of-last-n-values")
+			int numberOfLines = output.startsWith("average-of-last-n-")
 					? numberOfIterations / TAKE_AVERAGE_OF_N_VALUES : numberOfIterations;
 			
 			parameters.put("numberOfValues", Integer.toString(numberOfLines)); 
@@ -289,19 +288,45 @@ public class ACRSTRMain {
 					bw.write(Integer.toString(channelChangesThisIteration) + "\n");
 				} else if (output.equals("transmission-probability")) {
 					bw.write(Double.toString(averageTransmissionProbability) + "\n");
-				} else if (output.equals("average-of-last-n-values")) {
+				} else if (output.equals("average-of-last-n-rewards")) {
 					if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
 						double sumOfLastNValues = 0.0;
-						for (Double value : lastNValues) {
+						for (Double value : lastNAverages) {
 							sumOfLastNValues += value;
 						}
 						double average = sumOfLastNValues / TAKE_AVERAGE_OF_N_VALUES;
 						bw.write(Double.toString(average) + "\n");
-						lastNValues.clear();
+						lastNAverages.clear();
 					} else {
-						lastNValues.add(currentRewardAverage);
+						lastNAverages.add(currentRewardAverage);
 					}
-				}
+				} else if (output.equals("average-of-last-n-probabilities")) {
+					if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
+						double sumOfLastNValues = 0.0;
+						for (Double value : lastNProbabilities) {
+							sumOfLastNValues += value;
+						}
+						double average = sumOfLastNValues / TAKE_AVERAGE_OF_N_VALUES;
+						bw.write(Double.toString(average) + "\n");
+						lastNProbabilities.clear();
+					} else {
+						lastNProbabilities.add(probabilityOfSuccessfulTransmission);
+					}
+					
+				} else if (output.equals("average-of-last-n-channel-changes")) {
+					if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
+						double sumOfLastNValues = 0.0;
+						for (Integer value : lastNChannelChanges) {
+							sumOfLastNValues += value;
+						}
+						double average = (double) sumOfLastNValues / TAKE_AVERAGE_OF_N_VALUES;
+						bw.write(Double.toString(average) + "\n");
+						lastNChannelChanges.clear();
+					} else {
+						lastNChannelChanges.add(channelChangesThisIteration);
+					}
+					
+				} 
 			}
 
 			if (logging) {
