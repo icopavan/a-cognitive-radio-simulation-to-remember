@@ -93,9 +93,7 @@ public class ACRSTRMain {
 				for (RatesResponse rsr : ratesResponses) {
 					for (Method m : methodsToSimulate) {
 						for (String d : epsilonDecrements) {
-							for (Boolean b : changeTransmissionProbabilities) {
-								conductSimulation(m, qvr, rsr, output, d, b);	
-							}
+							conductSimulation(m, qvr, rsr, output, d);
 						}
 					}
 				}
@@ -135,8 +133,7 @@ public class ACRSTRMain {
 	}
 	
 	public static void conductSimulation(Method method, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, String output, String epsilonDecrement,
-			Boolean changeTransmissionProbability)
+			RatesResponse ratesResponse, String output, String epsilonDecrement)
 			throws IOException {
 		List<Double> lastNAverages = new ArrayList<Double>();
 		List<Double> lastNProbabilities = new ArrayList<Double>();
@@ -157,7 +154,6 @@ public class ACRSTRMain {
 			parameters.put("rate response", ratesResponse.toString());
 			parameters.put("color", colors.pop());
 			parameters.put("epsilon decrement", epsilonDecrement);
-			parameters.put("change transmission probability", changeTransmissionProbability.toString());
 			parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
 			parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
 			parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));
@@ -178,8 +174,7 @@ public class ACRSTRMain {
 
 			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
-						n, qValueResponse, ratesResponse, Double.parseDouble(epsilonDecrement),
-						changeTransmissionProbability));
+						n, qValueResponse, ratesResponse, Double.parseDouble(epsilonDecrement)));
 			}
 			
 			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;

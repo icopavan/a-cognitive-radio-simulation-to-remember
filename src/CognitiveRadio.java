@@ -26,64 +26,40 @@ public class CognitiveRadio extends Agent {
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
 	public static final double PROBABILITY_CHANGE_STEP = 0.1;
 	public static final double REWARD_COEFFICIENT_FOR_PROBABILITY = 25.0;
+	public static final double[] POWER_LEVELS = { 1000.0, 1250.0 };
 	
 	public int successfulTransmissions;
-	
 	public HashSet<StateAction> offendingQValues;
-	
 	public CircularFifoBuffer rewardHistory;
-	
 	public int negativeRewardsInARow;
-
 	public int REWARD_HISTORY_SIZE = 10;
-	
 	public double epsilon;
-	
 	public AbstractAction actionTaken;
-	
 	public List<AbstractAction> possibleActions;
-	
 	public List<Action> availableActions;
-	
 	public double learningRate;
-	
 	public HashMap<StateAction, Double> Q;
-	
 	public double randomDouble;
-	
 	public Method method;
-	
 	public double currentIterationsReward;
-	
 	public int randomInt;
-
 	public NothingAction nothingActionForComparison;
-	
 	public boolean changedChannelThisIteration;
-	
 	public boolean isActiveThisIteration;
 	
 	public StateAction thisIterationsStateAction;
-	
-	public boolean successfullyTransmittedThisIteration;
-	
 	public boolean isExploitingThisIteration;
-	
 	public int maximumNumberOfNegativeValuesTolerated;
-	
 	public RatesResponse responseForRates;
-	
 	public QValuesResponse responseForQValues;
-	
 	public double epsilonDecrement;
-	
 	public double probabilityForTransmission;
-	
 	public boolean changeProbabilities;
+	public boolean successfullyTransmittedThisIteration;
 	
 	public CognitiveRadio(String name, Environment environment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, double decreaseEpsilonBy, boolean changeProbability) {
+			RatesResponse ratesResponse, double decreaseEpsilonBy) {
 		super(name, environment);
 		offendingQValues = new HashSet<StateAction>();
 		successfulTransmissions = 0;
@@ -99,13 +75,10 @@ public class CognitiveRadio extends Agent {
 		responseForRates = ratesResponse;
 		epsilonDecrement = decreaseEpsilonBy;
 		probabilityForTransmission = INITIAL_PROBABILITY_FOR_TRANSMISSION;
-		changeProbabilities = changeProbability;
 		availableActions = new ArrayList<Action>();
 		availableActions.add(Action.DO_NOTHING);
 		availableActions.add(Action.JUMP_SPECTRUM);
-		if (changeProbability) {
-			availableActions.add(Action.JUMP_PROBABILITY);
-		}
+		availableActions.add(Action.JUMP_POWER);
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
@@ -148,21 +121,13 @@ public class CognitiveRadio extends Agent {
 		Action chosenAction = determineAction(abstractAction);
 		if (chosenAction == Action.JUMP_SPECTRUM) {
 			jumpSpectrum((SpectrumAction) abstractAction);
-		} else if (chosenAction == Action.JUMP_PROBABILITY) {
-			jumpProbability((ProbabilityAction) abstractAction);
+		} else if (chosenAction == Action.JUMP_POWER) {
+			jumpPower((PowerAction) abstractAction);
 		}
 	}
 	
-	public void jumpProbability(ProbabilityAction aProbabilityAction) {
-		if (aProbabilityAction.probabilityChange == ProbabilityChange.DECREMENT) {
-			if (probabilityForTransmission > PROBABILITY_CHANGE_STEP) {
-				probabilityForTransmission -= PROBABILITY_CHANGE_STEP;
-			}
-		} else if (aProbabilityAction.probabilityChange == ProbabilityChange.INCREMENT) {
-			if (probabilityForTransmission < 1 - PROBABILITY_CHANGE_STEP) {
-				probabilityForTransmission += PROBABILITY_CHANGE_STEP;
-			}
-		}
+	public void jumpPower(PowerAction aPowerAction) {
+		currentState.transmissionPower = aPowerAction.newPower;
 	}
 	
 	@Override
@@ -174,8 +139,8 @@ public class CognitiveRadio extends Agent {
 		if (randomDouble < probabilityForTransmission) {
 			super.transmit();
 			isActiveThisIteration = true;
-			State stateToSave = new State(currentState.spectrum);
-			previousState = new State(currentState.spectrum);
+			State stateToSave = new State(currentState.spectrum, currentState.transmissionPower);
+			previousState = new State(currentState.spectrum, currentState.transmissionPower);
 			// Explore if random number is less than epsilon or there is no policy yet
 			randomDouble = randomGenerator.nextDouble();
 			if (method == Method.QLEARNING) {
@@ -274,11 +239,12 @@ public class CognitiveRadio extends Agent {
 				possibleActions.add(new SpectrumAction(availableSpectrum));
 			}
 		}
-		possibleActions.add(new NothingAction());
-		if (changeProbabilities) {
-			possibleActions.add(new ProbabilityAction(ProbabilityChange.DECREMENT));
-			possibleActions.add(new ProbabilityAction(ProbabilityChange.INCREMENT));
+		for (double powerLevel : POWER_LEVELS) {
+			if (powerLevel != currentState.transmissionPower) {
+				possibleActions.add(new PowerAction(powerLevel));
+			}
 		}
+		possibleActions.add(new NothingAction());
 		return possibleActions;
 	}
 		
@@ -395,15 +361,10 @@ public class CognitiveRadio extends Agent {
 			randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
 			newSpectrum = environment.spectrums.get(randomInt);
 			return new SpectrumAction(newSpectrum);
-		} else if (anAvailableAction == Action.JUMP_PROBABILITY) {
-			int randomInt = randomGenerator.nextInt(2);
-			ProbabilityAction probabilityAction = null;
-			if (randomInt == 0) {
-				probabilityAction = new ProbabilityAction(ProbabilityChange.DECREMENT);
-			} else if (randomInt == 1) {
-				probabilityAction = new ProbabilityAction(ProbabilityChange.INCREMENT);
-			}
-			return probabilityAction;
+		} else if (anAvailableAction == Action.JUMP_POWER) {
+			int randomInt = randomGenerator.nextInt(POWER_LEVELS.length);
+			double randomPowerLevel = POWER_LEVELS[randomInt];
+			return new PowerAction(randomPowerLevel);
 		} else {
 			return new NothingAction();
 		}
@@ -415,8 +376,6 @@ public class CognitiveRadio extends Agent {
 			return Action.JUMP_POWER;
 		} else if (className.equals("SpectrumAction")) {
 			return Action.JUMP_SPECTRUM;
-		} else if (className.equals("ProbabilityAction")) {
-			return Action.JUMP_PROBABILITY;
 		} else {
 			return Action.DO_NOTHING;
 		}
@@ -454,8 +413,6 @@ public class CognitiveRadio extends Agent {
 		}
 		return reward;
 	}
-
-	
 	
 	public boolean gettingPositiveRewards() {
 		double totalReward = 0.0;
