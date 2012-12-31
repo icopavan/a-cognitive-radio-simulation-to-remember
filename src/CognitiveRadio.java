@@ -78,21 +78,7 @@ public class CognitiveRadio extends Agent {
 		availableActions.add(Action.JUMP_POWER);
 	}
 	
-	public void occupyChannel(Spectrum aSpectrum) {
-		currentState.spectrum = aSpectrum;
-		aSpectrum.occupyingAgents.add(this);
-	}
-	
-	public void vacateChannel() {
-		currentState.spectrum.occupyingAgents.remove(this);
-		currentState.spectrum = null;
-	}
-	
-	public void initializeParameters() {
-		chooseSpectrum();
-	}
-	
-	public void iterate() {
+	public void act() {
 		randomGenerator = new Random();
 		if (role == Role.TRANSMITTER) {
 			transmit();
@@ -107,26 +93,6 @@ public class CognitiveRadio extends Agent {
 		}
 	}
 	
-	public void jumpSpectrum(SpectrumAction aSpectrumAction) {
-		vacateChannel();
-		occupyChannel(aSpectrumAction.newSpectrum);
-		
-		changedChannelThisIteration = true;
-	}
-	
-	public void conductAction(AbstractAction abstractAction) {
-		Action chosenAction = determineAction(abstractAction);
-		if (chosenAction == Action.JUMP_SPECTRUM) {
-			jumpSpectrum((SpectrumAction) abstractAction);
-		} else if (chosenAction == Action.JUMP_POWER) {
-			jumpPower((PowerAction) abstractAction);
-		}
-	}
-	
-	public void jumpPower(PowerAction aPowerAction) {
-		currentState.transmissionPower = aPowerAction.newPower;
-	}
-	
 	@Override
 	public void transmit() {
 		isActiveThisIteration = false;
@@ -136,8 +102,10 @@ public class CognitiveRadio extends Agent {
 		if (randomDouble < probabilityForTransmission) {
 			super.transmit();
 			isActiveThisIteration = true;
-			State stateToSave = new State(currentState.spectrum, currentState.transmissionPower);
-			previousState = new State(currentState.spectrum, currentState.transmissionPower);
+			State stateToSave = new State(currentState.spectrum,
+					currentState.transmissionPower);
+			previousState = new State(currentState.spectrum,
+					currentState.transmissionPower);
 			// Explore if random number is less than epsilon or there is no policy yet
 			randomDouble = randomGenerator.nextDouble();
 			if (method == Method.QLEARNING) {
@@ -158,7 +126,129 @@ public class CognitiveRadio extends Agent {
 		}
 	}
 	
-	// Respond to environmental changes
+	public void explore() {
+		if (debug) {
+			ACRSTRUtil.log(name + " is exploring.");
+		}
+		actionTaken = selectRandomAction();
+	}
+	
+	public void exploit() {
+		isExploitingThisIteration = true;
+		if (debug) {
+			ACRSTRUtil.log(name + " is exploiting.");
+		}
+		actionTaken = getBestAction();
+		if (debug) {
+			ACRSTRUtil.log(name + " decided best action to be " + actionTaken + ".");
+		}
+	}
+	
+	public AbstractAction selectRandomAction() {
+		randomInt = randomGenerator.nextInt(availableActions.size());
+		Action anAvailableAction = availableActions.get(randomInt);
+		if (anAvailableAction == Action.JUMP_SPECTRUM) {
+			int randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
+			Spectrum newSpectrum = environment.spectrums.get(randomInt);
+			randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
+			newSpectrum = environment.spectrums.get(randomInt);
+			return new SpectrumAction(newSpectrum);
+		} else if (anAvailableAction == Action.JUMP_POWER) {
+			int randomInt = randomGenerator.nextInt(POWER_LEVELS.length);
+			double randomPowerLevel = POWER_LEVELS[randomInt];
+			return new PowerAction(randomPowerLevel);
+		} else {
+			return new NothingAction();
+		}
+	}
+	
+	public void conductAction(AbstractAction abstractAction) {
+		Action chosenAction = determineAction(abstractAction);
+		if (chosenAction == Action.JUMP_SPECTRUM) {
+			jumpSpectrum((SpectrumAction) abstractAction);
+		} else if (chosenAction == Action.JUMP_POWER) {
+			jumpPower((PowerAction) abstractAction);
+		}
+	}
+	
+	public Action determineAction(AbstractAction action) {
+		String className = action.getClass().getSimpleName();
+		if (className.equals("PowerAction")) {
+			return Action.JUMP_POWER;
+		} else if (className.equals("SpectrumAction")) {
+			return Action.JUMP_SPECTRUM;
+		} else {
+			return Action.DO_NOTHING;
+		}
+	}
+	
+	public void jumpSpectrum(SpectrumAction aSpectrumAction) {
+		vacateChannel();
+		occupyChannel(aSpectrumAction.newSpectrum);
+		changedChannelThisIteration = true;
+	}
+	
+	public void vacateChannel() {
+		currentState.spectrum.occupyingAgents.remove(this);
+		currentState.spectrum = null;
+	}
+	
+	public void occupyChannel(Spectrum aSpectrum) {
+		currentState.spectrum = aSpectrum;
+		aSpectrum.occupyingAgents.add(this);
+	}
+	
+	public void jumpPower(PowerAction aPowerAction) {
+		currentState.transmissionPower = aPowerAction.newPower;
+	}
+	
+	public AbstractAction getBestAction() {
+		double maximumValue = MINIMUM_DOUBLE;
+		AbstractAction bestAction = null;
+		possibleActions = getPossibleActions();
+		for (AbstractAction action : possibleActions) {
+			StateAction possibleStateAction = new StateAction(currentState, action);
+			if (Q.containsKey(possibleStateAction)) {
+				if (Q.get(possibleStateAction) > maximumValue) {
+					maximumValue = Q.get(possibleStateAction);
+					bestAction = possibleStateAction.action;
+				}
+			}
+		}
+		if (bestAction == null) {
+			return new NothingAction();
+		}
+		return bestAction;
+	}
+	
+	public List<AbstractAction> getPossibleActions() {
+		possibleActions = new ArrayList<AbstractAction>();
+		for (Spectrum availableSpectrum : environment.spectrums) {
+			if (currentState.spectrum.containsPrimaryUser
+					&& !availableSpectrum.equals(currentState.spectrum)
+					&& !availableSpectrum.containsPrimaryUser) {
+				possibleActions.add(new SpectrumAction(availableSpectrum));
+			}
+		}
+		for (double powerLevel : POWER_LEVELS) {
+			if (powerLevel != currentState.transmissionPower) {
+				possibleActions.add(new PowerAction(powerLevel));
+			}
+		}
+		possibleActions.add(new NothingAction());
+		return possibleActions;
+	}
+	
+	@Override
+	public void receive() {
+		currentState.spectrum = peer.currentState.spectrum;
+		super.receive();
+	}
+	
+	public void initializeParameters() {
+		chooseSpectrum();
+	}
+	
 	public void evaluate() {
 		currentIterationsReward = calculateReward();
 		if (isExploitingThisIteration) {
@@ -203,188 +293,6 @@ public class CognitiveRadio extends Agent {
 		}
 		updateQ(thisIterationsStateAction, currentIterationsReward);
 	}
-
-	@Override
-	public void receive() {
-		currentState.spectrum = peer.currentState.spectrum;
-		super.receive();
-	}
-
-	/**
-	 * Updates Q with the state action saved before taking an action and the reward obtained after 
-	 * having taken the action
-	 * 
-	 */
-	public void updateQ(StateAction stateAction, double reward) {
-		if (Q.containsKey(stateAction)) {
-			double oldValue = Q.get(stateAction);
-			double valueUpdate = learningRate * (reward + DISCOUNT_FACTOR * maxQ() - oldValue);
-			double newValue = oldValue + valueUpdate;
-			Q.put(stateAction, newValue);
-		} else {
-			Q.put(stateAction, reward);
-		}
-	}
-		
-	public List<AbstractAction> getPossibleActions() {
-		possibleActions = new ArrayList<AbstractAction>();
-		for (Spectrum availableSpectrum : environment.spectrums) {
-			if (currentState.spectrum.containsPrimaryUser
-					&& !availableSpectrum.equals(currentState.spectrum)
-					&& !availableSpectrum.containsPrimaryUser) {
-				possibleActions.add(new SpectrumAction(availableSpectrum));
-			}
-		}
-		for (double powerLevel : POWER_LEVELS) {
-			if (powerLevel != currentState.transmissionPower) {
-				possibleActions.add(new PowerAction(powerLevel));
-			}
-		}
-		possibleActions.add(new NothingAction());
-		return possibleActions;
-	}
-		
-	/**
-	 * Calculates maximum Q values for the newly attained state 
-	 */
-	public double maxQ() {
-		// Construct all possible state actions from the current state
-		List<StateAction> allStateActions = new ArrayList<StateAction>();
-		possibleActions = getPossibleActions();
-		for (AbstractAction possibleAction : possibleActions) {
-			allStateActions.add(new StateAction(currentState, possibleAction));
-		}
-		List<StateAction> stateActionsWithPolicies = new ArrayList<StateAction>();
-		for (StateAction stateAction : allStateActions) {
-			if (Q.containsKey(stateAction)) {
-				stateActionsWithPolicies.add(stateAction);
-			}
-		}
-		// Return 0 if there is no policy yet for any of the possible actions
-		if (stateActionsWithPolicies.size() == 0) {
-			return 0;
-		}
-		
-		double maximumValue = MINIMUM_DOUBLE;
-		
-		for (StateAction stateAction : stateActionsWithPolicies) {
-			if (Q.get(stateAction) > maximumValue) {
-				maximumValue = Q.get(stateAction);
-			}
-		}
-		return maximumValue;
-	}
-	
-	public void explore() {
-		if (debug) {
-			ACRSTRUtil.log(name + " is exploring.");
-		}
-		actionTaken = selectRandomAction();
-	}
-	
-	public void printQ() {
-		ACRSTRUtil.log("=====");
-		ACRSTRUtil.log("Q for " + name);
-		ACRSTRUtil.log("-----");
-		Map<StateAction, Double> orderedQ = new TreeMap<StateAction, Double>();
-		orderedQ.putAll(Q);
-		Iterator<Entry<StateAction, Double>> iter = orderedQ.entrySet().iterator();
-		while (iter.hasNext()) {
-			Map.Entry<StateAction, Double> pairs = (Map.Entry<StateAction, Double>) iter.next();
-			ACRSTRUtil.log("[State Action Pair: " + pairs.getKey().toString() + ", Q: " + pairs.getValue() + "]");
-		}
-		ACRSTRUtil.log("+++++++++");
-	}
-	
-	public void changeSpectrum() {
-		if (debug) {
-			ACRSTRUtil.log(name + " is changing spectrum.");
-		}
-		randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
-		Spectrum randomSpectrum = environment.spectrums.get(randomInt);
-		while (currentState.spectrum.equals(randomSpectrum)) {
-			randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
-			randomSpectrum = environment.spectrums.get(randomInt);
-		}
-		
-		currentState.spectrum = randomSpectrum;
-		actionTaken = new SpectrumAction(currentState.spectrum);
-	}
-	
-	public void doNothing() {
-		actionTaken = new NothingAction();
-	}
-	
-	/**
-	 * Sets actionToConduct to the best action according to current Q. 
-	 */
-	public void exploit() {
-		isExploitingThisIteration = true;
-		if (debug) {
-			ACRSTRUtil.log(name + " is exploiting.");
-		}
-		actionTaken = getBestAction();
-		if (debug) {
-			ACRSTRUtil.log(name + " decided best action to be " + actionTaken + ".");
-		}
-	}
-	
-	public AbstractAction getBestAction() {
-		double maximumValue = MINIMUM_DOUBLE;
-		AbstractAction bestAction = null;
-		possibleActions = getPossibleActions();
-		for (AbstractAction action : possibleActions) {
-			StateAction possibleStateAction = new StateAction(currentState, action);
-			if (Q.containsKey(possibleStateAction)) {
-				if (Q.get(possibleStateAction) > maximumValue) {
-					maximumValue = Q.get(possibleStateAction);
-					bestAction = possibleStateAction.action;
-				}
-			}
-		}
-		if (bestAction == null) {
-			return new NothingAction();
-		}
-		return bestAction;
-	}
-	
-	public AbstractAction selectRandomAction() {
-		randomInt = randomGenerator.nextInt(availableActions.size());
-		Action anAvailableAction = availableActions.get(randomInt);
-		if (anAvailableAction == Action.JUMP_SPECTRUM) {
-			int randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
-			Spectrum newSpectrum = environment.spectrums.get(randomInt);
-			randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
-			newSpectrum = environment.spectrums.get(randomInt);
-			return new SpectrumAction(newSpectrum);
-		} else if (anAvailableAction == Action.JUMP_POWER) {
-			int randomInt = randomGenerator.nextInt(POWER_LEVELS.length);
-			double randomPowerLevel = POWER_LEVELS[randomInt];
-			return new PowerAction(randomPowerLevel);
-		} else {
-			return new NothingAction();
-		}
-	}
-	
-	public Action determineAction(AbstractAction action) {
-		String className = action.getClass().getSimpleName();
-		if (className.equals("PowerAction")) {
-			return Action.JUMP_POWER;
-		} else if (className.equals("SpectrumAction")) {
-			return Action.JUMP_SPECTRUM;
-		} else {
-			return Action.DO_NOTHING;
-		}
-	}
-
-	public boolean isThereCRCollision() {
-		for (CognitiveRadio cr : currentState.spectrum.occupyingAgents) {
-			if (!this.equals(cr) && cr.isActiveThisIteration) {
-				return true;
-			}
-		}
-		return false;
-	}
 	
 	public double calculateReward() {
 		double reward;
@@ -410,5 +318,65 @@ public class CognitiveRadio extends Agent {
 		}
 		return reward;
 	}
-
+	
+	public boolean isThereCRCollision() {
+		for (CognitiveRadio cr : currentState.spectrum.occupyingAgents) {
+			if (!this.equals(cr) && cr.isActiveThisIteration) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void updateQ(StateAction stateAction, double reward) {
+		if (Q.containsKey(stateAction)) {
+			double oldValue = Q.get(stateAction);
+			double valueUpdate = learningRate * (reward + DISCOUNT_FACTOR * maxQ()
+					- oldValue);
+			double newValue = oldValue + valueUpdate;
+			Q.put(stateAction, newValue);
+		} else {
+			Q.put(stateAction, reward);
+		}
+	}
+	
+	public double maxQ() {
+		List<StateAction> allStateActions = new ArrayList<StateAction>();
+		possibleActions = getPossibleActions();
+		for (AbstractAction possibleAction : possibleActions) {
+			allStateActions.add(new StateAction(currentState, possibleAction));
+		}
+		List<StateAction> stateActionsWithPolicies = new ArrayList<StateAction>();
+		for (StateAction stateAction : allStateActions) {
+			if (Q.containsKey(stateAction)) {
+				stateActionsWithPolicies.add(stateAction);
+			}
+		}
+		if (stateActionsWithPolicies.size() == 0) {
+			return 0;
+		}
+		double maximumValue = MINIMUM_DOUBLE;
+		
+		for (StateAction stateAction : stateActionsWithPolicies) {
+			if (Q.get(stateAction) > maximumValue) {
+				maximumValue = Q.get(stateAction);
+			}
+		}
+		return maximumValue;
+	}
+	
+	public void printQ() {
+		ACRSTRUtil.log("=====");
+		ACRSTRUtil.log("Q for " + name);
+		ACRSTRUtil.log("-----");
+		Map<StateAction, Double> orderedQ = new TreeMap<StateAction, Double>();
+		orderedQ.putAll(Q);
+		Iterator<Entry<StateAction, Double>> iter = orderedQ.entrySet().iterator();
+		while (iter.hasNext()) {
+			Map.Entry<StateAction, Double> pairs = (Map.Entry<StateAction, Double>) iter.next();
+			ACRSTRUtil.log("[State Action Pair: " + pairs.getKey().toString() + ", Q: " + pairs.getValue() + "]");
+		}
+		ACRSTRUtil.log("+++++++++");
+	}
+	
 }

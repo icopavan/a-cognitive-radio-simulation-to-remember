@@ -231,7 +231,7 @@ public class ACRSTRMain {
 				}
 
 				for (CognitiveRadio cr : environment.cognitiveRadios) {
-					cr.iterate();
+					cr.act();
 				}
 
 				int numberOfSuccessfulTransmissionsThisIteration = 0;
