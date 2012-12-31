@@ -8,8 +8,6 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TreeMap;
 
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
-
 public class CognitiveRadio extends Agent {
 
 	public static final double INITIAL_EPSILON_VALUE = 0.8;
@@ -31,7 +29,6 @@ public class CognitiveRadio extends Agent {
 	
 	public int successfulTransmissions;
 	public HashSet<StateAction> offendingQValues;
-	public CircularFifoBuffer rewardHistory;
 	public int negativeRewardsInARow;
 	public int REWARD_HISTORY_SIZE = 10;
 	public double epsilon;
@@ -71,7 +68,6 @@ public class CognitiveRadio extends Agent {
 		epsilon = 0.8;
 		learningRate = 0.8;
 		nothingActionForComparison = new NothingAction();
-		rewardHistory = new CircularFifoBuffer(REWARD_HISTORY_SIZE);
 		responseForQValues = qValueResponse;
 		responseForRates = ratesResponse;
 		epsilonDecrement = decreaseEpsilonBy;
@@ -165,7 +161,6 @@ public class CognitiveRadio extends Agent {
 	// Respond to environmental changes
 	public void evaluate() {
 		currentIterationsReward = calculateReward();
-		rewardHistory.add(new Double(currentIterationsReward));
 		if (isExploitingThisIteration) {
 			if (currentIterationsReward < 0.0) {
 				negativeRewardsInARow++;
