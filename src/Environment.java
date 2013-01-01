@@ -37,24 +37,22 @@ public class Environment {
 	}
 	
 	public void introduceAPU(String puName) {
-		PrimaryUser transmitterPU = new PrimaryUser(puName, this);
+		PrimaryUser aPU = new PrimaryUser(puName, this);
 		int randomInt = randomNumberGenerator.nextInt(channelsWithSpectrumHoles.size());
 		Spectrum aSpectrum = channelsWithSpectrumHoles.get(randomInt);
-		aSpectrum.getOccupiedByPU(transmitterPU);
+		aSpectrum.getOccupiedByPU(aPU);
 		channelsOccupiedByPUs.add(aSpectrum);
 		channelsWithSpectrumHoles.remove(aSpectrum);
-		primaryUsers.add(transmitterPU);
+		primaryUsers.add(aPU);
 	}
 	
 	public void deactivateAPU() {
-		Spectrum spectrumToVacate = null;
-		PrimaryUser primaryUserToDeactivate = null;
-		for (Spectrum s : channelsOccupiedByPUs) {
-			primaryUserToDeactivate = s.occupyingPU;
-			s.getVacatedByPU();
-			spectrumToVacate = s;
-		}
+		int randomInt = randomNumberGenerator.nextInt(channelsOccupiedByPUs.size());
+		Spectrum spectrumToVacate = channelsOccupiedByPUs.get(randomInt);
+		PrimaryUser primaryUserToDeactivate = spectrumToVacate.occupyingPU;
+		spectrumToVacate.getVacatedByPU();
 		channelsOccupiedByPUs.remove(spectrumToVacate);
+		channelsWithSpectrumHoles.add(spectrumToVacate);
 		primaryUsers.remove(primaryUserToDeactivate);
 	}	
 

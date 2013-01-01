@@ -14,19 +14,16 @@ import org.json.simple.JSONValue;
 
 
 public class ACRSTRSimulation {
-	
+
+	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 1000 };
+	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = { 6000, 8000 };
+	public static int NUMBER_OF_PRIMARY_USERS = 2;
 	public static int NUMBER_OF_SECONDARY_USERS = 8;
 
 	public static int TAKE_AVERAGE_OF_N_VALUES = 100;
 	
-	public static boolean consoleDebug;
-	public static boolean logging;
-	
-	public static int maximumPUPairs;
-	
 	public static ArrayList<PrimaryUser> puList;
-	public static final int PU_PAIR_INTRODUCTION_EPOCH = 1000;
-	
+		
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
 	public static final int START_N_VALUES = 0;
@@ -39,7 +36,6 @@ public class ACRSTRSimulation {
 	public static List<String> epsilonDecrements;
 	public static List<Boolean> changeTransmissionProbabilities;
 	
-	public static int[] epochsToDeactivatePUPairs = { 6000, 8000 };
 	
 	public static int numberOfCRTransmitters;
 	public static Stack<String> colors;
@@ -75,13 +71,6 @@ public class ACRSTRSimulation {
 			ACRSTRUtil.readSettingsFile();
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
-		}
-		maximumPUPairs = Integer.parseInt(ACRSTRUtil.getSetting("primary-user-pairs"));
-		consoleDebug = (ACRSTRUtil.getSetting("console-debug")).equals("true");
-		logging = (ACRSTRUtil.getSetting("main-file-log")).equals(true);
-		if (consoleDebug) {
-			System.out.println("An Implementation of 'Spectrum Management of " +
-					"Cognitive Radio Using Multi-agent Reinforcement Learning'\n");
 		}
 
 		File oldOutput = new File(DIRECTORY_FOR_LATEST_OUTPUT);
@@ -137,10 +126,6 @@ public class ACRSTRSimulation {
 			
 			String jsonString = JSONValue.toJSONString(parameters);
 			bw.write(jsonString + "\n"); 
-			int numberOfPUPairs = 0;
-			if (logging) {
-				ACRSTRUtil.log("Conducting simulation for method: " + method + ".\n");
-			}
 
 			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,
@@ -154,18 +139,17 @@ public class ACRSTRSimulation {
 			double cumulativeSuccessProbabilities = 0.0;
 			
 			for (int i = 0; i < numberOfIterations; i++) {
-				if (consoleDebug) {
-					System.out.println("Iteration: " + (i + 1));
-				}
-
-				if (i % PU_PAIR_INTRODUCTION_EPOCH == 0 && numberOfPUPairs <= maximumPUPairs) {
-					String firstPUName = String.format("PU%s", i /
-							PU_PAIR_INTRODUCTION_EPOCH + 1);
-					environment.introduceAPU(firstPUName);
-					numberOfPUPairs++;
+				int index = 0;
+				for (int activationEpoch : EPOCHS_TO_ACTIVATE_PU_PAIRS) {
+					if (i == activationEpoch &&
+							environment.primaryUsers.size() <= NUMBER_OF_PRIMARY_USERS) {
+						String puName = String.format("PU%s", index + 1);
+						environment.introduceAPU(puName);
+					}
+					index++;
 				}
 				
-				for (int deactivationEpoch: epochsToDeactivatePUPairs) {
+				for (int deactivationEpoch : EPOCHS_TO_DEACTIVATE_PU_PAIRS) {
 					if (i == deactivationEpoch) {
 						environment.deactivateAPU();
 					}
