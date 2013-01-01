@@ -26,6 +26,9 @@ public class CognitiveRadio extends Agent {
 	public static final double REWARD_COEFFICIENT_FOR_PROBABILITY = 25.0;
 	public static final double[] POWER_LEVELS = { 1000.0, 1250.0 };
 	public static final double POWER_LEVEL_COEFFICIENT = 0.01;
+	public static final double PU_COLLISION_PENALTY = -15.0;
+	public static final double CR_COLLISION_PENALTY = -5.0;
+	public static final double SUCCESSFUL_TRANSMISSION_AWARD = 5.0;
 	
 	public int successfulTransmissions;
 	public HashSet<StateAction> offendingQValues;
@@ -310,8 +313,8 @@ public class CognitiveRadio extends Agent {
 			successfulTransmission = true;
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
-		reward = (puCollision ? -15.0 : 0.0) + (crCollision ? -5.0 : 0.0)
-				+ (successfulTransmission ? 5.0 : 0.0)
+		reward = (puCollision ? PU_COLLISION_PENALTY : 0.0) + (crCollision ? CR_COLLISION_PENALTY : 0.0)
+				+ (successfulTransmission ? SUCCESSFUL_TRANSMISSION_AWARD : 0.0)
 				+ POWER_LEVEL_COEFFICIENT * currentState.transmissionPower;
 		if (debug) {
 			ACRSTRUtil.log(name + " got reward: " + reward);
