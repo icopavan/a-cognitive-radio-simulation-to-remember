@@ -1,5 +1,5 @@
 
-public class StateAction implements Comparable<StateAction> {
+public class StateAction {
 
 	public State state;
 	
@@ -26,17 +26,17 @@ public class StateAction implements Comparable<StateAction> {
 
 	@Override
 	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
 		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		if (this.compareTo((StateAction) obj) == 0)
-			return true;
 		StateAction other = (StateAction) obj;
 		if (action == null) {
 			if (other.action != null)
 				return false;
-		} else if (!action.equals(other.action))
+		} else if (!AbstractAction.compareActions(action, other.action))
 			return false;
 		if (state == null) {
 			if (other.state != null)
@@ -44,15 +44,6 @@ public class StateAction implements Comparable<StateAction> {
 		} else if (!state.equals(other.state))
 			return false;
 		return true;
-	}
-
-	@Override
-	public int compareTo(StateAction arg0) {
-		if (!state.equals(arg0.state)) {
-			return state.compareTo(arg0.state);
-		} else {
-			return action.compareTo(arg0.action);
-		}
 	}
 	
 }

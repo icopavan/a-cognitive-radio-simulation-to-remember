@@ -1,15 +1,16 @@
 
 
-public class State implements Comparable<State> {
+public class State {
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((spectrum == null) ? 0 : spectrum.hashCode());
-		result = prime * result
-				+ ((transmission == null) ? 0 : transmission.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(frequency);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(transmissionPower);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
 
@@ -22,35 +23,28 @@ public class State implements Comparable<State> {
 		if (getClass() != obj.getClass())
 			return false;
 		State other = (State) obj;
-		if (spectrum == null) {
-			if (other.spectrum != null)
-				return false;
-		} else if (!spectrum.equals(other.spectrum))
+		if (Double.doubleToLongBits(frequency) != Double
+				.doubleToLongBits(other.frequency))
 			return false;
-		if (transmission == null) {
-			if (other.transmission != null)
-				return false;
-		} else if (!transmission.equals(other.transmission))
+		if (Double.doubleToLongBits(transmissionPower) != Double
+				.doubleToLongBits(other.transmissionPower))
 			return false;
 		return true;
 	}
 
-	public Spectrum spectrum;
-	public Transmission transmission;
+	public double frequency;
+	public double transmissionPower;
 	
 	@Override
 	public String toString() {
-		return "State [spectrum=" + spectrum + "]";
+		return "State [frequency=" + frequency + ", transmissionPower="
+				+ transmissionPower + "]";
 	}
 	
-	public State(Spectrum spectrum, Transmission aTransmission) {
-		this.spectrum = spectrum;
-		transmission = aTransmission;
+	public State(double aFrequency, double aTransmissionPower) {
+		frequency = aFrequency;
+		transmissionPower = aTransmissionPower;
 	}
 
-	@Override
-	public int compareTo(State arg0) {
-		return spectrum.compareTo(arg0.spectrum);
-	}
 
 }

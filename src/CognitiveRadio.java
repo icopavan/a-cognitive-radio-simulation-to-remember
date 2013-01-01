@@ -80,6 +80,7 @@ public class CognitiveRadio {
 		availableActions.add(Action.JUMP_SPECTRUM);
 		availableActions.add(Action.JUMP_POWER);
 		randomGenerator = new Random();
+		currentState = new State(0.0, 0.0);
 	}
 	
 	public void act() {
@@ -109,8 +110,8 @@ public class CognitiveRadio {
 			} else if (method == Method.RANDOM) {
 				actionTaken = selectRandomAction();
 			}
-			State stateToSave = new State(currentState.spectrum,
-					currentState.transmission);
+			State stateToSave = new State(currentState.frequency,
+					currentState.transmissionPower);
 			thisIterationsStateAction = new StateAction(stateToSave, actionTaken);
 			conductAction(actionTaken);
 		}
@@ -169,17 +170,17 @@ public class CognitiveRadio {
 	}
 	
 	public void vacateChannel() {
-		currentState.spectrum.occupyingAgents.remove(this);
-		currentState.spectrum = null;
+		environment.getChannel(currentState.frequency).occupyingAgents.remove(this);
+		currentState.frequency = 0.0;
 	}
 	
 	public void occupyChannel(Spectrum aSpectrum) {
-		currentState.spectrum = aSpectrum;
+		currentState.frequency = aSpectrum.frequency;
 		aSpectrum.occupyingAgents.add(this);
 	}
 	
 	public void jumpPower(PowerAction aPowerAction) {
-		currentState.transmission.transmissionPower = aPowerAction.newPower;
+		currentState.transmissionPower = aPowerAction.newPower;
 	}
 	
 	public AbstractAction getBestAction() {
@@ -203,15 +204,16 @@ public class CognitiveRadio {
 	
 	public List<AbstractAction> getPossibleActions() {
 		possibleActions = new ArrayList<AbstractAction>();
+		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
 		for (Spectrum availableSpectrum : environment.spectrums) {
-			if (currentState.spectrum.containsPrimaryUser
-					&& !availableSpectrum.equals(currentState.spectrum)
+			if (currentSpectrum != null && currentSpectrum.containsPrimaryUser
+					&& !availableSpectrum.equals(currentSpectrum)
 					&& !availableSpectrum.containsPrimaryUser) {
 				possibleActions.add(new SpectrumAction(availableSpectrum));
 			}
 		}
 		for (double powerLevel : POWER_LEVELS) {
-			if (powerLevel != currentState.transmission.transmissionPower) {
+			if (powerLevel != currentState.transmissionPower) {
 				possibleActions.add(new PowerAction(powerLevel));
 			}
 		}
@@ -262,7 +264,7 @@ public class CognitiveRadio {
 			}
 		}
 		updateQ(thisIterationsStateAction, currentIterationsReward);
-		if (currentState.spectrum != null) {
+		if (currentState.frequency != 0.0) {
 			vacateChannel();
 		}
 	}
@@ -271,11 +273,11 @@ public class CognitiveRadio {
 		double reward;
 		boolean puCollision = false, crCollision = false,
 				successfulTransmission = false;
-		
-		if (currentState.spectrum.containsPrimaryUser) {
+		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
+		if (currentSpectrum != null && currentSpectrum.containsPrimaryUser) {
 			puCollision = true;
 		}
-		if (isThereCRCollision()){
+		if (currentSpectrum != null && isThereCRCollision()){
 			crCollision = true;
 		}
 		if (!puCollision && !crCollision) {
@@ -284,12 +286,13 @@ public class CognitiveRadio {
 		successfullyTransmittedThisIteration = successfulTransmission;
 		reward = (puCollision ? PU_COLLISION_PENALTY : 0.0) + (crCollision ? CR_COLLISION_PENALTY : 0.0)
 				+ (successfulTransmission ? SUCCESSFUL_TRANSMISSION_AWARD : 0.0)
-				+ POWER_LEVEL_COEFFICIENT * currentState.transmission.transmissionPower;
+				+ POWER_LEVEL_COEFFICIENT * currentState.transmissionPower;
 		return reward;
 	}
 	
 	public boolean isThereCRCollision() {
-		for (CognitiveRadio cr : currentState.spectrum.occupyingAgents) {
+		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
+		for (CognitiveRadio cr : currentSpectrum.occupyingAgents) {
 			if (!this.equals(cr) && cr.isActiveThisIteration) {
 				return true;
 			}

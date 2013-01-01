@@ -22,16 +22,13 @@ public class Environment {
 		numberOfSecondaryUsers = Integer.parseInt(ACRSTRUtil.getSetting("secondary-users"));
 	}
 	
-	public void printQValues() {
-		for (CognitiveRadio cr : cognitiveRadios) {
-			cr.printQ();
+	public Spectrum getChannel(double aFrequency) {
+		for (Spectrum s : spectrums) {
+			if (s.frequency == aFrequency) {
+				return s;
+			}
 		}
-	}
-	
-	public void printStates() {
-		for (CognitiveRadio cr: cognitiveRadios) {
-			ACRSTRUtil.log(cr.name + " " + cr.currentState + " " + cr.actionTaken);
-		}
+		return null;
 	}
 	
 }
