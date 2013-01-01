@@ -1,12 +1,8 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
-import java.util.TreeMap;
 
 public class CognitiveRadio {
 
@@ -24,7 +20,6 @@ public class CognitiveRadio {
 	public static final double POWER_LEVEL_COEFFICIENT = 0.01;
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
-	public static final double SUCCESSFUL_TRANSMISSION_AWARD = 5.0;
 
 	public Environment environment;
 	public Random randomGenerator;
@@ -80,7 +75,8 @@ public class CognitiveRadio {
 		availableActions.add(Action.JUMP_SPECTRUM);
 		availableActions.add(Action.JUMP_POWER);
 		randomGenerator = new Random();
-		currentState = new State(0.0, 0.0);
+		currentState = new State(Environment.AVAILABLE_SPECTRA[0], POWER_LEVELS[0]);
+		possibleActions = getPossibleActions();
 	}
 	
 	public void act() {
@@ -127,21 +123,8 @@ public class CognitiveRadio {
 	}
 	
 	public AbstractAction selectRandomAction() {
-		randomInt = randomGenerator.nextInt(availableActions.size());
-		Action anAvailableAction = availableActions.get(randomInt);
-		if (anAvailableAction == Action.JUMP_SPECTRUM) {
-			int randomInt = randomGenerator.nextInt(Environment.AVAILABLE_SPECTRA.length);
-			Spectrum newSpectrum = environment.spectra.get(randomInt);
-			randomInt = randomGenerator.nextInt(Environment.AVAILABLE_SPECTRA.length);
-			newSpectrum = environment.spectra.get(randomInt);
-			return new SpectrumAction(newSpectrum);
-		} else if (anAvailableAction == Action.JUMP_POWER) {
-			int randomInt = randomGenerator.nextInt(POWER_LEVELS.length);
-			double randomPowerLevel = POWER_LEVELS[randomInt];
-			return new PowerAction(randomPowerLevel);
-		} else {
-			return new NothingAction();
-		}
+		randomInt = randomGenerator.nextInt(possibleActions.size());
+		return possibleActions.get(randomInt);
 	}
 	
 	public void conductAction(AbstractAction abstractAction) {
@@ -186,7 +169,6 @@ public class CognitiveRadio {
 	public AbstractAction getBestAction() {
 		double maximumValue = MINIMUM_DOUBLE;
 		AbstractAction bestAction = null;
-		possibleActions = getPossibleActions();
 		for (AbstractAction action : possibleActions) {
 			StateAction possibleStateAction = new StateAction(currentState, action);
 			if (Q.containsKey(possibleStateAction)) {
@@ -204,18 +186,11 @@ public class CognitiveRadio {
 	
 	public List<AbstractAction> getPossibleActions() {
 		possibleActions = new ArrayList<AbstractAction>();
-		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
 		for (Spectrum availableSpectrum : environment.spectra) {
-			if (currentSpectrum != null && currentSpectrum.containsPrimaryUser
-					&& !availableSpectrum.equals(currentSpectrum)
-					&& !availableSpectrum.containsPrimaryUser) {
-				possibleActions.add(new SpectrumAction(availableSpectrum));
-			}
+			possibleActions.add(new SpectrumAction(availableSpectrum));
 		}
 		for (double powerLevel : POWER_LEVELS) {
-			if (powerLevel != currentState.transmissionPower) {
-				possibleActions.add(new PowerAction(powerLevel));
-			}
+			possibleActions.add(new PowerAction(powerLevel));
 		}
 		possibleActions.add(new NothingAction());
 		return possibleActions;
@@ -286,8 +261,8 @@ public class CognitiveRadio {
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
 		reward = (puCollision ? PU_COLLISION_PENALTY : 0.0) + (crCollision ? CR_COLLISION_PENALTY : 0.0)
-				+ (successfulTransmission ? SUCCESSFUL_TRANSMISSION_AWARD : 0.0)
-				+ POWER_LEVEL_COEFFICIENT * currentState.transmissionPower;
+				+ (successfulTransmission ? POWER_LEVEL_COEFFICIENT * currentState.transmissionPower : 0.0);
+		System.out.println(method + " got " + reward);
 		return reward;
 	}
 	
@@ -315,7 +290,6 @@ public class CognitiveRadio {
 	
 	public double maxQ() {
 		List<StateAction> allStateActions = new ArrayList<StateAction>();
-		possibleActions = getPossibleActions();
 		for (AbstractAction possibleAction : possibleActions) {
 			allStateActions.add(new StateAction(currentState, possibleAction));
 		}
@@ -336,20 +310,6 @@ public class CognitiveRadio {
 			}
 		}
 		return maximumValue;
-	}
-	
-	public void printQ() {
-		ACRSTRUtil.log("=====");
-		ACRSTRUtil.log("Q for " + name);
-		ACRSTRUtil.log("-----");
-		Map<StateAction, Double> orderedQ = new TreeMap<StateAction, Double>();
-		orderedQ.putAll(Q);
-		Iterator<Entry<StateAction, Double>> iter = orderedQ.entrySet().iterator();
-		while (iter.hasNext()) {
-			Map.Entry<StateAction, Double> pairs = (Map.Entry<StateAction, Double>) iter.next();
-			ACRSTRUtil.log("[State Action Pair: " + pairs.getKey().toString() + ", Q: " + pairs.getValue() + "]");
-		}
-		ACRSTRUtil.log("+++++++++");
 	}
 	
 }

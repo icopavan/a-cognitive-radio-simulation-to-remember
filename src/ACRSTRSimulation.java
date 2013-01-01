@@ -17,10 +17,10 @@ public class ACRSTRSimulation {
 
 	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 1000 };
 	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = { 6000, 8000 };
-	public static int NUMBER_OF_PRIMARY_USERS = 2;
-	public static int NUMBER_OF_SECONDARY_USERS = 8;
+	public static int NUMBER_OF_PRIMARY_USERS = 1;
+	public static int NUMBER_OF_SECONDARY_USERS = 1;
 
-	public static int TAKE_AVERAGE_OF_N_VALUES = 100;
+	public static int TAKE_AVERAGE_OF_N_VALUES = 50;
 	
 	public static ArrayList<PrimaryUser> puList;
 		
@@ -34,10 +34,7 @@ public class ACRSTRSimulation {
 	public static List<Method> methodsToSimulate;
 	public static List<Integer> lastValuesToCheck;
 	public static List<String> epsilonDecrements;
-	public static List<Boolean> changeTransmissionProbabilities;
 	
-	
-	public static int numberOfCRTransmitters;
 	public static Stack<String> colors;
 	
 	public Environment environment;
@@ -55,15 +52,13 @@ public class ACRSTRSimulation {
 		ratesResponses = new ArrayList<RatesResponse>();
 		methodsToSimulate = new ArrayList<Method>();
 		epsilonDecrements = new ArrayList<String>();
-		changeTransmissionProbabilities = new ArrayList<Boolean>();
 		qValuesResponses.add(QValuesResponse.DELETE_OBSOLETE_VALUES);
 		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
 		methodsToSimulate.add(Method.QLEARNING);
-		lastValuesToCheck.add(0);
+		methodsToSimulate.add(Method.RANDOM);
 		lastValuesToCheck.add(5);
-		changeTransmissionProbabilities.add(false);
 		
-		epsilonDecrements.add("0.0008");
+		epsilonDecrements.add("0.00008");
 		
 		ACRSTRUtil.initialize();
 		puList = new ArrayList<PrimaryUser>();
@@ -132,8 +127,6 @@ public class ACRSTRSimulation {
 						n, qValueResponse, ratesResponse, Double.parseDouble(epsilonDecrement)));
 			}
 			
-			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;
-
 			double cumulativeRewards = 0.0;
 			
 			double cumulativeSuccessProbabilities = 0.0;
@@ -179,17 +172,17 @@ public class ACRSTRSimulation {
 				double cumulativeRewardAverage = cumulativeRewards / (i + 1);
 
 				double probabilityOfSuccessfulTransmission = (double) numberOfSuccessfulTransmissionsThisIteration
-						/ numberOfCRTransmitters;
+						/ environment.numberOfSecondaryUsers;
 				
 				cumulativeSuccessProbabilities += probabilityOfSuccessfulTransmission
-						/ ((i + 1) * numberOfCRTransmitters) ;
+						/ ((i + 1) * environment.numberOfSecondaryUsers) ;
 				
 				for (Spectrum s : environment.spectra) {
 					s.occupyingAgents.clear();
 				}
 
 				double currentRewardAverage = currentRewardTotals
-						/ numberOfCRTransmitters;
+						/ environment.numberOfSecondaryUsers;
 				if (output.equals("average")) {
 					bw.write(Double.toString(currentRewardAverage) + "\n");	
 				} else if (output.equals("probability")) {
