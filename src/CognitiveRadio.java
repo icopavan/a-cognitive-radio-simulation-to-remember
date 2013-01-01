@@ -117,8 +117,8 @@ public class CognitiveRadio extends Agent {
 			}
 			State stateToSave = new State(currentState.spectrum,
 					currentState.transmissionPower);
-			conductAction(actionTaken);
 			thisIterationsStateAction = new StateAction(stateToSave, actionTaken);
+			conductAction(actionTaken);
 		}
 		if (debug) {
 			ACRSTRUtil.log("End of iteration " + iterationNumber);
