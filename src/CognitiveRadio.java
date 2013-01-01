@@ -109,7 +109,6 @@ public class CognitiveRadio extends Agent {
 					currentState.transmissionPower);
 			previousState = new State(currentState.spectrum,
 					currentState.transmissionPower);
-			// Explore if random number is less than epsilon or there is no policy yet
 			randomDouble = randomGenerator.nextDouble();
 			if (method == Method.QLEARNING) {
 				if (randomDouble < epsilon || Q.size() == 0) {
