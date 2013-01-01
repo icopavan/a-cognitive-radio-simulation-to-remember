@@ -104,25 +104,6 @@ public class ACRSTRSimulation {
 
 	}
 	
-	public void introduceAPU(String puName) {
-		PrimaryUser transmitterPU = new PrimaryUser(puName, environment);
-		int randomInt = randomNumberGenerator.nextInt(environment.channelsWithSpectrumHoles.size());
-		Spectrum aSpectrum = environment.channelsWithSpectrumHoles.get(randomInt);
-		aSpectrum.getOccupiedByPU(transmitterPU);
-		environment.channelsOccupiedByPUs.add(aSpectrum);
-		environment.channelsWithSpectrumHoles.remove(aSpectrum);
-		environment.primaryUsers.add(transmitterPU);
-	}
-	
-	public void deactivateAPU(Environment anEnvironment) {
-		Spectrum vacatedSpectrum = null;
-		for (Spectrum s : anEnvironment.channelsOccupiedByPUs) {
-			s.getVacatedByPU();
-			vacatedSpectrum = s;
-		}
-		anEnvironment.channelsOccupiedByPUs.remove(vacatedSpectrum);
-	}
-	
 	public void conductSimulation(Method method, QValuesResponse qValueResponse,
 			RatesResponse ratesResponse, String output, String epsilonDecrement)
 			throws IOException {
@@ -180,13 +161,13 @@ public class ACRSTRSimulation {
 				if (i % PU_PAIR_INTRODUCTION_EPOCH == 0 && numberOfPUPairs <= maximumPUPairs) {
 					String firstPUName = String.format("PU%s", i /
 							PU_PAIR_INTRODUCTION_EPOCH + 1);
-					introduceAPU(firstPUName);
+					environment.introduceAPU(firstPUName);
 					numberOfPUPairs++;
 				}
 				
 				for (int deactivationEpoch: epochsToDeactivatePUPairs) {
 					if (i == deactivationEpoch) {
-						deactivateAPU(environment);
+						environment.deactivateAPU();
 					}
 				}
 
@@ -219,7 +200,7 @@ public class ACRSTRSimulation {
 				cumulativeSuccessProbabilities += probabilityOfSuccessfulTransmission
 						/ ((i + 1) * numberOfCRTransmitters) ;
 				
-				for (Spectrum s : environment.spectrums) {
+				for (Spectrum s : environment.spectra) {
 					s.occupyingAgents.clear();
 				}
 

@@ -131,9 +131,9 @@ public class CognitiveRadio {
 		Action anAvailableAction = availableActions.get(randomInt);
 		if (anAvailableAction == Action.JUMP_SPECTRUM) {
 			int randomInt = randomGenerator.nextInt(Environment.AVAILABLE_SPECTRA.length);
-			Spectrum newSpectrum = environment.spectrums.get(randomInt);
+			Spectrum newSpectrum = environment.spectra.get(randomInt);
 			randomInt = randomGenerator.nextInt(Environment.AVAILABLE_SPECTRA.length);
-			newSpectrum = environment.spectrums.get(randomInt);
+			newSpectrum = environment.spectra.get(randomInt);
 			return new SpectrumAction(newSpectrum);
 		} else if (anAvailableAction == Action.JUMP_POWER) {
 			int randomInt = randomGenerator.nextInt(POWER_LEVELS.length);
@@ -205,7 +205,7 @@ public class CognitiveRadio {
 	public List<AbstractAction> getPossibleActions() {
 		possibleActions = new ArrayList<AbstractAction>();
 		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
-		for (Spectrum availableSpectrum : environment.spectrums) {
+		for (Spectrum availableSpectrum : environment.spectra) {
 			if (currentSpectrum != null && currentSpectrum.containsPrimaryUser
 					&& !availableSpectrum.equals(currentSpectrum)
 					&& !availableSpectrum.containsPrimaryUser) {
