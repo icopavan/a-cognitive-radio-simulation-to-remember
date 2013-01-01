@@ -178,19 +178,6 @@ public class ACRSTRMain {
 			
 			numberOfCRTransmitters = environment.numberOfSecondaryUsers / 2;
 
-			int currentCR = 0;
-
-			for (CognitiveRadio cr : environment.cognitiveRadios) {
-				if (currentCR % 2 == 0) {
-					cr.role = Role.TRANSMITTER;
-					cr.peer = environment.cognitiveRadios.get(currentCR + 1);
-				} else {
-					cr.role = Role.RECEIVER;
-					cr.peer = environment.cognitiveRadios.get(currentCR - 1);
-				}
-				currentCR++;
-			}
-
 			double cumulativeRewards = 0.0;
 			
 			double cumulativeSuccessProbabilities = 0.0;
@@ -227,15 +214,13 @@ public class ACRSTRMain {
 				int channelChangesThisIteration = 0;
 				
 				for (CognitiveRadio cr : environment.cognitiveRadios) {
-					if (cr.role == Role.TRANSMITTER) {
-						cr.evaluate();
-						currentRewardTotals += cr.currentIterationsReward;
-						if (cr.successfullyTransmittedThisIteration) {
-							numberOfSuccessfulTransmissionsThisIteration++;
+					cr.evaluate();
+					currentRewardTotals += cr.currentIterationsReward;
+					if (cr.successfullyTransmittedThisIteration) {
+						numberOfSuccessfulTransmissionsThisIteration++;
 						}
-						if (cr.changedChannelThisIteration) {
-							channelChangesThisIteration++;
-						}
+					if (cr.changedChannelThisIteration) {
+						channelChangesThisIteration++;
 					}
 				}
 				
@@ -309,9 +294,7 @@ public class ACRSTRMain {
 			if (logging) {
 				ACRSTRUtil.log("\n=== Results ===");
 				for (CognitiveRadio cr : environment.cognitiveRadios) {
-					if (cr.role == Role.TRANSMITTER) {
-						cr.printQ();
-					}
+					cr.printQ();
 				}
 			}
 			bw.close();

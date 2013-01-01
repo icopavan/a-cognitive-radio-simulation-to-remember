@@ -26,10 +26,8 @@ public class CognitiveRadio {
 	public static final double CR_COLLISION_PENALTY = -5.0;
 	public static final double SUCCESSFUL_TRANSMISSION_AWARD = 5.0;
 
-	public CognitiveRadio peer;
 	public Environment environment;
 	public Random randomGenerator;
-	public Role role;
 	public State currentState;
 	public String name;
 	
@@ -85,11 +83,7 @@ public class CognitiveRadio {
 	}
 	
 	public void act() {
-		if (role == Role.TRANSMITTER) {
-			transmit();
-		} else {
-			receive();
-		}
+		transmit();
 		if (method == Method.QLEARNING) {
 			learningRate *= LEARNING_RATE_REDUCTION_FACTOR;
 			if (epsilon > epsilonDecrement) {
@@ -223,10 +217,6 @@ public class CognitiveRadio {
 		}
 		possibleActions.add(new NothingAction());
 		return possibleActions;
-	}
-	
-	public void receive() {
-		currentState.spectrum = peer.currentState.spectrum;
 	}
 	
 	public void evaluate() {
