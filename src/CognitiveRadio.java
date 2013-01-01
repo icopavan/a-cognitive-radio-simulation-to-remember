@@ -105,10 +105,6 @@ public class CognitiveRadio extends Agent {
 		if (randomDouble < probabilityForTransmission) {
 			super.transmit();
 			isActiveThisIteration = true;
-			State stateToSave = new State(currentState.spectrum,
-					currentState.transmissionPower);
-			previousState = new State(currentState.spectrum,
-					currentState.transmissionPower);
 			randomDouble = randomGenerator.nextDouble();
 			if (method == Method.QLEARNING) {
 				if (randomDouble < epsilon || Q.size() == 0) {
@@ -118,7 +114,9 @@ public class CognitiveRadio extends Agent {
 				}
 			} else if (method == Method.RANDOM) {
 				actionTaken = selectRandomAction();
-			} 
+			}
+			State stateToSave = new State(currentState.spectrum,
+					currentState.transmissionPower);
 			conductAction(actionTaken);
 			thisIterationsStateAction = new StateAction(stateToSave, actionTaken);
 		}

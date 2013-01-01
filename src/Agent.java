@@ -5,7 +5,6 @@ public class Agent {
 	public static final String SETTINGS_FILE_NAME = "acrstr.conf";
 
 	public State currentState;
-	public State previousState;
 	
 	public String name;
 
@@ -29,7 +28,6 @@ public class Agent {
 		this.name = name;
 		this.environment = environment;
 		currentState = new State();
-		previousState = new State();
 		randomGenerator = new Random();
 		getDebugSetting();
 		iterationNumber = 0;
