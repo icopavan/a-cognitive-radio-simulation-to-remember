@@ -13,7 +13,7 @@ import java.util.Stack;
 import org.json.simple.JSONValue;
 
 
-public class ACRSTRMain {
+public class ACRSTRSimulation {
 
 	public static int TAKE_AVERAGE_OF_N_VALUES = 100;
 	
@@ -42,7 +42,12 @@ public class ACRSTRMain {
 	public static int numberOfCRTransmitters;
 	public static Stack<String> colors;
 	
-	public static void main(String[] args) {
+	public Environment environment;
+	public Random randomNumberGenerator;
+	
+	public void startSimulation() {
+		environment = new Environment();
+		randomNumberGenerator = new Random();
 		colors = new Stack<String>();
 		colors.push("blue");
 		colors.push("red");
@@ -62,7 +67,6 @@ public class ACRSTRMain {
 		
 		epsilonDecrements.add("0.0008");
 		
-		System.out.println("Starting main method");
 		ACRSTRUtil.initialize();
 		puList = new ArrayList<PrimaryUser>();
 		try {
@@ -78,9 +82,6 @@ public class ACRSTRMain {
 					"Cognitive Radio Using Multi-agent Reinforcement Learning'\n");
 		}
 		try {
-			if (logging) {
-				ACRSTRUtil.log("###############");
-			}
 			File oldOutput = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 			if (oldOutput.exists()) {
 				oldOutput.renameTo(new File("acrstr-"
@@ -101,37 +102,28 @@ public class ACRSTRMain {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Ending main method");
 	}
 	
-	public static void introduceAPUPair(String transmitterName, String receiverName,
-			Environment anEnvironment, Spectrum aSpectrum) {
-		PrimaryUser transmitterPU = new PrimaryUser(transmitterName, anEnvironment);
-		PrimaryUser receiverPU = new PrimaryUser(receiverName, anEnvironment);
-		
-		transmitterPU.role = Role.TRANSMITTER;
-		receiverPU.role = Role.RECEIVER;
-		
-		transmitterPU.peer = receiverPU;
-		receiverPU.peer = transmitterPU;
-		
+	public void introduceAPU(String puName) {
+		PrimaryUser transmitterPU = new PrimaryUser(puName, environment);
+		int randomInt = randomNumberGenerator.nextInt(environment.channelsWithSpectrumHoles.size());
+		Spectrum aSpectrum = environment.channelsWithSpectrumHoles.get(randomInt);
 		aSpectrum.getOccupiedByPU(transmitterPU);
-		
-		PrimaryUser[] puPair = new PrimaryUser[]{ transmitterPU, receiverPU };
-		anEnvironment.primaryUserPairs.add(puPair);
-		puList.add(transmitterPU);
-		puList.add(receiverPU);
+		environment.channelsOccupiedByPUs.add(aSpectrum);
+		environment.channelsWithSpectrumHoles.remove(aSpectrum);
+		environment.primaryUsers.add(transmitterPU);
 	}
 	
-	public static void deactivateAPUPair(Environment anEnvironment) {
-		PrimaryUser[] aPUPair = anEnvironment.primaryUserPairs.get(
-				new Random().nextInt(anEnvironment.primaryUserPairs.size() / 2));
-		puList.remove(aPUPair[0]);
-		puList.remove(aPUPair[1]);
-		aPUPair[0].occupiedSpectrum.getVacatedByPU();
+	public void deactivateAPU(Environment anEnvironment) {
+		Spectrum vacatedSpectrum = null;
+		for (Spectrum s : anEnvironment.channelsOccupiedByPUs) {
+			s.getVacatedByPU();
+			vacatedSpectrum = s;
+		}
+		anEnvironment.channelsOccupiedByPUs.remove(vacatedSpectrum);
 	}
 	
-	public static void conductSimulation(Method method, QValuesResponse qValueResponse,
+	public void conductSimulation(Method method, QValuesResponse qValueResponse,
 			RatesResponse ratesResponse, String output, String epsilonDecrement)
 			throws IOException {
 		List<Double> lastNAverages = new ArrayList<Double>();
@@ -190,17 +182,13 @@ public class ACRSTRMain {
 				if (i % PU_PAIR_INTRODUCTION_EPOCH == 0 && numberOfPUPairs <= maximumPUPairs) {
 					String firstPUName = String.format("PU%s", i /
 							PU_PAIR_INTRODUCTION_EPOCH + 1);
-					String secondPUName = String.format("PU%s", i /
-							PU_PAIR_INTRODUCTION_EPOCH + 2);
-					introduceAPUPair(firstPUName, secondPUName, environment,
-							environment.spectrums.get((i / PU_PAIR_INTRODUCTION_EPOCH)
-									% environment.numberOfSpectra));
+					introduceAPU(firstPUName);
 					numberOfPUPairs++;
 				}
 				
 				for (int deactivationEpoch: epochsToDeactivatePUPairs) {
 					if (i == deactivationEpoch) {
-						deactivateAPUPair(environment);
+						deactivateAPU(environment);
 					}
 				}
 
@@ -291,12 +279,6 @@ public class ACRSTRMain {
 				} 
 			}
 
-			if (logging) {
-				ACRSTRUtil.log("\n=== Results ===");
-				for (CognitiveRadio cr : environment.cognitiveRadios) {
-					cr.printQ();
-				}
-			}
 			bw.close();
 
 		}

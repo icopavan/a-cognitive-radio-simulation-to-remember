@@ -2,8 +2,6 @@
 
 public class PrimaryUser {
 
-	public PrimaryUser peer;
-	public Role role;	
 	public String name;
 	public Spectrum occupiedSpectrum;
 

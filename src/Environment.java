@@ -9,7 +9,9 @@ public class Environment {
 	public List<Spectrum> spectrums;
 	public List<CognitiveRadio> cognitiveRadios;
 	public int numberOfSecondaryUsers;
-	public List<PrimaryUser[]> primaryUserPairs;
+	public List<PrimaryUser> primaryUsers;
+	public List<Spectrum> channelsOccupiedByPUs;
+	public List<Spectrum> channelsWithSpectrumHoles;
 	
 	public Environment() {
 		numberOfSpectra = availableSpectrums.length;
@@ -18,8 +20,11 @@ public class Environment {
 			spectrums.add(new Spectrum(availableSpectrums[i]));
 		}
 		cognitiveRadios = new ArrayList<CognitiveRadio>();
-		primaryUserPairs = new ArrayList<PrimaryUser[]>();
+		primaryUsers = new ArrayList<PrimaryUser>();
 		numberOfSecondaryUsers = Integer.parseInt(ACRSTRUtil.getSetting("secondary-users"));
+		channelsOccupiedByPUs = new ArrayList<Spectrum>();
+		channelsWithSpectrumHoles = new ArrayList<Spectrum>();
+		channelsWithSpectrumHoles.addAll(spectrums);
 	}
 	
 	public Spectrum getChannel(double aFrequency) {
@@ -30,5 +35,5 @@ public class Environment {
 		}
 		return null;
 	}
-	
+
 }

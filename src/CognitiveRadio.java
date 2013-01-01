@@ -280,7 +280,8 @@ public class CognitiveRadio {
 		if (currentSpectrum != null && isThereCRCollision()){
 			crCollision = true;
 		}
-		if (!puCollision && !crCollision) {
+		if (!puCollision && !crCollision && currentState.frequency != 0.0 &&
+				currentState.transmissionPower != 0.0) {
 			successfulTransmission = true;
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
