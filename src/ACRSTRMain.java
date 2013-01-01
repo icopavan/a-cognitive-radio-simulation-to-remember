@@ -115,8 +115,7 @@ public class ACRSTRMain {
 		transmitterPU.peer = receiverPU;
 		receiverPU.peer = transmitterPU;
 		
-		transmitterPU.choosePrimarySpectrum(aSpectrum);
-		receiverPU.choosePrimarySpectrum(aSpectrum);
+		aSpectrum.getOccupiedByPU(transmitterPU);
 		
 		PrimaryUser[] puPair = new PrimaryUser[]{ transmitterPU, receiverPU };
 		anEnvironment.primaryUserPairs.add(puPair);
@@ -129,7 +128,7 @@ public class ACRSTRMain {
 				new Random().nextInt(anEnvironment.primaryUserPairs.size() / 2));
 		puList.remove(aPUPair[0]);
 		puList.remove(aPUPair[1]);
-		aPUPair[0].currentState.spectrum.containsPrimaryUser = false;
+		aPUPair[0].occupiedSpectrum.getVacatedByPU();
 	}
 	
 	public static void conductSimulation(Method method, QValuesResponse qValueResponse,
@@ -192,12 +191,6 @@ public class ACRSTRMain {
 				currentCR++;
 			}
 
-			for (CognitiveRadio cr: environment.cognitiveRadios) {
-				cr.initializeParameters();
-			}
-
-
-
 			double cumulativeRewards = 0.0;
 			
 			double cumulativeSuccessProbabilities = 0.0;
@@ -225,18 +218,13 @@ public class ACRSTRMain {
 				}
 
 				double currentRewardTotals = 0.0;
-
-				for (PrimaryUser pu : puList) {
-					pu.iterate();
-				}
-
+				
 				for (CognitiveRadio cr : environment.cognitiveRadios) {
 					cr.act();
 				}
 
 				int numberOfSuccessfulTransmissionsThisIteration = 0;
 				int channelChangesThisIteration = 0;
-				double transmissionProbabilities = 0;
 				
 				for (CognitiveRadio cr : environment.cognitiveRadios) {
 					if (cr.role == Role.TRANSMITTER) {
@@ -248,12 +236,8 @@ public class ACRSTRMain {
 						if (cr.changedChannelThisIteration) {
 							channelChangesThisIteration++;
 						}
-						transmissionProbabilities += cr.probabilityForTransmission;
 					}
 				}
-				
-				double averageTransmissionProbability = transmissionProbabilities
-						/ numberOfCRTransmitters;
 				
 				cumulativeRewards += currentRewardTotals;
 				double cumulativeRewardAverage = cumulativeRewards / (i + 1);
@@ -281,8 +265,6 @@ public class ACRSTRMain {
 					bw.write(Double.toString(cumulativeSuccessProbabilities) + "\n");
 				} else if (output.equals("channel-changes")) {
 					bw.write(Integer.toString(channelChangesThisIteration) + "\n");
-				} else if (output.equals("transmission-probability")) {
-					bw.write(Double.toString(averageTransmissionProbability) + "\n");
 				} else if (output.equals("average-of-last-n-rewards")) {
 					if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
 						double sumOfLastNValues = 0.0;

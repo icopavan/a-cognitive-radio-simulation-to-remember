@@ -4,18 +4,27 @@ import java.util.List;
 
 public class Spectrum implements Comparable<Spectrum> {
 
-	public List<CognitiveRadio> occupyingSecondaryUsers;
-	
 	public List<CognitiveRadio> occupyingAgents;
+	public PrimaryUser occupyingPU;
 	
 	public double frequency;
+	
 	
 	public boolean containsPrimaryUser;
 	
 	public Spectrum(double frequency) {
 		this.frequency = frequency;
-		occupyingSecondaryUsers = new ArrayList<CognitiveRadio>();
 		occupyingAgents = new ArrayList<CognitiveRadio>();
+	}
+	
+	public void getOccupiedByPU(PrimaryUser aPU) {
+		occupyingPU = aPU;
+		occupyingPU.occupiedSpectrum = this;
+	}
+	
+	public void getVacatedByPU() {
+		occupyingPU.occupiedSpectrum = null;
+		occupyingPU = null;
 	}
 	
 	@Override

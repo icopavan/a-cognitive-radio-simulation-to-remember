@@ -1,27 +1,14 @@
-import java.util.Random;
 
 
-public class PrimaryUser extends Agent {
+public class PrimaryUser {
 
+	public PrimaryUser peer;
+	public Role role;	
 	public String name;
+	public Spectrum occupiedSpectrum;
 
 	public PrimaryUser(String name, Environment environment) {
-		super(name, environment);
 		this.name = name;
-		randomGenerator = new Random();
-		iterationNumber = 0;
-	}
-	
-	public void choosePrimarySpectrum(Spectrum aSpectrum) {
-		currentState.spectrum = aSpectrum;
-		currentState.spectrum.containsPrimaryUser = true;
-	}
-	
-	public void iterate() {
-		if (role == Role.TRANSMITTER) {
-			transmit();
-			iterationNumber++;
-		}
 	}
 	
 }

@@ -15,15 +15,11 @@ public class CognitiveRadio {
 	public static final double DISCOUNT_FACTOR = 0.8;
 	public static final double MINIMUM_DOUBLE= - Double.MAX_VALUE;
 	public static final double LEARNING_RATE_REDUCTION_FACTOR = 0.995;
-	public static final double INITIAL_PROBABILITY_FOR_TRANSMISSION = 0.2;
+	public static final double PROBABILITY_FOR_TRANSMISSION = 0.2;
 	public static final double SPEED_OF_LIGHT = 3E8;
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
-	public static final double RECEIVER_THRESHOLD = 1E-8;
-	public static final double[] DISTANCES = { 1.0, 1.41, 2.0, 2.82, 3.0, 4.24 };
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
-	public static final double PROBABILITY_CHANGE_STEP = 0.1;
-	public static final double REWARD_COEFFICIENT_FOR_PROBABILITY = 25.0;
 	public static final double[] POWER_LEVELS = { 1000.0, 1250.0 };
 	public static final double POWER_LEVEL_COEFFICIENT = 0.01;
 	public static final double PU_COLLISION_PENALTY = -15.0;
@@ -61,7 +57,6 @@ public class CognitiveRadio {
 	public RatesResponse responseForRates;
 	public QValuesResponse responseForQValues;
 	public double epsilonDecrement;
-	public double probabilityForTransmission;
 	public boolean changeProbabilities;
 	public boolean successfullyTransmittedThisIteration;
 	
@@ -82,7 +77,6 @@ public class CognitiveRadio {
 		responseForQValues = qValueResponse;
 		responseForRates = ratesResponse;
 		epsilonDecrement = decreaseEpsilonBy;
-		probabilityForTransmission = INITIAL_PROBABILITY_FOR_TRANSMISSION;
 		availableActions = new ArrayList<Action>();
 		availableActions.add(Action.DO_NOTHING);
 		availableActions.add(Action.JUMP_SPECTRUM);
@@ -91,7 +85,6 @@ public class CognitiveRadio {
 	}
 	
 	public void act() {
-	
 		if (role == Role.TRANSMITTER) {
 			transmit();
 		} else {
@@ -110,7 +103,7 @@ public class CognitiveRadio {
 		isExploitingThisIteration = false;
 		changedChannelThisIteration = false;
 		double randomDouble = randomGenerator.nextDouble();
-		if (randomDouble < probabilityForTransmission) {
+		if (randomDouble < PROBABILITY_FOR_TRANSMISSION) {
 			isActiveThisIteration = true;
 			randomDouble = randomGenerator.nextDouble();
 			if (method == Method.QLEARNING) {
@@ -177,7 +170,6 @@ public class CognitiveRadio {
 	}
 	
 	public void jumpSpectrum(SpectrumAction aSpectrumAction) {
-		vacateChannel();
 		occupyChannel(aSpectrumAction.newSpectrum);
 		changedChannelThisIteration = true;
 	}
@@ -280,11 +272,13 @@ public class CognitiveRadio {
 			}
 		}
 		updateQ(thisIterationsStateAction, currentIterationsReward);
+		if (currentState.spectrum != null) {
+			vacateChannel();
+		}
 	}
 	
 	public double calculateReward() {
 		double reward;
-		
 		boolean puCollision = false, crCollision = false,
 				successfulTransmission = false;
 		
