@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TreeMap;
 
-public class CognitiveRadio extends Agent {
+public class CognitiveRadio {
 
 	public static final double INITIAL_EPSILON_VALUE = 0.8;
 	public static final double INITIAL_LEARNING_RATE = 0.8;
@@ -29,6 +29,13 @@ public class CognitiveRadio extends Agent {
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
 	public static final double SUCCESSFUL_TRANSMISSION_AWARD = 5.0;
+
+	public CognitiveRadio peer;
+	public Environment environment;
+	public Random randomGenerator;
+	public Role role;
+	public State currentState;
+	public String name;
 	
 	public int successfulTransmissions;
 	public HashSet<StateAction> offendingQValues;
@@ -58,10 +65,11 @@ public class CognitiveRadio extends Agent {
 	public boolean changeProbabilities;
 	public boolean successfullyTransmittedThisIteration;
 	
-	public CognitiveRadio(String name, Environment environment, Method aMethod,
+	public CognitiveRadio(String aName, Environment anEnvironment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
 			RatesResponse ratesResponse, double decreaseEpsilonBy) {
-		super(name, environment);
+		name = aName;
+		environment = anEnvironment;
 		offendingQValues = new HashSet<StateAction>();
 		successfulTransmissions = 0;
 		maximumNumberOfNegativeValuesTolerated = checkLastNValues;
@@ -79,10 +87,11 @@ public class CognitiveRadio extends Agent {
 		availableActions.add(Action.DO_NOTHING);
 		availableActions.add(Action.JUMP_SPECTRUM);
 		availableActions.add(Action.JUMP_POWER);
+		randomGenerator = new Random();
 	}
 	
 	public void act() {
-		randomGenerator = new Random();
+	
 		if (role == Role.TRANSMITTER) {
 			transmit();
 		} else {
@@ -96,14 +105,12 @@ public class CognitiveRadio extends Agent {
 		}
 	}
 	
-	@Override
 	public void transmit() {
 		isActiveThisIteration = false;
 		isExploitingThisIteration = false;
 		changedChannelThisIteration = false;
 		double randomDouble = randomGenerator.nextDouble();
 		if (randomDouble < probabilityForTransmission) {
-			super.transmit();
 			isActiveThisIteration = true;
 			randomDouble = randomGenerator.nextDouble();
 			if (method == Method.QLEARNING) {
@@ -116,32 +123,19 @@ public class CognitiveRadio extends Agent {
 				actionTaken = selectRandomAction();
 			}
 			State stateToSave = new State(currentState.spectrum,
-					currentState.transmissionPower);
+					currentState.transmission);
 			thisIterationsStateAction = new StateAction(stateToSave, actionTaken);
 			conductAction(actionTaken);
-		}
-		if (debug) {
-			ACRSTRUtil.log("End of iteration " + iterationNumber);
-			printQ();
 		}
 	}
 	
 	public void explore() {
-		if (debug) {
-			ACRSTRUtil.log(name + " is exploring.");
-		}
 		actionTaken = selectRandomAction();
 	}
 	
 	public void exploit() {
 		isExploitingThisIteration = true;
-		if (debug) {
-			ACRSTRUtil.log(name + " is exploiting.");
-		}
 		actionTaken = getBestAction();
-		if (debug) {
-			ACRSTRUtil.log(name + " decided best action to be " + actionTaken + ".");
-		}
 	}
 	
 	public AbstractAction selectRandomAction() {
@@ -199,7 +193,7 @@ public class CognitiveRadio extends Agent {
 	}
 	
 	public void jumpPower(PowerAction aPowerAction) {
-		currentState.transmissionPower = aPowerAction.newPower;
+		currentState.transmission.transmissionPower = aPowerAction.newPower;
 	}
 	
 	public AbstractAction getBestAction() {
@@ -231,7 +225,7 @@ public class CognitiveRadio extends Agent {
 			}
 		}
 		for (double powerLevel : POWER_LEVELS) {
-			if (powerLevel != currentState.transmissionPower) {
+			if (powerLevel != currentState.transmission.transmissionPower) {
 				possibleActions.add(new PowerAction(powerLevel));
 			}
 		}
@@ -239,14 +233,8 @@ public class CognitiveRadio extends Agent {
 		return possibleActions;
 	}
 	
-	@Override
 	public void receive() {
 		currentState.spectrum = peer.currentState.spectrum;
-		super.receive();
-	}
-	
-	public void initializeParameters() {
-		chooseSpectrum();
 	}
 	
 	public void evaluate() {
@@ -312,10 +300,7 @@ public class CognitiveRadio extends Agent {
 		successfullyTransmittedThisIteration = successfulTransmission;
 		reward = (puCollision ? PU_COLLISION_PENALTY : 0.0) + (crCollision ? CR_COLLISION_PENALTY : 0.0)
 				+ (successfulTransmission ? SUCCESSFUL_TRANSMISSION_AWARD : 0.0)
-				+ POWER_LEVEL_COEFFICIENT * currentState.transmissionPower;
-		if (debug) {
-			ACRSTRUtil.log(name + " got reward: " + reward);
-		}
+				+ POWER_LEVEL_COEFFICIENT * currentState.transmission.transmissionPower;
 		return reward;
 	}
 	
