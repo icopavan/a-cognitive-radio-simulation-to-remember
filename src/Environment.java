@@ -3,9 +3,7 @@ import java.util.List;
 
 public class Environment {
 
-	public int numberOfSpectra;
-	
-	public double[] availableSpectrums = { 125E6, 250E6, 500E6, 750E6, 1000E6 };
+	public static final double[] AVAILABLE_SPECTRA = { 125E6, 250E6, 500E6, 750E6, 1000E6 };
 	public List<Spectrum> spectrums;
 	public List<CognitiveRadio> cognitiveRadios;
 	public int numberOfSecondaryUsers;
@@ -13,15 +11,14 @@ public class Environment {
 	public List<Spectrum> channelsOccupiedByPUs;
 	public List<Spectrum> channelsWithSpectrumHoles;
 	
-	public Environment() {
-		numberOfSpectra = availableSpectrums.length;
+	public Environment(int aNumberForSecondaryUsers) {
 		spectrums = new ArrayList<Spectrum>();
-		for (int i = 0; i < numberOfSpectra; i++) {
-			spectrums.add(new Spectrum(availableSpectrums[i]));
+		for (double frequency : AVAILABLE_SPECTRA) {
+			spectrums.add(new Spectrum(frequency));
 		}
 		cognitiveRadios = new ArrayList<CognitiveRadio>();
 		primaryUsers = new ArrayList<PrimaryUser>();
-		numberOfSecondaryUsers = Integer.parseInt(ACRSTRUtil.getSetting("secondary-users"));
+		numberOfSecondaryUsers = aNumberForSecondaryUsers;
 		channelsOccupiedByPUs = new ArrayList<Spectrum>();
 		channelsWithSpectrumHoles = new ArrayList<Spectrum>();
 		channelsWithSpectrumHoles.addAll(spectrums);

@@ -14,6 +14,8 @@ import org.json.simple.JSONValue;
 
 
 public class ACRSTRSimulation {
+	
+	public static int NUMBER_OF_SECONDARY_USERS = 8;
 
 	public static int TAKE_AVERAGE_OF_N_VALUES = 100;
 	
@@ -45,8 +47,8 @@ public class ACRSTRSimulation {
 	public Environment environment;
 	public Random randomNumberGenerator;
 	
-	public void startSimulation() {
-		environment = new Environment();
+	public void startSimulation() throws IOException {
+		environment = new Environment(NUMBER_OF_SECONDARY_USERS);
 		randomNumberGenerator = new Random();
 		colors = new Stack<String>();
 		colors.push("blue");
@@ -81,27 +83,25 @@ public class ACRSTRSimulation {
 			System.out.println("An Implementation of 'Spectrum Management of " +
 					"Cognitive Radio Using Multi-agent Reinforcement Learning'\n");
 		}
-		try {
-			File oldOutput = new File(DIRECTORY_FOR_LATEST_OUTPUT);
-			if (oldOutput.exists()) {
-				oldOutput.renameTo(new File("acrstr-"
-						+ System.currentTimeMillis()));
-			}
+
+		File oldOutput = new File(DIRECTORY_FOR_LATEST_OUTPUT);
+		if (oldOutput.exists()) {
+			oldOutput.renameTo(new File("acrstr-"
+					+ System.currentTimeMillis()));
+		}
 			
-			String output = ACRSTRUtil.getSetting("output");
-			
-			for (QValuesResponse qvr : qValuesResponses) {
-				for (RatesResponse rsr : ratesResponses) {
-					for (Method m : methodsToSimulate) {
-						for (String d : epsilonDecrements) {
-							conductSimulation(m, qvr, rsr, output, d);
-						}
+		String output = ACRSTRUtil.getSetting("output");
+		
+		for (QValuesResponse qvr : qValuesResponses) {
+			for (RatesResponse rsr : ratesResponses) {
+				for (Method m : methodsToSimulate) {
+					for (String d : epsilonDecrements) {
+						conductSimulation(m, qvr, rsr, output, d);
 					}
 				}
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+
 	}
 	
 	public void introduceAPU(String puName) {
@@ -160,8 +160,6 @@ public class ACRSTRSimulation {
 			if (logging) {
 				ACRSTRUtil.log("Conducting simulation for method: " + method + ".\n");
 			}
-
-			Environment environment = new Environment();
 
 			for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 				environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1), environment, method,

@@ -130,9 +130,9 @@ public class CognitiveRadio {
 		randomInt = randomGenerator.nextInt(availableActions.size());
 		Action anAvailableAction = availableActions.get(randomInt);
 		if (anAvailableAction == Action.JUMP_SPECTRUM) {
-			int randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
+			int randomInt = randomGenerator.nextInt(Environment.AVAILABLE_SPECTRA.length);
 			Spectrum newSpectrum = environment.spectrums.get(randomInt);
-			randomInt = randomGenerator.nextInt(environment.numberOfSpectra);
+			randomInt = randomGenerator.nextInt(Environment.AVAILABLE_SPECTRA.length);
 			newSpectrum = environment.spectrums.get(randomInt);
 			return new SpectrumAction(newSpectrum);
 		} else if (anAvailableAction == Action.JUMP_POWER) {
