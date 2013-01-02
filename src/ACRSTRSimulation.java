@@ -173,7 +173,7 @@ public class ACRSTRSimulation {
 	public String getYLabel(String output) {
 		if (output.contains("reward")) {
 			return "Average Rewards";
-		} else if (output.contains("probabilit")) {
+		} else if (output.contains("probability")) {
 			return "Probability of Successful Transmission";
 		}
 		return "Unknown";

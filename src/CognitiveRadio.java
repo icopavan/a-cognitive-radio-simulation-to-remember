@@ -37,7 +37,6 @@ public class CognitiveRadio {
 	public Method method;
 	public double currentIterationsReward;
 	public int randomInt;
-	public boolean changedChannelThisIteration;
 	public boolean isActiveThisIteration;
 	
 	public StateAction thisIterationsStateAction;
@@ -86,7 +85,6 @@ public class CognitiveRadio {
 	public void transmit() {
 		isActiveThisIteration = false;
 		isExploitingThisIteration = false;
-		changedChannelThisIteration = false;
 		double randomDouble = randomGenerator.nextDouble();
 		if (randomDouble < PROBABILITY_FOR_TRANSMISSION) {
 			isActiveThisIteration = true;
@@ -136,7 +134,6 @@ public class CognitiveRadio {
 			Spectrum aSpectrum = environment.getChannel(aFrequency);
 			currentState.frequency = aSpectrum.frequency;
 			aSpectrum.occupyingAgents.add(this);
-			changedChannelThisIteration = true;
 		}
 	}
 	
