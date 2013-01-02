@@ -11,7 +11,7 @@ public class CognitiveRadio {
 	public static final double DISCOUNT_FACTOR = 0.8;
 	public static final double MINIMUM_DOUBLE= - Double.MAX_VALUE;
 	public static final double LEARNING_RATE_REDUCTION_FACTOR = 0.995;
-	public static final double PROBABILITY_FOR_TRANSMISSION = 0.2;
+	public static final double PROBABILITY_FOR_TRANSMISSION = 1.0;
 	public static final double SPEED_OF_LIGHT = 3E8;
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
@@ -217,29 +217,23 @@ public class CognitiveRadio {
 	}
 	
 	public double calculateReward() {
-		System.out.println("---");
-		System.out.println(currentState);
 		double reward;
 		boolean puCollision = false, crCollision = false,
 				successfulTransmission = false;
 		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
 		if (currentSpectrum != null && currentSpectrum.occupyingPU != null) {
-			System.out.println("pu collision");
 			puCollision = true;
 		}
 		if (currentSpectrum != null && isThereCRCollision()){
-			System.out.println("cr collision");
 			crCollision = true;
 		}
 		if (!puCollision && !crCollision && currentState.frequency != 0.0 &&
 				currentState.transmissionPower != 0.0) {
-			System.out.println("success");
 			successfulTransmission = true;
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
 		reward = (puCollision ? PU_COLLISION_PENALTY : 0.0) + (crCollision ? CR_COLLISION_PENALTY : 0.0)
 				+ (successfulTransmission ? POWER_LEVEL_COEFFICIENT * currentState.transmissionPower : 0.0);
-		System.out.println(reward);
 		return reward;
 	}
 	

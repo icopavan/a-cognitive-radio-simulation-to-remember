@@ -15,9 +15,8 @@ import org.json.simple.JSONValue;
 
 public class ACRSTRSimulation {
 
-	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 1000 };
+	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 5, 10, 15 };
 	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = { 6000, 8000 };
-	public static int NUMBER_OF_PRIMARY_USERS = 5;
 	public static int NUMBER_OF_SECONDARY_USERS = 1;
 
 	public static int TAKE_AVERAGE_OF_N_VALUES = 50;
@@ -133,8 +132,7 @@ public class ACRSTRSimulation {
 			for (int i = 0; i < numberOfIterations; i++) {
 				int index = 0;
 				for (int activationEpoch : EPOCHS_TO_ACTIVATE_PU_PAIRS) {
-					if (i == activationEpoch &&
-							environment.primaryUsers.size() <= NUMBER_OF_PRIMARY_USERS) {
+					if (i == activationEpoch) {
 						String puName = String.format("PU%s", index + 1);
 						environment.introduceAPU(puName);
 					}
