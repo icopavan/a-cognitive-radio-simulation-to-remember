@@ -9,9 +9,6 @@ public class Spectrum implements Comparable<Spectrum> {
 	
 	public double frequency;
 	
-	
-	public boolean containsPrimaryUser;
-	
 	public Spectrum(double frequency) {
 		this.frequency = frequency;
 		occupyingAgents = new ArrayList<CognitiveRadio>();

@@ -17,7 +17,7 @@ public class ACRSTRSimulation {
 
 	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 1000 };
 	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = { 6000, 8000 };
-	public static int NUMBER_OF_PRIMARY_USERS = 1;
+	public static int NUMBER_OF_PRIMARY_USERS = 5;
 	public static int NUMBER_OF_SECONDARY_USERS = 1;
 
 	public static int TAKE_AVERAGE_OF_N_VALUES = 50;
@@ -55,10 +55,9 @@ public class ACRSTRSimulation {
 		qValuesResponses.add(QValuesResponse.DELETE_OBSOLETE_VALUES);
 		ratesResponses.add(RatesResponse.SET_TO_MIDPOINT);
 		methodsToSimulate.add(Method.QLEARNING);
-		methodsToSimulate.add(Method.RANDOM);
 		lastValuesToCheck.add(5);
 		
-		epsilonDecrements.add("0.00008");
+		epsilonDecrements.add("0.0008");
 		
 		ACRSTRUtil.initialize();
 		puList = new ArrayList<PrimaryUser>();

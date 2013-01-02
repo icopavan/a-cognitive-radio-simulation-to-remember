@@ -16,7 +16,7 @@ public class CognitiveRadio {
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
-	public static final double[] POWER_LEVELS = { 1000.0, 1250.0 };
+	public static final double[] POWER_LEVELS = { 1000.0, 1250.0 , 1500.0};
 	public static final double POWER_LEVEL_COEFFICIENT = 0.01;
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
@@ -122,7 +122,7 @@ public class CognitiveRadio {
 	}
 	
 	public void conductAction(TransmissionAction action) {
-		currentState.frequency = action.frequency;
+		occupyChannel(action.frequency);
 		currentState.transmissionPower = action.transmissionPower;
 	}
 	
@@ -131,9 +131,12 @@ public class CognitiveRadio {
 		currentState.frequency = 0.0;
 	}
 	
-	public void occupyChannel(Spectrum aSpectrum) {
-		currentState.frequency = aSpectrum.frequency;
-		aSpectrum.occupyingAgents.add(this);
+	public void occupyChannel(double aFrequency) {
+		if (aFrequency != 0.0) {
+			Spectrum aSpectrum = environment.getChannel(aFrequency);
+			currentState.frequency = aSpectrum.frequency;
+			aSpectrum.occupyingAgents.add(this);
+		}
 	}
 	
 	public TransmissionAction getBestAction() {
@@ -214,24 +217,29 @@ public class CognitiveRadio {
 	}
 	
 	public double calculateReward() {
+		System.out.println("---");
+		System.out.println(currentState);
 		double reward;
 		boolean puCollision = false, crCollision = false,
 				successfulTransmission = false;
 		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
-		if (currentSpectrum != null && currentSpectrum.containsPrimaryUser) {
+		if (currentSpectrum != null && currentSpectrum.occupyingPU != null) {
+			System.out.println("pu collision");
 			puCollision = true;
 		}
 		if (currentSpectrum != null && isThereCRCollision()){
+			System.out.println("cr collision");
 			crCollision = true;
 		}
 		if (!puCollision && !crCollision && currentState.frequency != 0.0 &&
 				currentState.transmissionPower != 0.0) {
+			System.out.println("success");
 			successfulTransmission = true;
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
 		reward = (puCollision ? PU_COLLISION_PENALTY : 0.0) + (crCollision ? CR_COLLISION_PENALTY : 0.0)
 				+ (successfulTransmission ? POWER_LEVEL_COEFFICIENT * currentState.transmissionPower : 0.0);
-		System.out.println(method + " got " + reward);
+		System.out.println(reward);
 		return reward;
 	}
 	
