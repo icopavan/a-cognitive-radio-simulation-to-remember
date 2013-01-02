@@ -86,7 +86,7 @@ public class ACRSTRSimulation {
 		parameters.put("xLabel", X_AXIS_LABEL);
 		parameters.put("yLabel", getYLabel(output));
 			
-		int numberOfLines = output.startsWith("average-of-")
+		int numberOfLines = output.startsWith("average-")
 				? numberOfIterations / TAKE_AVERAGE_OF_N_VALUES : numberOfIterations;
 			
 		parameters.put("numberOfValues", Integer.toString(numberOfLines)); 
@@ -146,9 +146,9 @@ public class ACRSTRSimulation {
 			} else if (output.equals("probability")) {
 				bw.write(Double.toString(probabilityOfSuccessfulTransmission)
 						+ "\n");
-			} else if (output.equals("channel-changes")) {
+			} else if (output.equals("channel-change")) {
 				bw.write(Integer.toString(channelChangesThisIteration) + "\n");
-			} else if (output.equals("average-of-rewards")) {
+			} else if (output.equals("average-reward")) {
 				if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
 					double sumOfLastNValues = 0.0;
 					for (Double value : lastNAverages) {
@@ -160,7 +160,7 @@ public class ACRSTRSimulation {
 				} else {
 					lastNAverages.add(currentRewardAverage);
 				}
-			} else if (output.equals("average-of-probability")) {
+			} else if (output.equals("average-probability")) {
 				if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
 					double sumOfLastNValues = 0.0;
 					for (Double value : lastNProbabilities) {
@@ -172,7 +172,7 @@ public class ACRSTRSimulation {
 				} else {
 					lastNProbabilities.add(probabilityOfSuccessfulTransmission);
 				}
-			} else if (output.equals("average-of-channel-changes")) {
+			} else if (output.equals("average-channel-change")) {
 				if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
 					double sumOfLastNValues = 0.0;
 					for (Integer value : lastNChannelChanges) {
