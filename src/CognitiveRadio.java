@@ -28,7 +28,7 @@ public class CognitiveRadio {
 	
 	public int successfulTransmissions;
 	public HashSet<StateAction> offendingQValues;
-	public int negativeRewardsInARow;
+	public int unsuccessfulTransmissionsInARow;
 	public int REWARD_HISTORY_SIZE = 10;
 	public double epsilon;
 	public double learningRate;
@@ -41,7 +41,7 @@ public class CognitiveRadio {
 	
 	public StateAction thisIterationsStateAction;
 	public boolean isExploitingThisIteration;
-	public int maximumNumberOfNegativeValuesTolerated;
+	public int maximumUnsuccessfulTransmissionsTolerated;
 	public RatesResponse responseForRates;
 	public QValuesResponse responseForQValues;
 	public double epsilonDecrement;
@@ -58,8 +58,8 @@ public class CognitiveRadio {
 		environment = anEnvironment;
 		offendingQValues = new HashSet<StateAction>();
 		successfulTransmissions = 0;
-		maximumNumberOfNegativeValuesTolerated = checkLastNValues;
-		negativeRewardsInARow = 0;
+		maximumUnsuccessfulTransmissionsTolerated = checkLastNValues;
+		unsuccessfulTransmissionsInARow = 0;
 		method = aMethod;
 		Q = new HashMap<StateAction, Double>();
 		epsilon = 0.8;
@@ -169,16 +169,16 @@ public class CognitiveRadio {
 	public void evaluate() {
 		currentIterationsReward = calculateReward();
 		if (isExploitingThisIteration) {
-			if (currentIterationsReward < 0.0) {
-				negativeRewardsInARow++;
+			if (!successfullyTransmittedThisIteration) {
+				unsuccessfulTransmissionsInARow++;
 				offendingQValues.add(thisIterationsStateAction);
 			} else {
-				negativeRewardsInARow = 0;
+				unsuccessfulTransmissionsInARow = 0;
 				offendingQValues.clear();
 			}
-			if (negativeRewardsInARow > maximumNumberOfNegativeValuesTolerated) {
-				negativeRewardsInARow = 0;
-				if (maximumNumberOfNegativeValuesTolerated > 0) {
+			if (unsuccessfulTransmissionsInARow > maximumUnsuccessfulTransmissionsTolerated) {
+				unsuccessfulTransmissionsInARow = 0;
+				if (maximumUnsuccessfulTransmissionsTolerated > 0) {
 					if (responseForRates == RatesResponse.RESET_TO_INITIAL_VALUES) {
 						epsilon = INITIAL_EPSILON_VALUE;
 						learningRate = INITIAL_LEARNING_RATE;
