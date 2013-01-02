@@ -66,7 +66,6 @@ public class ACRSTRSimulation {
 			throws IOException {
 		List<Double> lastNAverages = new ArrayList<Double>();
 		List<Double> lastNProbabilities = new ArrayList<Double>();
-		List<Integer> lastNChannelChanges = new ArrayList<Integer>();
 		
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
@@ -123,16 +122,12 @@ public class ACRSTRSimulation {
 			}
 
 			int numberOfSuccessfulTransmissionsThisIteration = 0;
-			int channelChangesThisIteration = 0;
 
 			for (CognitiveRadio cr : environment.cognitiveRadios) {
 				cr.evaluate();
 				currentRewardTotals += cr.currentIterationsReward;
 				if (cr.successfullyTransmittedThisIteration) {
 					numberOfSuccessfulTransmissionsThisIteration++;
-				}
-				if (cr.changedChannelThisIteration) {
-					channelChangesThisIteration++;
 				}
 			}
 
@@ -146,8 +141,6 @@ public class ACRSTRSimulation {
 			} else if (output.equals("probability")) {
 				bw.write(Double.toString(probabilityOfSuccessfulTransmission)
 						+ "\n");
-			} else if (output.equals("channel-change")) {
-				bw.write(Integer.toString(channelChangesThisIteration) + "\n");
 			} else if (output.equals("average-reward")) {
 				if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
 					double sumOfLastNValues = 0.0;
@@ -172,19 +165,7 @@ public class ACRSTRSimulation {
 				} else {
 					lastNProbabilities.add(probabilityOfSuccessfulTransmission);
 				}
-			} else if (output.equals("average-channel-change")) {
-				if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
-					double sumOfLastNValues = 0.0;
-					for (Integer value : lastNChannelChanges) {
-						sumOfLastNValues += value;
-					}
-					double average = (double) sumOfLastNValues / TAKE_AVERAGE_OF_N_VALUES;
-					bw.write(Double.toString(average) + "\n");
-					lastNChannelChanges.clear();
-				} else {
-					lastNChannelChanges.add(channelChangesThisIteration);
-				}
-			} 
+			}
 		}
 		bw.close();
 	}
@@ -194,8 +175,6 @@ public class ACRSTRSimulation {
 			return "Average Rewards";
 		} else if (output.contains("probabilit")) {
 			return "Probability of Successful Transmission";
-		} else if (output.contains("channel-changes")) {
-			return "Number of Channel Changes";
 		}
 		return "Unknown";
 	}
