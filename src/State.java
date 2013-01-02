@@ -2,6 +2,20 @@
 
 public class State {
 
+	public double frequency;
+	public double transmissionPower;
+	
+	public State(double aFrequency, double aTransmissionPower) {
+		frequency = aFrequency;
+		transmissionPower = aTransmissionPower;
+	}
+
+	@Override
+	public String toString() {
+		return "State [frequency=" + frequency + ", transmissionPower="
+				+ transmissionPower + "]";
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -31,20 +45,5 @@ public class State {
 			return false;
 		return true;
 	}
-
-	public double frequency;
-	public double transmissionPower;
-	
-	@Override
-	public String toString() {
-		return "State [frequency=" + frequency + ", transmissionPower="
-				+ transmissionPower + "]";
-	}
-	
-	public State(double aFrequency, double aTransmissionPower) {
-		frequency = aFrequency;
-		transmissionPower = aTransmissionPower;
-	}
-
 
 }

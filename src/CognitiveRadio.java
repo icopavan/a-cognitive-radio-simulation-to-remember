@@ -31,16 +31,12 @@ public class CognitiveRadio {
 	public int negativeRewardsInARow;
 	public int REWARD_HISTORY_SIZE = 10;
 	public double epsilon;
-	public AbstractAction actionTaken;
-	public List<AbstractAction> possibleActions;
-	public List<Action> availableActions;
 	public double learningRate;
 	public HashMap<StateAction, Double> Q;
 	public double randomDouble;
 	public Method method;
 	public double currentIterationsReward;
 	public int randomInt;
-	public NothingAction nothingActionForComparison;
 	public boolean changedChannelThisIteration;
 	public boolean isActiveThisIteration;
 	
@@ -52,6 +48,9 @@ public class CognitiveRadio {
 	public double epsilonDecrement;
 	public boolean changeProbabilities;
 	public boolean successfullyTransmittedThisIteration;
+	public List<TransmissionAction> possibleActions;
+	
+	public TransmissionAction actionTaken;
 	
 	public CognitiveRadio(String aName, Environment anEnvironment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
@@ -66,16 +65,11 @@ public class CognitiveRadio {
 		Q = new HashMap<StateAction, Double>();
 		epsilon = 0.8;
 		learningRate = 0.8;
-		nothingActionForComparison = new NothingAction();
 		responseForQValues = qValueResponse;
 		responseForRates = ratesResponse;
 		epsilonDecrement = decreaseEpsilonBy;
-		availableActions = new ArrayList<Action>();
-		availableActions.add(Action.DO_NOTHING);
-		availableActions.add(Action.JUMP_SPECTRUM);
-		availableActions.add(Action.JUMP_POWER);
 		randomGenerator = new Random();
-		currentState = new State(Environment.AVAILABLE_SPECTRA[0], POWER_LEVELS[0]);
+		currentState = new State(0.0, 0.0);
 		possibleActions = getPossibleActions();
 	}
 	
@@ -122,34 +116,14 @@ public class CognitiveRadio {
 		actionTaken = getBestAction();
 	}
 	
-	public AbstractAction selectRandomAction() {
+	public TransmissionAction selectRandomAction() {
 		randomInt = randomGenerator.nextInt(possibleActions.size());
 		return possibleActions.get(randomInt);
 	}
 	
-	public void conductAction(AbstractAction abstractAction) {
-		Action chosenAction = determineAction(abstractAction);
-		if (chosenAction == Action.JUMP_SPECTRUM) {
-			jumpSpectrum((SpectrumAction) abstractAction);
-		} else if (chosenAction == Action.JUMP_POWER) {
-			jumpPower((PowerAction) abstractAction);
-		}
-	}
-	
-	public Action determineAction(AbstractAction action) {
-		String className = action.getClass().getSimpleName();
-		if (className.equals("PowerAction")) {
-			return Action.JUMP_POWER;
-		} else if (className.equals("SpectrumAction")) {
-			return Action.JUMP_SPECTRUM;
-		} else {
-			return Action.DO_NOTHING;
-		}
-	}
-	
-	public void jumpSpectrum(SpectrumAction aSpectrumAction) {
-		occupyChannel(aSpectrumAction.newSpectrum);
-		changedChannelThisIteration = true;
+	public void conductAction(TransmissionAction action) {
+		currentState.frequency = action.frequency;
+		currentState.transmissionPower = action.transmissionPower;
 	}
 	
 	public void vacateChannel() {
@@ -162,37 +136,32 @@ public class CognitiveRadio {
 		aSpectrum.occupyingAgents.add(this);
 	}
 	
-	public void jumpPower(PowerAction aPowerAction) {
-		currentState.transmissionPower = aPowerAction.newPower;
-	}
-	
-	public AbstractAction getBestAction() {
+	public TransmissionAction getBestAction() {
 		double maximumValue = MINIMUM_DOUBLE;
-		AbstractAction bestAction = null;
-		for (AbstractAction action : possibleActions) {
+		TransmissionAction bestAction = null;
+		for (TransmissionAction action : possibleActions) {
 			StateAction possibleStateAction = new StateAction(currentState, action);
 			if (Q.containsKey(possibleStateAction)) {
 				if (Q.get(possibleStateAction) > maximumValue) {
 					maximumValue = Q.get(possibleStateAction);
-					bestAction = possibleStateAction.action;
+					bestAction = possibleStateAction.transmissionAction;
 				}
 			}
 		}
 		if (bestAction == null) {
-			return new NothingAction();
+			return selectRandomAction();
 		}
 		return bestAction;
 	}
 	
-	public List<AbstractAction> getPossibleActions() {
-		possibleActions = new ArrayList<AbstractAction>();
-		for (Spectrum availableSpectrum : environment.spectra) {
-			possibleActions.add(new SpectrumAction(availableSpectrum));
+	public List<TransmissionAction> getPossibleActions() {
+		List<TransmissionAction> possibleActions = new ArrayList<TransmissionAction>();
+		for (double frequency : Environment.AVAILABLE_SPECTRA) {
+			for (double transmissionPower : POWER_LEVELS) {
+				possibleActions.add(new TransmissionAction(frequency, transmissionPower));
+			}
 		}
-		for (double powerLevel : POWER_LEVELS) {
-			possibleActions.add(new PowerAction(powerLevel));
-		}
-		possibleActions.add(new NothingAction());
+		possibleActions.add(new TransmissionAction(0.0, 0.0));
 		return possibleActions;
 	}
 	
@@ -290,7 +259,7 @@ public class CognitiveRadio {
 	
 	public double maxQ() {
 		List<StateAction> allStateActions = new ArrayList<StateAction>();
-		for (AbstractAction possibleAction : possibleActions) {
+		for (TransmissionAction possibleAction : possibleActions) {
 			allStateActions.add(new StateAction(currentState, possibleAction));
 		}
 		List<StateAction> stateActionsWithPolicies = new ArrayList<StateAction>();

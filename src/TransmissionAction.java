@@ -1,9 +1,11 @@
 
-public class Transmission {
-	
+public class TransmissionAction {
+
+	public double frequency;
 	public double transmissionPower;
 	
-	public Transmission(double aTransmissionPower) {
+	public TransmissionAction(double aFrequency, double aTransmissionPower) {
+		frequency = aFrequency;
 		transmissionPower = aTransmissionPower;
 	}
 
@@ -12,6 +14,8 @@ public class Transmission {
 		final int prime = 31;
 		int result = 1;
 		long temp;
+		temp = Double.doubleToLongBits(frequency);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(transmissionPower);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
@@ -25,12 +29,14 @@ public class Transmission {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Transmission other = (Transmission) obj;
+		TransmissionAction other = (TransmissionAction) obj;
+		if (Double.doubleToLongBits(frequency) != Double
+				.doubleToLongBits(other.frequency))
+			return false;
 		if (Double.doubleToLongBits(transmissionPower) != Double
 				.doubleToLongBits(other.transmissionPower))
 			return false;
 		return true;
 	}
 	
-
 }

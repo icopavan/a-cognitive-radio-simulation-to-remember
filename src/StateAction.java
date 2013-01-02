@@ -2,25 +2,28 @@
 public class StateAction {
 
 	public State state;
-	
-	public AbstractAction action;
+	public TransmissionAction transmissionAction;
 
-	public StateAction(State aState, AbstractAction anAction) {
+	public StateAction(State aState, TransmissionAction anAction) {
 		this.state = aState;
-		this.action = anAction;
+		this.transmissionAction = anAction;
 	}
 	
 	@Override
 	public String toString() {
-		return "StateAction [state=" + state + ", action=" + action + "]";
+		return "StateAction [state=" + state + ", transmissionAction="
+				+ transmissionAction + "]";
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((action == null) ? 0 : action.hashCode());
 		result = prime * result + ((state == null) ? 0 : state.hashCode());
+		result = prime
+				* result
+				+ ((transmissionAction == null) ? 0 : transmissionAction
+						.hashCode());
 		return result;
 	}
 
@@ -33,15 +36,15 @@ public class StateAction {
 		if (getClass() != obj.getClass())
 			return false;
 		StateAction other = (StateAction) obj;
-		if (action == null) {
-			if (other.action != null)
-				return false;
-		} else if (!AbstractAction.compareActions(action, other.action))
-			return false;
 		if (state == null) {
 			if (other.state != null)
 				return false;
 		} else if (!state.equals(other.state))
+			return false;
+		if (transmissionAction == null) {
+			if (other.transmissionAction != null)
+				return false;
+		} else if (!transmissionAction.equals(other.transmissionAction))
 			return false;
 		return true;
 	}

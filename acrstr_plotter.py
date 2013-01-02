@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 import matplotlib.pyplot as plt
 import json, os, glob, sys
 
