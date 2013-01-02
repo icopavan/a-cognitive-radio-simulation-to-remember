@@ -32,12 +32,22 @@ public class ACRSTRSimulation {
 	public RatesResponse ratesResponse;
 	public Method methodToSimulate;
 	public Integer lastValuesToCheck;
-	public String epsilonDecrement;
+	public Double epsilonDecrement;
 	
 	public static Stack<String> colors;
 	
 	public Environment environment;
 	public Random randomNumberGenerator;
+	
+	public ACRSTRSimulation(Method aMethod, double anEpsilonDecrement,
+			Integer aLastValuesToCheck, QValuesResponse aQValuesResponse,
+			RatesResponse aRatesResponse) {
+		methodToSimulate = aMethod;
+		epsilonDecrement = new Double(anEpsilonDecrement);
+		lastValuesToCheck = new Integer(aLastValuesToCheck);
+		qValuesResponse = aQValuesResponse;
+		ratesResponse = aRatesResponse;
+	}
 	
 	public void startSimulation() throws IOException {
 		environment = new Environment(NUMBER_OF_SECONDARY_USERS);
@@ -46,14 +56,7 @@ public class ACRSTRSimulation {
 		colors.push("blue");
 		colors.push("red");
 				
-		qValuesResponse = QValuesResponse.DELETE_OBSOLETE_VALUES;
-		ratesResponse = RatesResponse.SET_TO_MIDPOINT;
-		methodToSimulate = Method.QLEARNING;
-		lastValuesToCheck = new Integer(5);
-		epsilonDecrement = "0.0008";
-		
 		ACRSTRUtil.initialize();
-		puList = new ArrayList<PrimaryUser>();
 		try {
 			ACRSTRUtil.readSettingsFile();
 		} catch (FileNotFoundException e1) {
@@ -72,7 +75,7 @@ public class ACRSTRSimulation {
 	}
 	
 	public void conductSimulation(Method method, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, String output, String epsilonDecrement,
+			RatesResponse ratesResponse, String output, Double epsilonDecrement,
 			Integer lastValuesToCheck)
 			throws IOException {
 		List<Double> lastNAverages = new ArrayList<Double>();
@@ -92,7 +95,7 @@ public class ACRSTRSimulation {
 		parameters.put("q response", qValueResponse.toString());
 		parameters.put("rate response", ratesResponse.toString());
 		parameters.put("color", colors.pop());
-		parameters.put("epsilon decrement", epsilonDecrement);
+		parameters.put("epsilon decrement", epsilonDecrement.toString());
 		parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
 		parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
 		parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));
@@ -108,7 +111,7 @@ public class ACRSTRSimulation {
 		for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 			environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1),
 					environment, method, lastValuesToCheck, qValueResponse,
-					ratesResponse, Double.parseDouble(epsilonDecrement)));
+					ratesResponse, epsilonDecrement));
 		}
 			
 		for (int i = 0; i < numberOfIterations; i++) {
