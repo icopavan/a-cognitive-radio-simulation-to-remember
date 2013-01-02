@@ -14,9 +14,9 @@ import org.json.simple.JSONValue;
 public class ACRSTRSimulation {
 
 	public static int NUMBER_OF_SECONDARY_USERS = 2;
-	public static int TAKE_AVERAGE_OF_N_VALUES = 50;
-	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 5, 1000, 3000 };
-	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = { 6000, 7000 };
+	public static int TAKE_AVERAGE_OF_N_VALUES = 100;
+	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 5, 10 };
+	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = { };
 	public static String X_AXIS_LABEL = "Iteration";
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	

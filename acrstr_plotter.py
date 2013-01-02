@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 import json, os, glob, sys
 
-LEGEND_POSITION = 3
+LEGEND_POSITION = 4
 GLOB_PATTERN = 'acrstr-latest'
 NUMBER_OF_EPOCHS = 10000
 
@@ -42,7 +42,8 @@ def plot_a_simulation(values, info, filedir):
         labels[index] = label * NUMBER_OF_EPOCHS / number_of_values
     plot_data(labels, values, info),
     plt.legend(loc=LEGEND_POSITION)
-    plt.ylim(last_min_y-1, last_max_y+1)
+    difference = last_max_y - last_min_y
+    plt.ylim(last_min_y - difference / 10.0, last_max_y + difference / 10.0)
 
 def plot_data(x, y, info):
     global last_min_y, last_max_y

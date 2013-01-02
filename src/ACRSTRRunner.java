@@ -14,9 +14,9 @@ public class ACRSTRRunner {
 					+ System.currentTimeMillis()));
 		}
 		ACRSTRSimulation simulation1 = new ACRSTRSimulation(Method.QLEARNING,
-				0.0008, 5, QValuesResponse.DELETE_OBSOLETE_VALUES,
+				0.0008, 0, QValuesResponse.DELETE_OBSOLETE_VALUES,
 				RatesResponse.SET_TO_MIDPOINT, "blue");
-		ACRSTRSimulation simulation2 = new ACRSTRSimulation(Method.QLEARNING,
+		ACRSTRSimulation simulation2 = new ACRSTRSimulation(Method.RANDOM,
 				0.0008, 0, QValuesResponse.DELETE_OBSOLETE_VALUES,
 				RatesResponse.SET_TO_MIDPOINT, "red");
 		try {
