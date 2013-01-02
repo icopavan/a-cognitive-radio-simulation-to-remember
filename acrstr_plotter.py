@@ -21,9 +21,7 @@ def read_files(filedir):
         for line in opened_file:
             values.append(float(line))
         averages.append([get_average(values), info])
-        plot_an_epochs_values(values, info, filedir)
-#    plot_differing_values(averages, filedir)
-    os.chdir('..')
+        plot_a_simulation(values, info, filedir)
 
 def get_average(values):
     running_sum = 0.0
@@ -31,16 +29,7 @@ def get_average(values):
         running_sum += value
     return running_sum / len(values)
 
-# def plot_differing_values(values_in_pairs, filedir):
-#     differing_values = []
-#     infos = []
-#     for value_and_info in values_in_pairs:
-#         differing_values.append(value_and_info[0])
-#         infos.append('[' + value_and_info[1]["q response"] + '-'
-#                      + value_and_info[1]["rate response"] + ']')
-#     plt.plot(range(len(differing_values)), differing_values)
-
-def plot_an_epochs_values(values, info, filedir):
+def plot_a_simulation(values, info, filedir):
     number_of_values = int(info['numberOfValues'])
     labels = range(1,1+number_of_values)
     for index, label in enumerate(labels):
