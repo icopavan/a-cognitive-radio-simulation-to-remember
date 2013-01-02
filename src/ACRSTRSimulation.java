@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Stack;
 
 import org.json.simple.JSONValue;
 
@@ -27,25 +26,23 @@ public class ACRSTRSimulation {
 	public Method methodToSimulate;
 	public QValuesResponse qValuesResponse;
 	public RatesResponse ratesResponse;
-	public Random randomNumberGenerator;	
-	public Stack<String> colors;
+	public Random randomNumberGenerator;
+	public String color;
 	
 	public ACRSTRSimulation(Method aMethod, double anEpsilonDecrement,
 			Integer aLastValuesToCheck, QValuesResponse aQValuesResponse,
-			RatesResponse aRatesResponse) {
+			RatesResponse aRatesResponse, String aColor) {
 		methodToSimulate = aMethod;
 		epsilonDecrement = new Double(anEpsilonDecrement);
 		lastValuesToCheck = new Integer(aLastValuesToCheck);
 		qValuesResponse = aQValuesResponse;
 		ratesResponse = aRatesResponse;
+		color = aColor;
 	}
 	
 	public void startSimulation() throws IOException {
 		environment = new Environment(NUMBER_OF_SECONDARY_USERS);
 		randomNumberGenerator = new Random();
-		colors = new Stack<String>();
-		colors.push("blue");
-		colors.push("red");
 				
 		ACRSTRUtil.initialize();
 		ACRSTRUtil.readSettingsFile();
@@ -79,7 +76,7 @@ public class ACRSTRSimulation {
 		parameters.put("checked recent values", lastValuesToCheck.toString());
 		parameters.put("q response", qValueResponse.toString());
 		parameters.put("rate response", ratesResponse.toString());
-		parameters.put("color", colors.pop());
+		parameters.put("color", color);
 		parameters.put("epsilon decrement", epsilonDecrement.toString());
 		parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
 		parameters.put("xLabel", X_AXIS_LABEL);
