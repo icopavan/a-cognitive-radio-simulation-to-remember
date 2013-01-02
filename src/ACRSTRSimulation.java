@@ -16,7 +16,7 @@ import org.json.simple.JSONValue;
 public class ACRSTRSimulation {
 
 	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 5, 10, 15 };
-	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = { 6000, 8000 };
+	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = {};
 	public static int NUMBER_OF_SECONDARY_USERS = 1;
 
 	public static int TAKE_AVERAGE_OF_N_VALUES = 50;
