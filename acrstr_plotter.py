@@ -22,6 +22,8 @@ def read_files(filedir):
             values.append(float(line))
         averages.append([get_average(values), info])
         plot_a_simulation(values, info, filedir)
+    plt.savefig(filedir + '.png')
+    plt.clf()
 
 def get_average(values):
     running_sum = 0.0
@@ -37,8 +39,6 @@ def plot_a_simulation(values, info, filedir):
     plot_data(labels, values, info),
     plt.legend(loc=LEGEND_POSITION)
     plt.ylim(last_min_y-1, last_max_y+1)
-    plt.savefig(filedir + '.png')
-    plt.clf()
 
 def plot_data(x, y, info):
     global last_min_y, last_max_y

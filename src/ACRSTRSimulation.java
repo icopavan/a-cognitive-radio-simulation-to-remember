@@ -17,8 +17,8 @@ public class ACRSTRSimulation {
 	public static int TAKE_AVERAGE_OF_N_VALUES = 50;
 	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 5, 10, 15 };
 	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = {};
-	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";	
 	public static String X_AXIS_LABEL = "Iteration";
+	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
 	public Double epsilonDecrement;
 	public Environment environment;	
@@ -47,11 +47,6 @@ public class ACRSTRSimulation {
 		ACRSTRUtil.initialize();
 		ACRSTRUtil.readSettingsFile();
 
-		File oldOutput = new File(DIRECTORY_FOR_LATEST_OUTPUT);
-		if (oldOutput.exists()) {
-			oldOutput.renameTo(new File("acrstr-"
-					+ System.currentTimeMillis()));
-		}
 		String output = ACRSTRUtil.getSetting("output");
 		conductSimulation(methodToSimulate, qValuesResponse, ratesResponse,
 				output, epsilonDecrement, lastValuesToCheck);
