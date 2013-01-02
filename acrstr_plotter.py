@@ -3,21 +3,17 @@ import matplotlib.pyplot as plt
 import json, os, glob, sys
 
 LEGEND_POSITION = 3
-LATEST_OUTPUT_DIRECTORY = 'acrstr-latest'
-GLOB_PATTERN = LATEST_OUTPUT_DIRECTORY
+GLOB_PATTERN = 'acrstr-latest'
 NUMBER_OF_EPOCHS = 10000
 
 last_min_y = sys.float_info.max
 last_max_y = - sys.float_info.max
-
-processed_files = []
 
 def read_files(filedir):
     files = os.listdir(filedir)
     files.sort()
     os.chdir(filedir)
     averages = []
-    convergences = []
     for a_file in files:
         values = []
         opened_file = open(a_file, 'r')
@@ -25,37 +21,26 @@ def read_files(filedir):
         for line in opened_file:
             values.append(float(line))
         averages.append([get_average(values), info])
-        convergences.append([get_convergence(values), info])
-        plot_an_epochs_values(values, info)
-    plot_differing_values(averages, filedir)
+        plot_an_epochs_values(values, info, filedir)
+#    plot_differing_values(averages, filedir)
     os.chdir('..')
 
-def get_convergence(values):
-    convergence = 1
-    for index, value in enumerate(values):
-        if index > 0:
-            if value != values[index - 1]:
-                convergence = index + 1
-    return convergence
-                
 def get_average(values):
     running_sum = 0.0
     for value in values:
         running_sum += value
     return running_sum / len(values)
 
-def plot_differing_values(values_in_pairs, filedir):
-    differing_values = []
-    infos = []
-    for value_and_info in values_in_pairs:
-        differing_values.append(value_and_info[0])
-        infos.append('[' + value_and_info[1]["q response"] + '-'
-                     + value_and_info[1]["rate response"] + ']')
-    plt.plot(range(len(differing_values)), differing_values)
-    plt.savefig(filedir + '.png')
-    plt.clf()
+# def plot_differing_values(values_in_pairs, filedir):
+#     differing_values = []
+#     infos = []
+#     for value_and_info in values_in_pairs:
+#         differing_values.append(value_and_info[0])
+#         infos.append('[' + value_and_info[1]["q response"] + '-'
+#                      + value_and_info[1]["rate response"] + ']')
+#     plt.plot(range(len(differing_values)), differing_values)
 
-def plot_an_epochs_values(values, info):
+def plot_an_epochs_values(values, info, filedir):
     number_of_values = int(info['numberOfValues'])
     labels = range(1,1+number_of_values)
     for index, label in enumerate(labels):
@@ -63,6 +48,8 @@ def plot_an_epochs_values(values, info):
     plot_data(labels, values, info),
     plt.legend(loc=LEGEND_POSITION)
     plt.ylim(last_min_y-1, last_max_y+1)
+    plt.savefig(filedir + '.png')
+    plt.clf()
 
 def plot_data(x, y, info):
     global last_min_y, last_max_y
