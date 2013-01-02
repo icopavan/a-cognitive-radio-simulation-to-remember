@@ -42,7 +42,7 @@ def plot_a_simulation(values, info, filedir):
 
 def plot_data(x, y, info):
     global last_min_y, last_max_y
-    plt.plot(x, y, label=info['comparing'], c=info['color'])
+    plt.plot(x, y, label=info['legend'], c=info['color'])
     current_min_y = min(y)
     current_max_y = max(y)
     if current_min_y < last_min_y:
