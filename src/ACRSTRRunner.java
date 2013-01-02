@@ -11,15 +11,15 @@ public class ACRSTRRunner {
 			oldOutput.renameTo(new File("acrstr-"
 					+ System.currentTimeMillis()));
 		}
-		ACRSTRSimulation qLearningSimulation = new ACRSTRSimulation(Method.QLEARNING,
+		ACRSTRSimulation simulation1 = new ACRSTRSimulation(Method.QLEARNING,
 				0.0008, 5, QValuesResponse.DELETE_OBSOLETE_VALUES,
 				RatesResponse.SET_TO_MIDPOINT, "blue");
-		ACRSTRSimulation randomSimulation = new ACRSTRSimulation(Method.RANDOM,
+		ACRSTRSimulation simulation2 = new ACRSTRSimulation(Method.RANDOM,
 				0.0008, 5, QValuesResponse.DELETE_OBSOLETE_VALUES,
 				RatesResponse.SET_TO_MIDPOINT, "red");
 		try {
-			qLearningSimulation.startSimulation();
-			randomSimulation.startSimulation();
+			simulation1.startSimulation();
+			simulation2.startSimulation();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
