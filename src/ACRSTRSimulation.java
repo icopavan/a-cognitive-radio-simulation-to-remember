@@ -16,13 +16,14 @@ public class ACRSTRSimulation {
 	public static int NUMBER_OF_SECONDARY_USERS = 2;
 	public static int TAKE_AVERAGE_OF_N_VALUES = 50;
 	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 5, 1000, 3000 };
-	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = { 7000 };
+	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = { 6000, 7000 };
 	public static String X_AXIS_LABEL = "Iteration";
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 	
 	public Double epsilonDecrement;
 	public Environment environment;	
 	public Integer lastValuesToCheck;
+	public Map<String, String> parameters;
 	public Method methodToSimulate;
 	public QValuesResponse qValuesResponse;
 	public RatesResponse ratesResponse;
@@ -66,7 +67,7 @@ public class ACRSTRSimulation {
 		
 		String filename = DIRECTORY_FOR_LATEST_OUTPUT + '/' + System.currentTimeMillis() + ".txt";
 		BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
-		Map<String, String> parameters = new HashMap<String, String>();
+		parameters = new HashMap<String, String>();
 		parameters.put("method", method.toString());
 		parameters.put("checked recent values", lastValuesToCheck.toString());
 		parameters.put("q response", qValueResponse.toString());

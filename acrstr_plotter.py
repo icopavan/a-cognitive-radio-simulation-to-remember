@@ -11,10 +11,14 @@ last_max_y = - sys.float_info.max
 
 def read_files(filedir):
     files = os.listdir(filedir)
-    files.sort()
+    txt_files = []
+    for a_file in files:
+        if a_file[-3:] == 'txt':
+            txt_files.append(a_file)
+    txt_files.sort()
     os.chdir(filedir)
     averages = []
-    for a_file in files:
+    for a_file in txt_files:
         values = []
         opened_file = open(a_file, 'r')
         info = json.loads(opened_file.readline())

@@ -1,4 +1,6 @@
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 
@@ -20,6 +22,16 @@ public class ACRSTRRunner {
 		try {
 			simulation1.startSimulation();
 			simulation2.startSimulation();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			BufferedWriter infoBW = new BufferedWriter
+					(new FileWriter(ACRSTRSimulation.DIRECTORY_FOR_LATEST_OUTPUT + "/info.ini"));
+			infoBW.write(simulation1.parameters.toString() + "\n");
+			infoBW.write(simulation2.parameters.toString() + "\n");
+			infoBW.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
