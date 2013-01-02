@@ -136,6 +136,7 @@ public class CognitiveRadio {
 			Spectrum aSpectrum = environment.getChannel(aFrequency);
 			currentState.frequency = aSpectrum.frequency;
 			aSpectrum.occupyingAgents.add(this);
+			changedChannelThisIteration = true;
 		}
 	}
 	

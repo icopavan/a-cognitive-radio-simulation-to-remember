@@ -1,6 +1,5 @@
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,29 +14,21 @@ import org.json.simple.JSONValue;
 
 public class ACRSTRSimulation {
 
+	public static int NUMBER_OF_SECONDARY_USERS = 1;
+	public static int TAKE_AVERAGE_OF_N_VALUES = 50;
 	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 5, 10, 15 };
 	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = {};
-	public static int NUMBER_OF_SECONDARY_USERS = 1;
-
-	public static int TAKE_AVERAGE_OF_N_VALUES = 50;
+	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";	
+	public static String X_AXIS_LABEL = "Iteration";
 	
-	public static ArrayList<PrimaryUser> puList;
-		
-	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
-	
-	public static final int START_N_VALUES = 0;
-	public static final int END_N_VALUES = 0;
-	
+	public Double epsilonDecrement;
+	public Environment environment;	
+	public Integer lastValuesToCheck;
+	public Method methodToSimulate;
 	public QValuesResponse qValuesResponse;
 	public RatesResponse ratesResponse;
-	public Method methodToSimulate;
-	public Integer lastValuesToCheck;
-	public Double epsilonDecrement;
-	
-	public static Stack<String> colors;
-	
-	public Environment environment;
-	public Random randomNumberGenerator;
+	public Random randomNumberGenerator;	
+	public Stack<String> colors;
 	
 	public ACRSTRSimulation(Method aMethod, double anEpsilonDecrement,
 			Integer aLastValuesToCheck, QValuesResponse aQValuesResponse,
@@ -57,11 +48,7 @@ public class ACRSTRSimulation {
 		colors.push("red");
 				
 		ACRSTRUtil.initialize();
-		try {
-			ACRSTRUtil.readSettingsFile();
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		}
+		ACRSTRUtil.readSettingsFile();
 
 		File oldOutput = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		if (oldOutput.exists()) {
@@ -71,7 +58,6 @@ public class ACRSTRSimulation {
 		String output = ACRSTRUtil.getSetting("output");
 		conductSimulation(methodToSimulate, qValuesResponse, ratesResponse,
 				output, epsilonDecrement, lastValuesToCheck);
-
 	}
 	
 	public void conductSimulation(Method method, QValuesResponse qValueResponse,
@@ -97,10 +83,10 @@ public class ACRSTRSimulation {
 		parameters.put("color", colors.pop());
 		parameters.put("epsilon decrement", epsilonDecrement.toString());
 		parameters.put("comparing", parameters.get(ACRSTRUtil.getSetting("compare")));
-		parameters.put("xLabel", ACRSTRUtil.getSetting("x-label"));
-		parameters.put("yLabel", ACRSTRUtil.getSetting("y-label"));
+		parameters.put("xLabel", X_AXIS_LABEL);
+		parameters.put("yLabel", getYLabel(output));
 			
-		int numberOfLines = output.startsWith("average-of-last-n-")
+		int numberOfLines = output.startsWith("average-of-")
 				? numberOfIterations / TAKE_AVERAGE_OF_N_VALUES : numberOfIterations;
 			
 		parameters.put("numberOfValues", Integer.toString(numberOfLines)); 
@@ -153,20 +139,16 @@ public class ACRSTRSimulation {
 			double probabilityOfSuccessfulTransmission = (double) numberOfSuccessfulTransmissionsThisIteration
 					/ environment.numberOfSecondaryUsers;
 
-			for (Spectrum s : environment.spectra) {
-				s.occupyingAgents.clear();
-			}
-
 			double currentRewardAverage = currentRewardTotals
 					/ environment.numberOfSecondaryUsers;
-			if (output.equals("average")) {
+			if (output.equals("reward")) {
 				bw.write(Double.toString(currentRewardAverage) + "\n");	
 			} else if (output.equals("probability")) {
 				bw.write(Double.toString(probabilityOfSuccessfulTransmission)
 						+ "\n");
 			} else if (output.equals("channel-changes")) {
 				bw.write(Integer.toString(channelChangesThisIteration) + "\n");
-			} else if (output.equals("average-of-last-n-rewards")) {
+			} else if (output.equals("average-of-rewards")) {
 				if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
 					double sumOfLastNValues = 0.0;
 					for (Double value : lastNAverages) {
@@ -178,7 +160,7 @@ public class ACRSTRSimulation {
 				} else {
 					lastNAverages.add(currentRewardAverage);
 				}
-			} else if (output.equals("average-of-last-n-probabilities")) {
+			} else if (output.equals("average-of-probability")) {
 				if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
 					double sumOfLastNValues = 0.0;
 					for (Double value : lastNProbabilities) {
@@ -190,8 +172,7 @@ public class ACRSTRSimulation {
 				} else {
 					lastNProbabilities.add(probabilityOfSuccessfulTransmission);
 				}
-
-			} else if (output.equals("average-of-last-n-channel-changes")) {
+			} else if (output.equals("average-of-channel-changes")) {
 				if (i % TAKE_AVERAGE_OF_N_VALUES == 0) {
 					double sumOfLastNValues = 0.0;
 					for (Integer value : lastNChannelChanges) {
@@ -203,12 +184,20 @@ public class ACRSTRSimulation {
 				} else {
 					lastNChannelChanges.add(channelChangesThisIteration);
 				}
-
 			} 
 		}
-
 		bw.close();
-
+	}
+	
+	public String getYLabel(String output) {
+		if (output.contains("reward")) {
+			return "Average Rewards";
+		} else if (output.contains("probabilit")) {
+			return "Probability of Successful Transmission";
+		} else if (output.contains("channel-changes")) {
+			return "Number of Channel Changes";
+		}
+		return "Unknown";
 	}
 
 }
