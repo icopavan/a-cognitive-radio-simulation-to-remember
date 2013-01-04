@@ -69,11 +69,11 @@ public class ACRSTRSimulation {
 		BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
 		parameters = new HashMap<String, String>();
 		parameters.put("method", method.toString());
-		parameters.put("checked recent values", lastValuesToCheck.toString());
-		parameters.put("q response", qValueResponse.toString());
-		parameters.put("rate response", ratesResponse.toString());
+		parameters.put("evaluation", lastValuesToCheck.toString());
+		parameters.put("q-response", qValueResponse.toString());
+		parameters.put("rate-response", ratesResponse.toString());
 		parameters.put("color", color);
-		parameters.put("epsilon decrement", epsilonDecrement.toString());
+		parameters.put("epsilon-decrement", epsilonDecrement.toString());
 		String compared = ACRSTRUtil.getSetting("compare");
 		String instance = parameters.get(compared);
 		parameters.put("legend", getLegend(compared, instance));
@@ -177,7 +177,7 @@ public class ACRSTRSimulation {
 	public String getLegend(String compared, String instance) {
 		if (compared.equals("method")) {
 			return instance;
-		} else if (compared.equals("checked recent values")) {
+		} else if (compared.equals("evaluation")) {
 			int checkedLastValues = Integer.parseInt(instance);
 			if (checkedLastValues > 0) {
 				return String.format("Evaluate Last %d values", checkedLastValues);
