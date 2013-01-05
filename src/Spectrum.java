@@ -24,6 +24,10 @@ public class Spectrum implements Comparable<Spectrum> {
 		occupyingPU = null;
 	}
 	
+	public boolean isUnderPUOccupation() {
+		return occupyingPU != null;
+	}
+	
 	@Override
 	public String toString() {
 		return frequency + " MHz";

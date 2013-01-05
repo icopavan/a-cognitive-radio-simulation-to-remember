@@ -20,6 +20,7 @@ public class CognitiveRadio {
 	public static final double POWER_LEVEL_COEFFICIENT = 0.01;
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
+	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
 
 	public Environment environment;
 	public Random randomGenerator;
@@ -80,6 +81,20 @@ public class CognitiveRadio {
 				epsilon -= epsilonDecrement;
 			}
 		}
+	}
+	
+	public boolean sense() {
+		double randomDouble = randomGenerator.nextDouble();
+		Spectrum currentSpectrum = getCurrentSpectrum();
+		if (randomDouble < PROBABILITY_FOR_CORRECT_SENSING) {
+			return currentSpectrum.isUnderPUOccupation();
+		} else {
+			return !(currentSpectrum.isUnderPUOccupation());
+		}
+	}
+	
+	public Spectrum getCurrentSpectrum() {
+		return environment.getChannel(currentState.frequency);
 	}
 	
 	public void transmit() {
