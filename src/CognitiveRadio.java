@@ -21,6 +21,7 @@ public class CognitiveRadio {
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
+	public static final int EVALUATION_OFFSET_RANGE = 5; 
 
 	public int iteration;
 	public Environment environment;
@@ -190,42 +191,46 @@ public class CognitiveRadio {
 	
 	public void evaluate() {
 		currentIterationsReward = calculateReward();
-		if (isExploitingThisIteration) {
-			if (!successfullyTransmittedThisIteration) {
-				unsuccessfulTransmissionsInARow++;
-				offendingQValues.add(thisIterationsStateAction);
-			} else {
-				unsuccessfulTransmissionsInARow = 0;
-				offendingQValues.clear();
-			}
-			if (unsuccessfulTransmissionsInARow > maximumUnsuccessfulTransmissionsTolerated) {
-				unsuccessfulTransmissionsInARow = 0;
-				if (maximumUnsuccessfulTransmissionsTolerated > 0) {
-					if (responseForRates == RatesResponse.RESET_TO_INITIAL_VALUES) {
-						epsilon = INITIAL_EPSILON_VALUE;
-						learningRate = INITIAL_LEARNING_RATE;
-					} else if (responseForRates == RatesResponse.SET_TO_MIDPOINT) {
-						epsilon += (INITIAL_EPSILON_VALUE - epsilon) / 2.0;
-						learningRate += (INITIAL_LEARNING_RATE - learningRate) / 2.0;
-					} else if (responseForRates == RatesResponse.INCREASE_BY_CONSTANT) {
-						epsilon += CONSTANT_TO_INCREASE_RATES;
-						if (epsilon > 0.8) {
-							epsilon = 0.8;
+		if (maximumUnsuccessfulTransmissionsTolerated > 0) {
+			int randomOffset = randomGenerator.nextInt(EVALUATION_OFFSET_RANGE);
+			if (isExploitingThisIteration) {
+				if (!successfullyTransmittedThisIteration) {
+					unsuccessfulTransmissionsInARow++;
+					offendingQValues.add(thisIterationsStateAction);
+				} else {
+					unsuccessfulTransmissionsInARow = 0;
+					offendingQValues.clear();
+				}
+				if (unsuccessfulTransmissionsInARow > maximumUnsuccessfulTransmissionsTolerated
+						+ randomOffset) {
+					unsuccessfulTransmissionsInARow = 0;
+					if (maximumUnsuccessfulTransmissionsTolerated > 0) {
+						if (responseForRates == RatesResponse.RESET_TO_INITIAL_VALUES) {
+							epsilon = INITIAL_EPSILON_VALUE;
+							learningRate = INITIAL_LEARNING_RATE;
+						} else if (responseForRates == RatesResponse.SET_TO_MIDPOINT) {
+							epsilon += (INITIAL_EPSILON_VALUE - epsilon) / 2.0;
+							learningRate += (INITIAL_LEARNING_RATE - learningRate) / 2.0;
+						} else if (responseForRates == RatesResponse.INCREASE_BY_CONSTANT) {
+							epsilon += CONSTANT_TO_INCREASE_RATES;
+							if (epsilon > 0.8) {
+								epsilon = 0.8;
+							}
+							learningRate += CONSTANT_TO_INCREASE_RATES;
+							if (learningRate > 0.8) {
+								learningRate = 0.8;
+							}
 						}
-						learningRate += CONSTANT_TO_INCREASE_RATES;
-						if (learningRate > 0.8) {
-							learningRate = 0.8;
+
+						if (responseForQValues == QValuesResponse.DELETE_OBSOLETE_VALUES) {
+							for (StateAction offendingStateAction : offendingQValues) {
+								Q.remove(offendingStateAction);
+							}
+						} else if (responseForQValues == QValuesResponse.DELETE_ALL_VALUES) {
+							Q.clear();
+						} else if (responseForQValues == QValuesResponse.KEEP_ALL_VALUES) {
+							// Do nothing
 						}
-					}
-					
-					if (responseForQValues == QValuesResponse.DELETE_OBSOLETE_VALUES) {
-						for (StateAction offendingStateAction : offendingQValues) {
-							Q.remove(offendingStateAction);
-						}
-					} else if (responseForQValues == QValuesResponse.DELETE_ALL_VALUES) {
-						Q.clear();
-					} else if (responseForQValues == QValuesResponse.KEEP_ALL_VALUES) {
-						// Do nothing
 					}
 				}
 			}
