@@ -300,8 +300,6 @@ public class CognitiveRadio {
 		return false;
 	}
 	
-
-	
 	public void establishPreferredSpectrum() {
 		int maximumPastSuccesses = 0;
 		double preferredSpectrum = 0.0;
@@ -314,7 +312,9 @@ public class CognitiveRadio {
 				maximumPastSuccesses = pastSuccesses;
 			}
 		}
-
+		if (preferredSpectrum != 0.0) {
+			currentState.preferredFrequency = preferredSpectrum;
+		}
 	}
 	
 	public void updateQ(StateAction stateAction, double reward) {
