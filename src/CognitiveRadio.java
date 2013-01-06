@@ -236,10 +236,16 @@ public class CognitiveRadio {
 		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
 		if (currentSpectrum != null && currentSpectrum.occupyingPU != null) {
 			puCollision = true;
+			if (currentState.frequency == currentState.frequencyOfPreferredChannel) {
+				resetPreferredChannel();
+			}
 			preferredSpectrumCandidates.remove(currentState.frequency);
 		}
 		if (currentSpectrum != null && isThereCRCollision()){
 			crCollision = true;
+			if (currentState.frequency == currentState.frequencyOfPreferredChannel) {
+				resetPreferredChannel();
+			}
 			preferredSpectrumCandidates.remove(currentState.frequency);
 		}
 		if (!puCollision && !crCollision && currentState.frequency != 0.0 &&
@@ -268,6 +274,10 @@ public class CognitiveRadio {
 		return false;
 	}
 	
+	public void resetPreferredChannel() {
+		currentState.frequencyOfPreferredChannel = 0.0;
+	}
+	
 	public void establishPreferredSpectrum() {
 		int maximumPastSuccesses = 0;
 		double preferredSpectrum = 0.0;
@@ -280,7 +290,7 @@ public class CognitiveRadio {
 			}
 		}
 		if (preferredSpectrum != 0.0) {
-			
+			currentState.frequencyOfPreferredChannel = preferredSpectrum;
 		}
 	}
 	
