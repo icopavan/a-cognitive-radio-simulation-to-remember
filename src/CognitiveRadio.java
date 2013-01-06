@@ -264,7 +264,7 @@ public class CognitiveRadio {
 			}
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
-		reward = successfulTransmission ? ENERGY_EFFICIENCY_COEFFICIENT * energyEfficiency: 0.0;
+		reward = successfulTransmission ? ENERGY_EFFICIENCY_COEFFICIENT * energyEfficiency : -energyConsumption;
 		return reward;
 	}
 	
