@@ -138,12 +138,7 @@ public class CognitiveRadio {
 		occupyChannel(action.frequency);
 		currentState.transmissionPower = action.transmissionPower;
 	}
-	
-	public void vacateChannel() {
-		environment.getChannel(currentState.frequency).occupyingAgents.remove(this);
-		currentState.frequency = 0.0;
-	}
-	
+
 	public void occupyChannel(double aFrequency) {
 		if (aFrequency != 0.0) {
 			Spectrum aSpectrum = environment.getChannel(aFrequency);
@@ -224,9 +219,6 @@ public class CognitiveRadio {
 			}
 		}
 		updateQ(thisIterationsStateAction, currentIterationsReward);
-		if (currentState.frequency != 0.0) {
-			vacateChannel();
-		}
 	}
 	
 	public double calculateReward() {
