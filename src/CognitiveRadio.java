@@ -11,7 +11,7 @@ public class CognitiveRadio {
 	public static final double DISCOUNT_FACTOR = 0.8;
 	public static final double MINIMUM_DOUBLE= - Double.MAX_VALUE;
 	public static final double LEARNING_RATE_REDUCTION_FACTOR = 0.995;
-	public static final double PROBABILITY_FOR_TRANSMISSION = 1.0;
+	public static final double PROBABILITY_FOR_TRANSMISSION = 0.5;
 	public static final double SPEED_OF_LIGHT = 3E8;
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
@@ -135,11 +135,15 @@ public class CognitiveRadio {
 	}
 	
 	public void conductAction(TransmissionAction action) {
-		occupyChannel(action.frequency);
+		switchChannel(action.frequency);
 		currentState.transmissionPower = action.transmissionPower;
 	}
 
-	public void occupyChannel(double aFrequency) {
+	public void switchChannel(double aFrequency) {
+		if (currentState.frequency != 0.0) {
+			Spectrum currentSpectrum = getCurrentSpectrum();
+			currentSpectrum.occupyingAgents.remove(this);
+		}
 		if (aFrequency != 0.0) {
 			Spectrum aSpectrum = environment.getChannel(aFrequency);
 			currentState.frequency = aSpectrum.frequency;
@@ -243,7 +247,7 @@ public class CognitiveRadio {
 	}
 	
 	public boolean isThereCRCollision() {
-		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
+		Spectrum currentSpectrum = getCurrentSpectrum();
 		for (CognitiveRadio cr : currentSpectrum.occupyingAgents) {
 			if (!this.equals(cr) && cr.isActiveThisIteration) {
 				return true;
