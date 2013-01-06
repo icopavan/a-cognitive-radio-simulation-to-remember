@@ -4,19 +4,16 @@ public class State {
 
 	public double frequency;
 	public double transmissionPower;
-	public double preferredFrequency;
 	
 	public State(double aFrequency, double aTransmissionPower) {
 		frequency = aFrequency;
 		transmissionPower = aTransmissionPower;
-		preferredFrequency = 0.0;
 	}
 
 	@Override
 	public String toString() {
 		return "State [frequency=" + frequency + ", transmissionPower="
-				+ transmissionPower + ", preferredFrequency="
-				+ preferredFrequency + "]";
+				+ transmissionPower + "]";
 	}
 
 	@Override
@@ -25,8 +22,6 @@ public class State {
 		int result = 1;
 		long temp;
 		temp = Double.doubleToLongBits(frequency);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(preferredFrequency);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(transmissionPower);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -44,9 +39,6 @@ public class State {
 		State other = (State) obj;
 		if (Double.doubleToLongBits(frequency) != Double
 				.doubleToLongBits(other.frequency))
-			return false;
-		if (Double.doubleToLongBits(preferredFrequency) != Double
-				.doubleToLongBits(other.preferredFrequency))
 			return false;
 		if (Double.doubleToLongBits(transmissionPower) != Double
 				.doubleToLongBits(other.transmissionPower))

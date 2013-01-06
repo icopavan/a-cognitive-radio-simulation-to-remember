@@ -49,7 +49,7 @@ public class ACRSTRUtil {
 		}
 	}
 	
-	public static void log(String logLine) {
+	public static void log(Object logLine) {
 		try {
 			bufferedWriter = new BufferedWriter(new FileWriter(OUTPUT_FILE_NAME + OUTPUT_FILE_EXTENSION, true));
 			bufferedWriter.write(logLine + "\n");

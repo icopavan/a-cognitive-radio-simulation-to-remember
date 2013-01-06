@@ -13,7 +13,6 @@ public class CognitiveRadio {
 	public static final double MINIMUM_DOUBLE= - Double.MAX_VALUE;
 	public static final double LEARNING_RATE_REDUCTION_FACTOR = 0.995;
 	public static final double PROBABILITY_FOR_TRANSMISSION = 1.0;
-	public static final double PREFERRED_ACTION_BOOST = 10.0;
 	public static final double SPEED_OF_LIGHT = 3E8;
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
@@ -23,10 +22,11 @@ public class CognitiveRadio {
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
-	public static final int MINIMUM_SUCCESSFUL_TRANSMISSION_FOR_PREFERRED_SPECTRUM = 20;
-	public static final int PREFERRED_CHANNEL_TOLERANCE = 10;
+	public static final int MINIMUM_SUCCESSFUL_TRANSMISSION_FOR_PREFERRED_SPECTRUM = 10;
+	public static final int PREFERRED_CHANNEL_TOLERANCE = 5;
 
 	public double preferredChannelErrors;
+	public double preferredFrequency;
 	public int iteration;
 	public Environment environment;
 	public Random randomGenerator;
@@ -134,10 +134,8 @@ public class CognitiveRadio {
 			if (method == Method.QLEARNING) {
 				if (randomDouble < epsilon || Q.size() == 0) {
 					explore();
-					System.out.println("exploring");
 				} else {
 					exploit();
-					System.out.println("exploiting");
 				}
 			} else if (method == Method.RANDOM) {
 				actionTaken = selectRandomAction();
@@ -166,15 +164,10 @@ public class CognitiveRadio {
 			if (Q.containsKey(possibleStateAction)) {
 				if (Q.get(possibleStateAction) > maximumValue) {
 					maximumValue = Q.get(possibleStateAction);
-					if (hasAPreferredChannel() && 
-							possibleStateAction.state.frequency == currentState.frequency) {
-						maximumValue += PREFERRED_ACTION_BOOST;
-					}
 					bestAction = possibleStateAction.transmissionAction;
 				}
 			}
 		}
-		
 		if (bestAction == null) {
 			return selectRandomAction();
 		}
@@ -182,7 +175,7 @@ public class CognitiveRadio {
 	}
 	
 	public boolean hasAPreferredChannel() {
-		return (currentState.preferredFrequency != 0.0);
+		return (preferredFrequency != 0.0);
 	}
 	
 	public TransmissionAction selectRandomAction() {
@@ -208,7 +201,6 @@ public class CognitiveRadio {
 	}
 	
 	public void evaluate() {
-		System.out.println(this);
 		currentIterationsReward = calculateReward();
 		if (isExploitingThisIteration) {
 			if (!successfullyTransmittedThisIteration) {
@@ -250,7 +242,9 @@ public class CognitiveRadio {
 				}
 			}
 		}
-
+		if (!hasAPreferredChannel()) {
+			establishPreferredSpectrum();
+		}
 		updateQ(thisIterationsStateAction, currentIterationsReward);
 	}
 	
@@ -260,18 +254,15 @@ public class CognitiveRadio {
 				successfulTransmission = false;
 		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
 		if (currentSpectrum != null && currentSpectrum.occupyingPU != null) {
-			System.out.println("Pu collision on " + currentState.frequency);
 			puCollision = true;
-
 			preferredSpectrumCandidates.remove(currentState.frequency);
 		}
 		if (currentSpectrum != null && isThereCRCollision()) {
-			System.out.println("Cr collision on " + currentState.frequency);
 			crCollision = true;
 			preferredChannelErrors++;
 			if (preferredChannelErrors > PREFERRED_CHANNEL_TOLERANCE) {
-
 				preferredSpectrumCandidates.remove(currentState.frequency);
+				preferredChannelErrors = 0;
 			}
 		}
 		if (!puCollision && !crCollision && currentState.frequency != 0.0 &&
@@ -302,18 +293,18 @@ public class CognitiveRadio {
 	
 	public void establishPreferredSpectrum() {
 		int maximumPastSuccesses = 0;
-		double preferredSpectrum = 0.0;
+		double aPreferredSpectrum = 0.0;
 		for (Map.Entry<Double, Integer> preferredSpectrumCandidate 
 				: preferredSpectrumCandidates.entrySet()) {
 			int pastSuccesses = preferredSpectrumCandidate.getValue();
 			if (pastSuccesses > MINIMUM_SUCCESSFUL_TRANSMISSION_FOR_PREFERRED_SPECTRUM
 					&& pastSuccesses > maximumPastSuccesses) {
-				preferredSpectrum = preferredSpectrumCandidate.getKey();
+				aPreferredSpectrum = preferredSpectrumCandidate.getKey();
 				maximumPastSuccesses = pastSuccesses;
 			}
 		}
-		if (preferredSpectrum != 0.0) {
-			currentState.preferredFrequency = preferredSpectrum;
+		if (aPreferredSpectrum != 0.0) {
+			preferredFrequency = aPreferredSpectrum;
 		}
 	}
 	
@@ -351,6 +342,12 @@ public class CognitiveRadio {
 			}
 		}
 		return maximumValue;
+	}
+	
+	public void printQValues() {
+		for (Map.Entry<StateAction, Double> qValue : Q.entrySet()) {
+			ACRSTRUtil.log("SA: " + qValue.getKey() + " ,r: " + qValue.getValue());
+		}
 	}
 	
 }
