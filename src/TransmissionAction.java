@@ -1,6 +1,12 @@
 
 public class TransmissionAction {
 
+	@Override
+	public String toString() {
+		return "TransmissionAction [frequency=" + frequency
+				+ ", transmissionPower=" + transmissionPower + "]";
+	}
+
 	public double frequency;
 	public double transmissionPower;
 	
