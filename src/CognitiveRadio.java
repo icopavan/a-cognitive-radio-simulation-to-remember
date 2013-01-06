@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class CognitiveRadio {
@@ -21,12 +22,13 @@ public class CognitiveRadio {
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
+	public static final int MINIMUM_SUCCESSFUL_TRANSMISSION_FOR_PREFERRED_SPECTRUM = 10;
 
+	public int iteration;
 	public Environment environment;
 	public Random randomGenerator;
 	public State currentState;
 	public String name;
-	
 	public int successfulTransmissions;
 	public HashSet<StateAction> offendingQValues;
 	public int unsuccessfulTransmissionsInARow;
@@ -39,7 +41,6 @@ public class CognitiveRadio {
 	public double currentIterationsReward;
 	public int randomInt;
 	public boolean isActiveThisIteration;
-	
 	public StateAction thisIterationsStateAction;
 	public boolean isExploitingThisIteration;
 	public int maximumUnsuccessfulTransmissionsTolerated;
@@ -49,8 +50,8 @@ public class CognitiveRadio {
 	public boolean changeProbabilities;
 	public boolean successfullyTransmittedThisIteration;
 	public List<TransmissionAction> possibleActions;
-	
 	public TransmissionAction actionTaken;
+	public Map<Double, Integer> preferredSpectrumCandidates;
 	
 	public CognitiveRadio(String aName, Environment anEnvironment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
@@ -71,9 +72,12 @@ public class CognitiveRadio {
 		randomGenerator = new Random();
 		currentState = new State(0.0, 0.0);
 		possibleActions = getPossibleActions();
+		preferredSpectrumCandidates = new HashMap<Double, Integer>();
+		iteration = 0;
 	}
 	
 	public void act() {
+		iteration++;
 		transmit();
 		if (method == Method.QLEARNING) {
 			learningRate *= LEARNING_RATE_REDUCTION_FACTOR;
@@ -232,13 +236,21 @@ public class CognitiveRadio {
 		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
 		if (currentSpectrum != null && currentSpectrum.occupyingPU != null) {
 			puCollision = true;
+			preferredSpectrumCandidates.remove(currentState.frequency);
 		}
 		if (currentSpectrum != null && isThereCRCollision()){
 			crCollision = true;
+			preferredSpectrumCandidates.remove(currentState.frequency);
 		}
 		if (!puCollision && !crCollision && currentState.frequency != 0.0 &&
 				currentState.transmissionPower != 0.0) {
 			successfulTransmission = true;
+			if (preferredSpectrumCandidates.containsKey(currentState.frequency)) {
+				int oldValue = preferredSpectrumCandidates.get(currentState.frequency);
+				preferredSpectrumCandidates.put(currentState.frequency, oldValue + 1);
+			} else {
+				preferredSpectrumCandidates.put(currentState.frequency, 1);
+			}
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
 		reward = (puCollision ? PU_COLLISION_PENALTY : 0.0) + (crCollision ? CR_COLLISION_PENALTY : 0.0)
@@ -254,6 +266,22 @@ public class CognitiveRadio {
 			}
 		}
 		return false;
+	}
+	
+	public void establishPreferredSpectrum() {
+		int maximumPastSuccesses = 0;
+		double preferredSpectrum = 0.0;
+		for (Map.Entry<Double, Integer> preferredSpectrumCandidate : preferredSpectrumCandidates.entrySet()) {
+			int pastSuccesses = preferredSpectrumCandidate.getValue();
+			if (pastSuccesses > MINIMUM_SUCCESSFUL_TRANSMISSION_FOR_PREFERRED_SPECTRUM
+					&& pastSuccesses > maximumPastSuccesses) {
+				preferredSpectrum = preferredSpectrumCandidate.getKey();
+				maximumPastSuccesses = pastSuccesses;
+			}
+		}
+		if (preferredSpectrum != 0.0) {
+			
+		}
 	}
 	
 	public void updateQ(StateAction stateAction, double reward) {
