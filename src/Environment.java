@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class Environment {
 
-	public static final double[] AVAILABLE_SPECTRA = { 125E6, 250E6, 500E6, 750E6, 1000E6 };
+	public static final double[] AVAILABLE_SPECTRA = { 1600.0, 1620.0, 1640.0, 1660.0, 1680.0 };
 	public List<Spectrum> spectra;
 	public List<CognitiveRadio> cognitiveRadios;
 	public int numberOfSecondaryUsers;

@@ -26,7 +26,7 @@ def read_files(filedir):
             values.append(float(line))
         averages.append([get_average(values), info])
         plot_a_simulation(values, info, filedir)
-    plt.savefig(filedir + '.png')
+    plt.savefig(txt_files[-1][:-4] + '.png')
     plt.clf()
 
 def get_average(values):

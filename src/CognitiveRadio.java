@@ -17,13 +17,15 @@ public class CognitiveRadio {
 	public static final double DISTANCE = 5.0;
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
 	public static final double[] POWER_LEVELS = { 1000.0, 1250.0 , 1500.0};
-	public static final double POWER_LEVEL_COEFFICIENT = 0.01;
+	public static final double ENERGY_EFFICIENCY_COEFFICIENT = 2.0;
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
-	public static final int EVALUATION_OFFSET_RANGE = 5; 
+	public static final int EVALUATION_OFFSET_RANGE = 5;
+	public static final double SWITCHING_POWER_PER_CHANNEL = 0.5;
 
 	public int iteration;
+	public double energyConsumption;
 	public Environment environment;
 	public Random randomGenerator;
 	public State currentState;
@@ -92,6 +94,7 @@ public class CognitiveRadio {
 	
 	public void act() {
 		iteration++;
+		energyConsumption = 0.0;
 		transmit();
 		if (method == Method.QLEARNING) {
 			learningRate *= LEARNING_RATE_REDUCTION_FACTOR;
@@ -178,6 +181,8 @@ public class CognitiveRadio {
 	}
 
 	public void switchChannel(double aFrequency) {
+		double frequencyDifference = Math.abs(currentState.frequency - aFrequency);
+		energyConsumption += frequencyDifference * SWITCHING_POWER_PER_CHANNEL;
 		if (currentState.frequency != 0.0) {
 			Spectrum currentSpectrum = getCurrentSpectrum();
 			currentSpectrum.occupyingAgents.remove(this);
@@ -239,7 +244,7 @@ public class CognitiveRadio {
 	}
 	
 	public double calculateReward() {
-		double reward;
+		double reward, energyEfficiency = 0.0;
 		boolean puCollision = false, crCollision = false,
 				successfulTransmission = false;
 		Spectrum currentSpectrum = environment.getChannel(currentState.frequency);
@@ -252,10 +257,13 @@ public class CognitiveRadio {
 		if (!puCollision && !crCollision && currentState.frequency != 0.0 &&
 				currentState.transmissionPower != 0.0) {
 			successfulTransmission = true;
+			if (energyConsumption > 0) {
+				energyEfficiency = currentState.transmissionPower / energyConsumption;	
+			}
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
 		reward = (puCollision ? PU_COLLISION_PENALTY : 0.0) + (crCollision ? CR_COLLISION_PENALTY : 0.0)
-				+ (successfulTransmission ? POWER_LEVEL_COEFFICIENT * currentState.transmissionPower : 0.0);
+				+ (successfulTransmission ? ENERGY_EFFICIENCY_COEFFICIENT * energyEfficiency: 0.0);
 		return reward;
 	}
 	
