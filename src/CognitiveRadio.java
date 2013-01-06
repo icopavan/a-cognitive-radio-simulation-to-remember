@@ -22,8 +22,10 @@ public class CognitiveRadio {
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
-	public static final int MINIMUM_SUCCESSFUL_TRANSMISSION_FOR_PREFERRED_SPECTRUM = 10;
+	public static final int MINIMUM_SUCCESSFUL_TRANSMISSION_FOR_PREFERRED_SPECTRUM = 20;
+	public static final int PREFERRED_CHANNEL_TOLERANCE = 10;
 
+	public double preferredChannelErrors;
 	public int iteration;
 	public Environment environment;
 	public Random randomGenerator;
@@ -74,6 +76,7 @@ public class CognitiveRadio {
 		possibleActions = getPossibleActions();
 		preferredSpectrumCandidates = new HashMap<Double, Integer>();
 		iteration = 0;
+		preferredChannelErrors = 0;
 	}
 	
 	public void act() {
@@ -159,6 +162,10 @@ public class CognitiveRadio {
 		double maximumValue = MINIMUM_DOUBLE;
 		TransmissionAction bestAction = null;
 		for (TransmissionAction action : possibleActions) {
+			if (currentState.frequencyOfPreferredChannel != 0.0
+					&& action.frequency != currentState.frequencyOfPreferredChannel) {
+				continue;
+			}
 			StateAction possibleStateAction = new StateAction(currentState, action);
 			if (Q.containsKey(possibleStateAction)) {
 				if (Q.get(possibleStateAction) > maximumValue) {
@@ -243,10 +250,13 @@ public class CognitiveRadio {
 		}
 		if (currentSpectrum != null && isThereCRCollision()){
 			crCollision = true;
-			if (currentState.frequency == currentState.frequencyOfPreferredChannel) {
-				resetPreferredChannel();
+			preferredChannelErrors++;
+			if (preferredChannelErrors > PREFERRED_CHANNEL_TOLERANCE) {
+				if (currentState.frequency == currentState.frequencyOfPreferredChannel) {
+					resetPreferredChannel();
+				}
+				preferredSpectrumCandidates.remove(currentState.frequency);
 			}
-			preferredSpectrumCandidates.remove(currentState.frequency);
 		}
 		if (!puCollision && !crCollision && currentState.frequency != 0.0 &&
 				currentState.transmissionPower != 0.0) {
