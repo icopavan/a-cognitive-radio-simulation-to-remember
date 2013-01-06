@@ -23,6 +23,7 @@ public class CognitiveRadio {
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
 	public static final int EVALUATION_OFFSET_RANGE = 5;
 	public static final double SWITCHING_POWER_PER_CHANNEL = 0.5;
+	public static final double SENSING_POWER = 50;
 
 	public int iteration;
 	public double energyConsumption;
@@ -107,6 +108,7 @@ public class CognitiveRadio {
 	}
 	
 	public boolean sense() {
+		energyConsumption += SENSING_POWER;
 		double randomDouble = randomGenerator.nextDouble();
 		Spectrum currentSpectrum = getCurrentSpectrum();
 		if (randomDouble < PROBABILITY_FOR_CORRECT_SENSING) {
@@ -262,8 +264,7 @@ public class CognitiveRadio {
 			}
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
-		reward = (puCollision ? PU_COLLISION_PENALTY : 0.0) + (crCollision ? CR_COLLISION_PENALTY : 0.0)
-				+ (successfulTransmission ? ENERGY_EFFICIENCY_COEFFICIENT * energyEfficiency: 0.0);
+		reward = successfulTransmission ? ENERGY_EFFICIENCY_COEFFICIENT * energyEfficiency: 0.0;
 		return reward;
 	}
 	
