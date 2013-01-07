@@ -21,7 +21,6 @@ public class CognitiveRadio {
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
-	public static final int EVALUATION_OFFSET_RANGE = 5;
 	public static final double SWITCHING_POWER_PER_CHANNEL = 0.5;
 	public static final double SENSING_POWER = 50;
 
@@ -208,7 +207,6 @@ public class CognitiveRadio {
 	public void evaluate() {
 		currentIterationsReward = calculateReward();
 		if (maximumUnsuccessfulTransmissionsTolerated > 0) {
-			int randomOffset = randomGenerator.nextInt(EVALUATION_OFFSET_RANGE);
 			if (isExploitingThisIteration) {
 				if (!successfullyTransmittedThisIteration) {
 					unsuccessfulTransmissionsInARow++;
@@ -217,8 +215,7 @@ public class CognitiveRadio {
 					unsuccessfulTransmissionsInARow = 0;
 					offendingQValues.clear();
 				}
-				if (unsuccessfulTransmissionsInARow > maximumUnsuccessfulTransmissionsTolerated
-						+ randomOffset) {
+				if (unsuccessfulTransmissionsInARow > maximumUnsuccessfulTransmissionsTolerated) {
 					unsuccessfulTransmissionsInARow = 0;
 					if (maximumUnsuccessfulTransmissionsTolerated > 0) {
 						if (responseForRates == RatesResponse.RESET_TO_INITIAL_VALUES) {
