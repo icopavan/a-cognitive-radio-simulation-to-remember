@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class CognitiveRadio {
@@ -152,7 +153,7 @@ public class CognitiveRadio {
 				if (randomDouble < greedyExploration) {
 					explore();
 				} else {
-					//greedyExploit();
+					greedyExploit();
 				}
 			}
 			State stateToSave = new State(currentState.frequency,
@@ -169,6 +170,10 @@ public class CognitiveRadio {
 	public void exploit() {
 		isExploitingThisIteration = true;
 		actionTaken = getBestAction();
+	}
+	
+	public void greedyExploit() {
+		actionTaken = greedyBestAction();
 	}
 	
 	public TransmissionAction getBestAction() {
@@ -192,6 +197,21 @@ public class CognitiveRadio {
 	public TransmissionAction selectRandomAction() {
 		randomInt = randomGenerator.nextInt(possibleActions.size());
 		return possibleActions.get(randomInt);
+	}
+	
+	public TransmissionAction greedyBestAction() {
+		double maximumValue = MINIMUM_DOUBLE;
+		TransmissionAction bestAction = null;
+		for (Map.Entry<StateAction, Double> previousAction : previousRewards.entrySet()) {
+			if (previousAction.getValue() > maximumValue) {
+				maximumValue = previousAction.getValue();
+				bestAction = previousAction.getKey().transmissionAction;
+			}
+		}
+		if (bestAction == null) {
+			return selectRandomAction();
+		}
+		return bestAction;
 	}
 	
 	public void conductAction(TransmissionAction action) {
@@ -266,6 +286,8 @@ public class CognitiveRadio {
 				}
 			}
 			updateQ(thisIterationsStateAction, currentIterationsReward);
+		} else if (method == Method.GREEDY) {
+			updateGreedyHistory(thisIterationsStateAction, currentIterationsReward);
 		}
 	}
 	
@@ -336,6 +358,10 @@ public class CognitiveRadio {
 			}
 		}
 		return maximumValue;
+	}
+	
+	public void updateGreedyHistory(StateAction aStateAction, Double aReward) {
+		previousRewards.put(aStateAction, aReward);
 	}
 	
 }
