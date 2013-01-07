@@ -111,6 +111,9 @@ public class CognitiveRadio {
 		energyConsumption += SENSING_POWER;
 		double randomDouble = randomGenerator.nextDouble();
 		Spectrum currentSpectrum = getCurrentSpectrum();
+		if (currentSpectrum == null) {
+			return false;
+		}
 		if (randomDouble < PROBABILITY_FOR_CORRECT_SENSING) {
 			return currentSpectrum.isUnderPUOccupation();
 		} else {
@@ -127,7 +130,6 @@ public class CognitiveRadio {
 		isExploitingThisIteration = false;
 		double randomDouble = randomGenerator.nextDouble();
 		if (randomDouble < PROBABILITY_FOR_TRANSMISSION) {
-			isActiveThisIteration = true;
 			randomDouble = randomGenerator.nextDouble();
 			if (method == Method.QLEARNING) {
 				if (randomDouble < epsilon || Q.size() == 0) {
@@ -179,7 +181,14 @@ public class CognitiveRadio {
 	
 	public void conductAction(TransmissionAction action) {
 		switchChannel(action.frequency);
-		currentState.transmissionPower = action.transmissionPower;
+		boolean isChannelOccupied = sense();
+		if (isChannelOccupied) {
+			currentState.transmissionPower = 0.0;
+			isActiveThisIteration = false;
+		} else {
+			currentState.transmissionPower = action.transmissionPower;
+			isActiveThisIteration = true;
+		}
 	}
 
 	public void switchChannel(double aFrequency) {
