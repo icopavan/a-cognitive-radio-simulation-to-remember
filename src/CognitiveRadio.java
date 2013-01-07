@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
+
 public class CognitiveRadio {
 
 	public static final double INITIAL_EPSILON_VALUE = 0.8;
@@ -24,7 +26,8 @@ public class CognitiveRadio {
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
 	public static final double SWITCHING_POWER_PER_CHANNEL = 0.5;
 	public static final double SENSING_POWER = 50;
-	public static final double INITIAL_GREEDY_EXPLORATION_COEFFICIENT = 0.8;
+	public static final double INITIAL_GREEDY_EXPLORATION_COEFFICIENT = 0.5;
+	public static final int GREEDY_N_REPOSITORY_SIZE = 29;
 
 	public int iteration;
 	public double energyConsumption;
@@ -41,6 +44,7 @@ public class CognitiveRadio {
 	public double learningRate;
 	public HashMap<StateAction, Double> Q;
 	public HashMap<StateAction, Double> previousRewards;
+	public HashMap<StateAction, CircularFifoBuffer> pastRewardsRepository;
 	public double randomDouble;
 	public Method method;
 	public double currentIterationsReward;
@@ -78,6 +82,8 @@ public class CognitiveRadio {
 		currentState = new State(0.0, 0.0);
 		possibleActions = getPossibleActions();
 		iteration = 0;
+		previousRewards = new HashMap<StateAction, Double>();
+		pastRewardsRepository = new HashMap<StateAction, CircularFifoBuffer>();
 	}
 	
 	@Override
@@ -109,11 +115,9 @@ public class CognitiveRadio {
 				epsilon = 0.0;
 			}
 		} else if (method == Method.GREEDY) {
-			if (greedyExploration > epsilonDecrement) {
-				greedyExploration -= epsilonDecrement;
-			} else {
-				greedyExploration = 0.0;
-			}
+
+		} else if (method == Method.GREEDY_29) {
+			
 		}
 	}
 	
@@ -155,6 +159,12 @@ public class CognitiveRadio {
 				} else {
 					greedyExploit();
 				}
+			} else if (method == Method.GREEDY_29) {
+				if (randomDouble < greedyExploration) {
+					explore();
+				} else {
+					greedyNExploit();
+				}
 			}
 			State stateToSave = new State(currentState.frequency,
 					currentState.transmissionPower);
@@ -174,6 +184,10 @@ public class CognitiveRadio {
 	
 	public void greedyExploit() {
 		actionTaken = greedyBestAction();
+	}
+	
+	public void greedyNExploit() {
+		actionTaken = greedyNBestAction();
 	}
 	
 	public TransmissionAction getBestAction() {
@@ -206,6 +220,26 @@ public class CognitiveRadio {
 			if (previousAction.getValue() > maximumValue) {
 				maximumValue = previousAction.getValue();
 				bestAction = previousAction.getKey().transmissionAction;
+			}
+		}
+		if (bestAction == null) {
+			return selectRandomAction();
+		}
+		return bestAction;
+	}
+	
+	public TransmissionAction greedyNBestAction() {
+		double maximumValue = MINIMUM_DOUBLE;
+		TransmissionAction bestAction = null;
+		for (Map.Entry<StateAction, CircularFifoBuffer> previousAction : 
+			pastRewardsRepository.entrySet()) {
+			CircularFifoBuffer repository = previousAction.getValue();
+			for (Object record : repository) {
+				Double reward = (Double) record;
+				if (reward > maximumValue) {
+					maximumValue = reward;
+					bestAction = previousAction.getKey().transmissionAction;
+				}
 			}
 		}
 		if (bestAction == null) {
@@ -288,6 +322,8 @@ public class CognitiveRadio {
 			updateQ(thisIterationsStateAction, currentIterationsReward);
 		} else if (method == Method.GREEDY) {
 			updateGreedyHistory(thisIterationsStateAction, currentIterationsReward);
+		} else if (method == Method.GREEDY_29) {
+			updateNGreedyHistory(thisIterationsStateAction, currentIterationsReward);
 		}
 	}
 	
@@ -362,6 +398,17 @@ public class CognitiveRadio {
 	
 	public void updateGreedyHistory(StateAction aStateAction, Double aReward) {
 		previousRewards.put(aStateAction, aReward);
+	}
+	
+	public void updateNGreedyHistory(StateAction aStateAction, Double aReward) {
+		CircularFifoBuffer repo = null;
+		if (pastRewardsRepository.containsKey(aStateAction)) {
+			repo = pastRewardsRepository.get(aStateAction);
+		} else {
+			repo = new CircularFifoBuffer(GREEDY_N_REPOSITORY_SIZE);
+		}
+		repo.add(aReward);
+		pastRewardsRepository.put(aStateAction, repo);
 	}
 	
 }

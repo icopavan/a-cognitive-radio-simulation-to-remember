@@ -10,18 +10,17 @@ import java.util.Random;
 
 import org.json.simple.JSONValue;
 
-
 public class ACRSTRSimulation {
 
-	public static int NUMBER_OF_SECONDARY_USERS = 1;
+	public static int NUMBER_OF_SECONDARY_USERS = 2;
 	public static int TAKE_AVERAGE_OF_N_VALUES = 100;
 	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 5, 10 };
-	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = { };
+	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = {};
 	public static String X_AXIS_LABEL = "Iteration";
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
-	
+
 	public Double epsilonDecrement;
-	public Environment environment;	
+	public Environment environment;
 	public Integer lastValuesToCheck;
 	public Map<String, String> parameters;
 	public Method methodToSimulate;
@@ -29,7 +28,7 @@ public class ACRSTRSimulation {
 	public RatesResponse ratesResponse;
 	public Random randomNumberGenerator;
 	public String color;
-	
+
 	public ACRSTRSimulation(Method aMethod, double anEpsilonDecrement,
 			Integer aLastValuesToCheck, QValuesResponse aQValuesResponse,
 			RatesResponse aRatesResponse, String aColor) {
@@ -40,11 +39,11 @@ public class ACRSTRSimulation {
 		ratesResponse = aRatesResponse;
 		color = aColor;
 	}
-	
+
 	public void startSimulation() throws IOException {
 		environment = new Environment(NUMBER_OF_SECONDARY_USERS);
 		randomNumberGenerator = new Random();
-				
+
 		ACRSTRUtil.initialize();
 		ACRSTRUtil.readSettingsFile();
 
@@ -52,20 +51,22 @@ public class ACRSTRSimulation {
 		conductSimulation(methodToSimulate, qValuesResponse, ratesResponse,
 				output, epsilonDecrement, lastValuesToCheck);
 	}
-	
-	public void conductSimulation(Method method, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, String output, Double epsilonDecrement,
-			Integer lastValuesToCheck)
+
+	public void conductSimulation(Method method,
+			QValuesResponse qValueResponse, RatesResponse ratesResponse,
+			String output, Double epsilonDecrement, Integer lastValuesToCheck)
 			throws IOException {
 		List<Double> lastNAverages = new ArrayList<Double>();
 		List<Double> lastNProbabilities = new ArrayList<Double>();
-		
+
 		File outputDirectory = new File(DIRECTORY_FOR_LATEST_OUTPUT);
 		outputDirectory.mkdir();
-		
-		int numberOfIterations = Integer.parseInt(ACRSTRUtil.getSetting("iterations"));
-		
-		String filename = DIRECTORY_FOR_LATEST_OUTPUT + '/' + System.currentTimeMillis() + ".txt";
+
+		int numberOfIterations = Integer.parseInt(ACRSTRUtil
+				.getSetting("iterations"));
+
+		String filename = DIRECTORY_FOR_LATEST_OUTPUT + '/'
+				+ System.currentTimeMillis() + ".txt";
 		BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
 		parameters = new HashMap<String, String>();
 		parameters.put("method", method.toString());
@@ -79,21 +80,21 @@ public class ACRSTRSimulation {
 		parameters.put("legend", getLegend(compared, instance));
 		parameters.put("xLabel", X_AXIS_LABEL);
 		parameters.put("yLabel", getYLabel(output));
-			
-		int numberOfLines = output.startsWith("average-")
-				? numberOfIterations / TAKE_AVERAGE_OF_N_VALUES : numberOfIterations;
-			
-		parameters.put("numberOfValues", Integer.toString(numberOfLines)); 
+
+		int numberOfLines = output.startsWith("average-") ? numberOfIterations
+				/ TAKE_AVERAGE_OF_N_VALUES : numberOfIterations;
+
+		parameters.put("numberOfValues", Integer.toString(numberOfLines));
 
 		String jsonString = JSONValue.toJSONString(parameters);
-		bw.write(jsonString + "\n"); 
+		bw.write(jsonString + "\n");
 
 		for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 			environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1),
 					environment, method, lastValuesToCheck, qValueResponse,
 					ratesResponse, epsilonDecrement));
 		}
-			
+
 		for (int i = 0; i < numberOfIterations; i++) {
 			int index = 0;
 			for (int activationEpoch : EPOCHS_TO_ACTIVATE_PU_PAIRS) {
@@ -132,7 +133,7 @@ public class ACRSTRSimulation {
 			double currentRewardAverage = currentRewardTotals
 					/ environment.numberOfSecondaryUsers;
 			if (output.equals("reward")) {
-				bw.write(Double.toString(currentRewardAverage) + "\n");	
+				bw.write(Double.toString(currentRewardAverage) + "\n");
 			} else if (output.equals("probability")) {
 				bw.write(Double.toString(probabilityOfSuccessfulTransmission)
 						+ "\n");
@@ -142,7 +143,8 @@ public class ACRSTRSimulation {
 					for (Double value : lastNAverages) {
 						sumOfLastNValues += value;
 					}
-					double average = sumOfLastNValues / TAKE_AVERAGE_OF_N_VALUES;
+					double average = sumOfLastNValues
+							/ TAKE_AVERAGE_OF_N_VALUES;
 					bw.write(Double.toString(average) + "\n");
 					lastNAverages.clear();
 				} else {
@@ -154,7 +156,8 @@ public class ACRSTRSimulation {
 					for (Double value : lastNProbabilities) {
 						sumOfLastNValues += value;
 					}
-					double average = sumOfLastNValues / TAKE_AVERAGE_OF_N_VALUES;
+					double average = sumOfLastNValues
+							/ TAKE_AVERAGE_OF_N_VALUES;
 					bw.write(Double.toString(average) + "\n");
 					lastNProbabilities.clear();
 				} else {
@@ -164,7 +167,7 @@ public class ACRSTRSimulation {
 		}
 		bw.close();
 	}
-	
+
 	public String getYLabel(String output) {
 		if (output.contains("reward")) {
 			return "Average Rewards";
@@ -173,14 +176,15 @@ public class ACRSTRSimulation {
 		}
 		return "Unknown";
 	}
-	
+
 	public String getLegend(String compared, String instance) {
 		if (compared.equals("method")) {
 			return instance;
 		} else if (compared.equals("evaluation")) {
 			int checkedLastValues = Integer.parseInt(instance);
 			if (checkedLastValues > 0) {
-				return String.format("Evaluate Last %d values", checkedLastValues);
+				return String.format("Evaluate Last %d values",
+						checkedLastValues);
 			} else {
 				return "No Self Evaluation";
 			}
