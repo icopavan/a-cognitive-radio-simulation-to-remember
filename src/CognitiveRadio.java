@@ -20,7 +20,6 @@ public class CognitiveRadio {
 	public static final double DISTANCE = 5.0;
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
 	public static final double[] POWER_LEVELS = { 1000.0, 1250.0 , 1500.0};
-	public static final double ENERGY_EFFICIENCY_COEFFICIENT = 2.0;
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
@@ -336,7 +335,7 @@ public class CognitiveRadio {
 			}
 		}
 		successfullyTransmittedThisIteration = successfulTransmission;
-		reward = successfulTransmission ? ENERGY_EFFICIENCY_COEFFICIENT * energyEfficiency : -energyConsumption;
+		reward = successfulTransmission ? energyEfficiency : -energyConsumption;
 		return reward;
 	}
 	
