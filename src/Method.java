@@ -1,7 +1,7 @@
 
 public enum Method {
 
-	QLEARNING("Q-learning"), RANDOM("Random"), GREEDY("Greedy"), GREEDY_29("Greedy-29");
+	QLEARNING("Q-learning"), RANDOM("Random"), GREEDY("Greedy");
 	
 	private String text;
 	

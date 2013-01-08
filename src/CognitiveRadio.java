@@ -116,8 +116,6 @@ public class CognitiveRadio {
 			}
 		} else if (method == Method.GREEDY) {
 
-		} else if (method == Method.GREEDY_29) {
-			
 		}
 	}
 	
@@ -158,12 +156,6 @@ public class CognitiveRadio {
 					explore();
 				} else {
 					greedyExploit();
-				}
-			} else if (method == Method.GREEDY_29) {
-				if (randomDouble < greedyExploration) {
-					explore();
-				} else {
-					greedyNExploit();
 				}
 			}
 			State stateToSave = new State(currentState.frequency,
@@ -322,8 +314,6 @@ public class CognitiveRadio {
 			updateQ(thisIterationsStateAction, currentIterationsReward);
 		} else if (method == Method.GREEDY) {
 			updateGreedyHistory(thisIterationsStateAction, currentIterationsReward);
-		} else if (method == Method.GREEDY_29) {
-			updateNGreedyHistory(thisIterationsStateAction, currentIterationsReward);
 		}
 	}
 	
@@ -398,17 +388,6 @@ public class CognitiveRadio {
 	
 	public void updateGreedyHistory(StateAction aStateAction, Double aReward) {
 		previousRewards.put(aStateAction, aReward);
-	}
-	
-	public void updateNGreedyHistory(StateAction aStateAction, Double aReward) {
-		CircularFifoBuffer repo = null;
-		if (pastRewardsRepository.containsKey(aStateAction)) {
-			repo = pastRewardsRepository.get(aStateAction);
-		} else {
-			repo = new CircularFifoBuffer(GREEDY_N_REPOSITORY_SIZE);
-		}
-		repo.add(aReward);
-		pastRewardsRepository.put(aStateAction, repo);
 	}
 	
 }
