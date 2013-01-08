@@ -19,14 +19,13 @@ public class CognitiveRadio {
 	public static final double PATH_LOSS_EXPONENT = - 2.0;
 	public static final double DISTANCE = 5.0;
 	public static final double CONSTANT_TO_INCREASE_RATES = 0.1;
-	public static final double[] POWER_LEVELS = { 1000.0, 1250.0 , 1500.0};
+	public static final double[] POWER_LEVELS = { 1000.0, 1250.0, 1500.0};
 	public static final double PU_COLLISION_PENALTY = -15.0;
 	public static final double CR_COLLISION_PENALTY = -5.0;
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
 	public static final double SWITCHING_POWER_PER_CHANNEL = 0.5;
 	public static final double SENSING_POWER = 50;
-	public static final double INITIAL_GREEDY_EXPLORATION_COEFFICIENT = 0.5;
-	public static final int GREEDY_N_REPOSITORY_SIZE = 29;
+	public static final double GREEDY_EXPLORATION_COEFFICIENT = 0.5;
 
 	public int iteration;
 	public double energyConsumption;
@@ -73,7 +72,7 @@ public class CognitiveRadio {
 		Q = new HashMap<StateAction, Double>();
 		epsilon = 0.8;
 		learningRate = 0.8;
-		greedyExploration = INITIAL_GREEDY_EXPLORATION_COEFFICIENT;
+		greedyExploration = GREEDY_EXPLORATION_COEFFICIENT;
 		responseForQValues = qValueResponse;
 		responseForRates = ratesResponse;
 		epsilonDecrement = decreaseEpsilonBy;
