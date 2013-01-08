@@ -176,10 +176,6 @@ public class CognitiveRadio {
 		actionTaken = greedyBestAction();
 	}
 	
-	public void greedyNExploit() {
-		actionTaken = greedyNBestAction();
-	}
-	
 	public TransmissionAction getBestAction() {
 		double maximumValue = MINIMUM_DOUBLE;
 		TransmissionAction bestAction = null;
@@ -210,26 +206,6 @@ public class CognitiveRadio {
 			if (previousAction.getValue() > maximumValue) {
 				maximumValue = previousAction.getValue();
 				bestAction = previousAction.getKey().transmissionAction;
-			}
-		}
-		if (bestAction == null) {
-			return selectRandomAction();
-		}
-		return bestAction;
-	}
-	
-	public TransmissionAction greedyNBestAction() {
-		double maximumValue = MINIMUM_DOUBLE;
-		TransmissionAction bestAction = null;
-		for (Map.Entry<StateAction, CircularFifoBuffer> previousAction : 
-			pastRewardsRepository.entrySet()) {
-			CircularFifoBuffer repository = previousAction.getValue();
-			for (Object record : repository) {
-				Double reward = (Double) record;
-				if (reward > maximumValue) {
-					maximumValue = reward;
-					bestAction = previousAction.getKey().transmissionAction;
-				}
 			}
 		}
 		if (bestAction == null) {
@@ -295,7 +271,6 @@ public class CognitiveRadio {
 									learningRate = 0.8;
 								}
 							}
-
 							if (responseForQValues == QValuesResponse.DELETE_OBSOLETE_VALUES) {
 								for (StateAction offendingStateAction : offendingQValues) {
 									Q.remove(offendingStateAction);
