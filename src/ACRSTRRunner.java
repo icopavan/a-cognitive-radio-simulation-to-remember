@@ -13,6 +13,7 @@ public class ACRSTRRunner {
 			oldOutput.renameTo(new File("acrstr-"
 					+ System.currentTimeMillis()));
 		}
+		
 		ACRSTRSimulation simulation1 = new ACRSTRSimulation(Method.QLEARNING,
 				0.0008, 5, QValuesResponse.DELETE_OBSOLETE_VALUES,
 				RatesResponse.SET_TO_MIDPOINT, "blue");

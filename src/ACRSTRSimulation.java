@@ -12,14 +12,15 @@ import org.json.simple.JSONValue;
 
 public class ACRSTRSimulation {
 
-	public static int NUMBER_OF_SECONDARY_USERS = 5;
-	public static int NUMBER_OF_SPECTRA = 15;
 	public static int TAKE_AVERAGE_OF_N_VALUES = 100;
 	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 5, 10, 15, 20, 25, 30, 35 };
 	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = {};
 	public static String X_AXIS_LABEL = "Iteration";
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 
+	public int numberOfSecondaryUsers;
+	public int numberOfSpectra;
+	public int numberOfPrimaryUsers;
 	public Double epsilonDecrement;
 	public Environment environment;
 	public Integer lastValuesToCheck;
@@ -29,6 +30,7 @@ public class ACRSTRSimulation {
 	public RatesResponse ratesResponse;
 	public Random randomNumberGenerator;
 	public String color;
+	public String name;
 
 	public ACRSTRSimulation(Method aMethod, double anEpsilonDecrement,
 			Integer aLastValuesToCheck, QValuesResponse aQValuesResponse,
@@ -39,15 +41,19 @@ public class ACRSTRSimulation {
 		qValuesResponse = aQValuesResponse;
 		ratesResponse = aRatesResponse;
 		color = aColor;
+		numberOfPrimaryUsers = EPOCHS_TO_ACTIVATE_PU_PAIRS.length;
 	}
 
 	public void startSimulation() throws IOException {
-		environment = new Environment(NUMBER_OF_SECONDARY_USERS, NUMBER_OF_SPECTRA);
-		randomNumberGenerator = new Random();
-
 		ACRSTRUtil.initialize();
 		ACRSTRUtil.readSettingsFile();
 
+		numberOfSecondaryUsers = new Integer(ACRSTRUtil.getSetting("secondary-users"));
+		numberOfSpectra = new Integer(ACRSTRUtil.getSetting("spectra-number"));
+		environment = new Environment(numberOfSecondaryUsers, numberOfSpectra);
+		randomNumberGenerator = new Random();
+		
+		name = ACRSTRUtil.getSetting("name");
 		String output = ACRSTRUtil.getSetting("output");
 		conductSimulation(methodToSimulate, qValuesResponse, ratesResponse,
 				output, epsilonDecrement, lastValuesToCheck);
@@ -70,6 +76,10 @@ public class ACRSTRSimulation {
 				+ System.currentTimeMillis() + ".txt";
 		BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
 		parameters = new HashMap<String, String>();
+		parameters.put("name", name);
+		parameters.put("secondary-users", new Integer(numberOfSecondaryUsers).toString());
+		parameters.put("spectra-number", new Integer(numberOfSpectra).toString());
+		parameters.put("primary-users", new Integer(numberOfPrimaryUsers).toString());
 		parameters.put("method", method.toString());
 		parameters.put("evaluation", lastValuesToCheck.toString());
 		parameters.put("q-response", qValueResponse.toString());
