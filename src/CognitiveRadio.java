@@ -25,7 +25,7 @@ public class CognitiveRadio {
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
 	public static final double SWITCHING_POWER_PER_CHANNEL = 0.5;
 	public static final double SENSING_POWER = 50;
-	public static final double GREEDY_EXPLORATION_COEFFICIENT = 0.5;
+	public static final double GREEDY_EXPLORATION_COEFFICIENT = 0.1;
 
 	public int iteration;
 	public double energyConsumption;
@@ -92,9 +92,9 @@ public class CognitiveRadio {
 	
 	public List<TransmissionAction> getPossibleActions() {
 		List<TransmissionAction> possibleActions = new ArrayList<TransmissionAction>();
-		for (double frequency : Environment.AVAILABLE_SPECTRA) {
+		for (Spectrum spectrum : environment.spectra) {
 			for (double transmissionPower : POWER_LEVELS) {
-				possibleActions.add(new TransmissionAction(frequency, transmissionPower));
+				possibleActions.add(new TransmissionAction(spectrum.frequency, transmissionPower));
 			}
 		}
 		possibleActions.add(new TransmissionAction(0.0, 0.0));

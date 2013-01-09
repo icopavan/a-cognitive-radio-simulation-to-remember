@@ -4,19 +4,22 @@ import java.util.Random;
 
 public class Environment {
 
-	public static final double[] AVAILABLE_SPECTRA = { 1600.0, 1620.0, 1640.0, 1660.0, 1680.0 };
+	public static final double SPECTRA_STEP_SIZE = 20.0;
+	public static final double STARTING_SPECTRUM = 1600.0;
 	public List<Spectrum> spectra;
 	public List<CognitiveRadio> cognitiveRadios;
 	public int numberOfSecondaryUsers;
+	public int numberOfSpectra;
 	public List<PrimaryUser> primaryUsers;
 	public List<Spectrum> channelsOccupiedByPUs;
 	public List<Spectrum> channelsWithSpectrumHoles;
 	public Random randomNumberGenerator;
 	
-	public Environment(int aNumberForSecondaryUsers) {
+	public Environment(int aNumberForSecondaryUsers, int aNumberForSpectra) {
+		numberOfSpectra = aNumberForSpectra;
 		spectra = new ArrayList<Spectrum>();
-		for (double frequency : AVAILABLE_SPECTRA) {
-			spectra.add(new Spectrum(frequency));
+		for (int i = 0; i < numberOfSpectra; i++) {
+			spectra.add(new Spectrum(STARTING_SPECTRUM + i * SPECTRA_STEP_SIZE));
 		}
 		cognitiveRadios = new ArrayList<CognitiveRadio>();
 		primaryUsers = new ArrayList<PrimaryUser>();
