@@ -13,7 +13,6 @@ import org.json.simple.JSONValue;
 public class ACRSTRSimulation {
 
 	public static int TAKE_AVERAGE_OF_N_VALUES = 100;
-	public static int[] EPOCHS_TO_ACTIVATE_PU_PAIRS = { 0, 5, 10, 15, 20, 25, 30, 35 };
 	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = {};
 	public static String X_AXIS_LABEL = "Iteration";
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
@@ -42,7 +41,6 @@ public class ACRSTRSimulation {
 		qValuesResponse = aQValuesResponse;
 		ratesResponse = aRatesResponse;
 		color = aColor;
-		numberOfPrimaryUsers = EPOCHS_TO_ACTIVATE_PU_PAIRS.length;
 	}
 
 	public void startSimulation() throws IOException {
@@ -51,6 +49,7 @@ public class ACRSTRSimulation {
 
 		numberOfSecondaryUsers = new Integer(ACRSTRUtil.getSetting("secondary-users"));
 		numberOfSpectra = new Integer(ACRSTRUtil.getSetting("spectra-number"));
+		numberOfPrimaryUsers = new Integer(ACRSTRUtil.getSetting("primary-users"));
 		environment = new Environment(numberOfSecondaryUsers, numberOfSpectra);
 		randomNumberGenerator = new Random();
 		greedyExploration = Double.parseDouble((ACRSTRUtil.getSetting("greedy-exploration")));
@@ -80,8 +79,8 @@ public class ACRSTRSimulation {
 		parameters = new HashMap<String, String>();
 		parameters.put("name", name);
 		parameters.put("secondary-users", new Integer(numberOfSecondaryUsers).toString());
-		parameters.put("spectra-number", new Integer(numberOfSpectra).toString());
 		parameters.put("primary-users", new Integer(numberOfPrimaryUsers).toString());
+		parameters.put("spectra-number", new Integer(numberOfSpectra).toString());
 		parameters.put("method", method.toString());
 		parameters.put("evaluation", lastValuesToCheck.toString());
 		parameters.put("q-response", qValueResponse.toString());
@@ -102,6 +101,11 @@ public class ACRSTRSimulation {
 
 		String jsonString = JSONValue.toJSONString(parameters);
 		bw.write(jsonString + "\n");
+		
+		for (int j = 0; j < numberOfPrimaryUsers; j++) {
+				String puName = String.format("PU%s", j + 1);
+				environment.introduceAPU(puName);
+		}
 
 		for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 			environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1),
@@ -110,14 +114,6 @@ public class ACRSTRSimulation {
 		}
 
 		for (int i = 0; i < numberOfIterations; i++) {
-			int index = 0;
-			for (int activationEpoch : EPOCHS_TO_ACTIVATE_PU_PAIRS) {
-				if (i == activationEpoch) {
-					String puName = String.format("PU%s", index + 1);
-					environment.introduceAPU(puName);
-				}
-				index++;
-			}
 
 			for (int deactivationEpoch : EPOCHS_TO_DEACTIVATE_PU_PAIRS) {
 				if (i == deactivationEpoch) {
