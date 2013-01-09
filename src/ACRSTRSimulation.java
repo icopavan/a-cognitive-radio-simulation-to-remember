@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,8 @@ import org.json.simple.JSONValue;
 public class ACRSTRSimulation {
 
 	public static int TAKE_AVERAGE_OF_N_VALUES = 100;
-	public static int[] EPOCHS_TO_DEACTIVATE_PU_PAIRS = {};
+	public static int[] EPOCHS_TO_INTRODUCE_PUS = { };
+	public static int[] EPOCHS_TO_DEACTIVATE_PUS = { 3000, 5000 };
 	public static String X_AXIS_LABEL = "Iteration";
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 
@@ -88,6 +90,8 @@ public class ACRSTRSimulation {
 		parameters.put("color", color);
 		parameters.put("epsilon-decrement", epsilonDecrement.toString());
 		parameters.put("greedy-exploration", greedyExploration.toString());
+		parameters.put("pu-deactivation", Arrays.toString(EPOCHS_TO_DEACTIVATE_PUS));
+		parameters.put("pu-introduction", Arrays.toString(EPOCHS_TO_INTRODUCE_PUS));
 		String compared = ACRSTRUtil.getSetting("compare");
 		String instance = parameters.get(compared);
 		parameters.put("legend", getLegend(compared, instance));
@@ -114,8 +118,14 @@ public class ACRSTRSimulation {
 		}
 
 		for (int i = 0; i < numberOfIterations; i++) {
+			
+			for (int introductionEpoch : EPOCHS_TO_INTRODUCE_PUS) {
+				if (i == introductionEpoch) {
+					environment.introduceAPU("Newcomer PU");
+				}
+			}
 
-			for (int deactivationEpoch : EPOCHS_TO_DEACTIVATE_PU_PAIRS) {
+			for (int deactivationEpoch : EPOCHS_TO_DEACTIVATE_PUS) {
 				if (i == deactivationEpoch) {
 					environment.deactivateAPU();
 				}
