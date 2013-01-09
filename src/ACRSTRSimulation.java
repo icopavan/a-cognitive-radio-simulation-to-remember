@@ -18,6 +18,7 @@ public class ACRSTRSimulation {
 	public static String X_AXIS_LABEL = "Iteration";
 	public static final String DIRECTORY_FOR_LATEST_OUTPUT = "acrstr-latest";
 
+	public double greedyExploration;
 	public int numberOfSecondaryUsers;
 	public int numberOfSpectra;
 	public int numberOfPrimaryUsers;
@@ -52,16 +53,17 @@ public class ACRSTRSimulation {
 		numberOfSpectra = new Integer(ACRSTRUtil.getSetting("spectra-number"));
 		environment = new Environment(numberOfSecondaryUsers, numberOfSpectra);
 		randomNumberGenerator = new Random();
-		
+		greedyExploration = Double.parseDouble((ACRSTRUtil.getSetting("greedy-exploration")));
 		name = ACRSTRUtil.getSetting("name");
 		String output = ACRSTRUtil.getSetting("output");
 		conductSimulation(methodToSimulate, qValuesResponse, ratesResponse,
-				output, epsilonDecrement, lastValuesToCheck);
+				output, epsilonDecrement, lastValuesToCheck, greedyExploration);
 	}
 
 	public void conductSimulation(Method method,
 			QValuesResponse qValueResponse, RatesResponse ratesResponse,
-			String output, Double epsilonDecrement, Integer lastValuesToCheck)
+			String output, Double epsilonDecrement, Integer lastValuesToCheck,
+			Double greedyExploration)
 			throws IOException {
 		List<Double> lastNAverages = new ArrayList<Double>();
 		List<Double> lastNProbabilities = new ArrayList<Double>();
@@ -86,6 +88,7 @@ public class ACRSTRSimulation {
 		parameters.put("rate-response", ratesResponse.toString());
 		parameters.put("color", color);
 		parameters.put("epsilon-decrement", epsilonDecrement.toString());
+		parameters.put("greedy-exploration", greedyExploration.toString());
 		String compared = ACRSTRUtil.getSetting("compare");
 		String instance = parameters.get(compared);
 		parameters.put("legend", getLegend(compared, instance));
@@ -103,7 +106,7 @@ public class ACRSTRSimulation {
 		for (int i = 0; i < environment.numberOfSecondaryUsers; i++) {
 			environment.cognitiveRadios.add(new CognitiveRadio("CR" + (i + 1),
 					environment, method, lastValuesToCheck, qValueResponse,
-					ratesResponse, epsilonDecrement));
+					ratesResponse, epsilonDecrement, greedyExploration));
 		}
 
 		for (int i = 0; i < numberOfIterations; i++) {
@@ -194,7 +197,7 @@ public class ACRSTRSimulation {
 		} else if (compared.equals("evaluation")) {
 			int checkedLastValues = Integer.parseInt(instance);
 			if (checkedLastValues > 0) {
-				return String.format("Evaluate Last %d values",
+				return String.format("Monitor Last %d Transmissions for Failure",
 						checkedLastValues);
 			} else {
 				return "No Self Evaluation";

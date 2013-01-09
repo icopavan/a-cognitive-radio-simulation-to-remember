@@ -25,7 +25,6 @@ public class CognitiveRadio {
 	public static final double PROBABILITY_FOR_CORRECT_SENSING = 1.0;
 	public static final double SWITCHING_POWER_PER_CHANNEL = 0.5;
 	public static final double SENSING_POWER = 50;
-	public static final double GREEDY_EXPLORATION_COEFFICIENT = 0.1;
 
 	public int iteration;
 	public double energyConsumption;
@@ -61,7 +60,7 @@ public class CognitiveRadio {
 	
 	public CognitiveRadio(String aName, Environment anEnvironment, Method aMethod,
 			int checkLastNValues, QValuesResponse qValueResponse,
-			RatesResponse ratesResponse, double decreaseEpsilonBy) {
+			RatesResponse ratesResponse, double decreaseEpsilonBy, double aGreedyExploration) {
 		name = aName;
 		environment = anEnvironment;
 		offendingQValues = new HashSet<StateAction>();
@@ -72,7 +71,7 @@ public class CognitiveRadio {
 		Q = new HashMap<StateAction, Double>();
 		epsilon = 0.8;
 		learningRate = 0.8;
-		greedyExploration = GREEDY_EXPLORATION_COEFFICIENT;
+		greedyExploration = aGreedyExploration;
 		responseForQValues = qValueResponse;
 		responseForRates = ratesResponse;
 		epsilonDecrement = decreaseEpsilonBy;
